@@ -61,6 +61,22 @@ function listTweaks() {
   }
   return out;
 }
+function libraryVersion() {
+  let newest = 0;
+  const files = [STATE_FILE];
+  for (const kind of KINDS) {
+    const dir = path.join(TWEAKS_DIR, kind);
+    try { fs.readdirSync(dir).forEach(function (name) { if (name.toLowerCase().endsWith(".lua")) files.push(path.join(dir, name)); }); }
+    catch (e) {}
+  }
+  for (const file of files) {
+    try {
+      const stat = fs.statSync(file);
+      newest = Math.max(newest, stat.mtimeMs, stat.size);
+    } catch (e) {}
+  }
+  return String(newest) + ":" + files.length;
+}
 
 const MIME = {
   ".html": "text/html; charset=utf-8",
@@ -98,6 +114,11 @@ const server = http.createServer(function (req, res) {
       res.end(JSON.stringify(listTweaks()));
       return;
     }
+    if (req.method === "GET" && req.url.split("?")[0] === "/api/tweaks/version") {
+      res.writeHead(200, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" });
+      res.end(JSON.stringify({ version: libraryVersion() }));
+      return;
+    }
     if (req.method === "POST" && req.url === "/api/tweaks/toggle") {
       let data = {};
       try { data = JSON.parse((await readBody(req)) || "{}"); } catch (e) { data = {}; }
@@ -130,6 +151,7 @@ module.exports = {
   server: server,
   safeName: safeName,
   listTweaks: listTweaks,
+  libraryVersion: libraryVersion,
   readState: readState,
   writeState: writeState,
   serveStatic: serveStatic,

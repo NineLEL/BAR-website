@@ -147,23 +147,32 @@ do
 		return true
 	end
 
-	local function applyAAMissileVis(w)
-		w.cegtag, w.smoketrail, w.smoketrailcastshadow = "missiletrailaa", true, false
-		w.smokeperiod, w.smoketime, w.smokesize, w.smokecolor = 1, 24, 7.0, 1
-		w.texture1, w.texture2, w.explosiongenerator = "null", "smoketrailaa", "custom:genericshellexplosion-medium-aa"
+	local function D(d, v, s, c)
+		local t = { default = d }
+		if v then
+			t.vtol = v
+		end
+		if s then
+			t.shields = s
+		end
+		if c then
+			t.commandertoo = c
+		end
+		return t
 	end
 
-	local function applyHeavyMissileVis(w)
+	local function setMissileVis(w, heavy)
 		w.cegtag, w.smoketrail, w.smoketrailcastshadow = "missiletrailaa", true, false
-		w.smokeperiod, w.smoketime, w.smokesize, w.smokecolor = 2, 12, 3.8, 1
-		w.texture1, w.texture2, w.explosiongenerator = "null", "smoketrailaa", "custom:genericshellexplosion-small"
+		w.smokeperiod, w.smoketime, w.smokesize, w.smokecolor =
+			heavy and 2 or 1, heavy and 12 or 24, heavy and 3.8 or 7.0, 1
+		w.texture1, w.texture2 = "null", "smoketrailaa"
+		w.explosiongenerator = heavy and "custom:genericshellexplosion-small"
+			or "custom:genericshellexplosion-medium-aa"
 	end
 
-	local function applyArtyVis(w, huge)
-		w.cegtag = huge and "arty-huge" or "arty-large"
-		w.explosiongenerator = huge and "custom:genericshellexplosion-huge" or "custom:genericshellexplosion-large"
-		w.soundhit, w.soundhitwet = "lrpcexplo", "splshbig"
-	end
+	local C_CAN, C_MSL, C_BLAS, T_V, T_S, T_SV =
+		"Cannon", "MissileLauncher", "BeamLaser", "VTOL", "SURFACE", "SURFACE VTOL"
+	local S_CAN1, S_CAN2, S_BLAS, S_ANNI = "cannhvy1", "cannhvy2", "beamlaserfire", "annigun1"
 
 	local SPECS = {
 		-- 1. HAILSTORM
@@ -175,7 +184,7 @@ do
 			"Short-range saturation flak battery",
 			function(u, src)
 				installWeapon(u, src, 1, "HAILSTORM_FLAK", {
-					weapontype = "Cannon",
+					weapontype = C_CAN,
 					range = 1500,
 					reloadtime = 1.2,
 					burst = 60,
@@ -185,8 +194,8 @@ do
 					areaofeffect = 120,
 					weaponvelocity = 4200,
 					energypershot = 900,
-					onlytargetcategory = "VTOL",
-					damage = { default = 900, vtol = 12000, shields = 4000 },
+					onlytargetcategory = T_V,
+					damage = D(900, 12000, 4000),
 					cegtag = "flaktrailaamg",
 					explosiongenerator = "custom:flakshard",
 					texture1 = "null",
@@ -205,7 +214,7 @@ do
 			"Long-range AA interceptor battery",
 			function(u, src)
 				installWeapon(u, src, 1, "NEEDLE_SWARM", {
-					weapontype = "MissileLauncher",
+					weapontype = C_MSL,
 					range = 3200,
 					reloadtime = 3.0,
 					burst = 8,
@@ -220,12 +229,12 @@ do
 					wobble = 90,
 					areaofeffect = 220,
 					energypershot = 12000,
-					damage = { default = 2500, vtol = 68000, shields = 16000 },
+					damage = D(2500, 68000, 16000),
 					soundhit = "packaahit",
 					soundstart = "packaamissiles",
-					onlytargetcategory = "VTOL",
+					onlytargetcategory = T_V,
 				})
-				applyAAMissileVis(u.weapondefs.NEEDLE_SWARM)
+				setMissileVis(u.weapondefs.NEEDLE_SWARM, false)
 			end,
 		},
 		-- 3. BLACKOUT CASCADE
@@ -237,7 +246,7 @@ do
 			"Wide-area AA EMP battery",
 			function(u, src)
 				installWeapon(u, src, 1, "BLACKOUT_CASCADE", {
-					weapontype = "Cannon",
+					weapontype = C_CAN,
 					range = 1900,
 					reloadtime = 3.5,
 					burst = 10,
@@ -249,11 +258,11 @@ do
 					energypershot = 14000,
 					paralyzer = true,
 					paralyzetime = 45,
-					damage = { default = 400, vtol = 5e5, commandertoo = 400 },
+					damage = D(400, 5e5, nil, 400),
 					explosiongenerator = "custom:emp_m_preventable",
 					soundhit = "emparm",
-					soundstart = "cannhvy2",
-					onlytargetcategory = "VTOL",
+					soundstart = S_CAN2,
+					onlytargetcategory = T_V,
 				})
 			end,
 		},
@@ -266,7 +275,7 @@ do
 			"Rapid close-range anti-air point defense beam",
 			function(u, src)
 				installWeapon(u, src, 1, "PHALANX_SKYBEAM", {
-					weapontype = "BeamLaser",
+					weapontype = C_BLAS,
 					largebeamlaser = true,
 					range = 1400,
 					reloadtime = 0.02,
@@ -276,12 +285,12 @@ do
 					corethickness = 1.20,
 					energypershot = 1400,
 					laserflaresize = 12,
-					damage = { default = 220, vtol = 9000, shields = 3000 },
+					damage = D(220, 9000, 3000),
 					explosiongenerator = "custom:laserhit-small-blue",
 					rgbcolor = "0.2 0.9 1",
-					soundstart = "beamlaserfire",
+					soundstart = S_BLAS,
 					soundtrigger = 1,
-					onlytargetcategory = "VTOL",
+					onlytargetcategory = T_V,
 				})
 			end,
 		},
@@ -294,7 +303,7 @@ do
 			"Cratering siege artillery",
 			function(u, src)
 				installWeapon(u, src, 1, "QUAKE_DOOM", {
-					weapontype = "Cannon",
+					weapontype = C_CAN,
 					range = 5200,
 					reloadtime = 4.0,
 					energypershot = 120e3,
@@ -307,10 +316,13 @@ do
 					cratermult = 15.0,
 					camerashake = 200,
 					size = 16.0,
-					damage = { default = 96000, shields = 52000, commandertoo = 20000 },
-					onlytargetcategory = "SURFACE",
+					damage = D(96000, nil, 52000, 20000),
+					cegtag = "arty-huge",
+					explosiongenerator = "custom:genericshellexplosion-huge",
+					soundhit = "lrpcexplo",
+					soundhitwet = "splshbig",
+					onlytargetcategory = T_S,
 				})
-				applyArtyVis(u.weapondefs.QUAKE_DOOM, true)
 			end,
 		},
 		-- 6. NULL CATHEDRAL
@@ -322,7 +334,7 @@ do
 			"Strategic long-range ground EMP artillery",
 			function(u, src)
 				installWeapon(u, src, 1, "NULL_CATHEDRAL", {
-					weapontype = "Cannon",
+					weapontype = C_CAN,
 					range = 3400,
 					reloadtime = 4.5,
 					energypershot = 180e3,
@@ -334,10 +346,10 @@ do
 					camerashake = 160,
 					size = 15.0,
 					rgbcolor = "0.2 0.6 1",
-					damage = { default = 900, commandertoo = 900 },
+					damage = D(900, nil, nil, 900),
 					explosiongenerator = "custom:emp_l_preventable",
 					soundhit = "emparm",
-					onlytargetcategory = "SURFACE",
+					onlytargetcategory = T_S,
 				})
 			end,
 		},
@@ -350,7 +362,7 @@ do
 			"Guided missile barrage fortress",
 			function(u, src)
 				installWeapon(u, src, 1, "HIVE_ARRAY", {
-					weapontype = "MissileLauncher",
+					weapontype = C_MSL,
 					range = 4200,
 					reloadtime = 0.02,
 					weaponvelocity = 3800,
@@ -363,11 +375,11 @@ do
 					wobble = 400,
 					areaofeffect = 200,
 					energypershot = 3200,
-					damage = { default = 5200, vtol = 34000, shields = 12000 },
+					damage = D(5200, 34000, 12000),
 					soundstart = "rocklit1",
-					onlytargetcategory = "SURFACE VTOL",
+					onlytargetcategory = T_SV,
 				})
-				applyHeavyMissileVis(u.weapondefs.HIVE_ARRAY)
+				setMissileVis(u.weapondefs.HIVE_ARRAY, true)
 			end,
 		},
 		-- 8. AEGIS ERASER
@@ -379,7 +391,7 @@ do
 			"Dedicated multi-round shield-breaking battery",
 			function(u, src)
 				installWeapon(u, src, 1, "AEGIS_ERASER", {
-					weapontype = "Cannon",
+					weapontype = C_CAN,
 					range = 3400,
 					reloadtime = 1.5,
 					burst = 8,
@@ -392,11 +404,11 @@ do
 					energypershot = 26000,
 					size = 9.0,
 					rgbcolor = "0.1 0.9 1",
-					damage = { default = 22000, shields = 340e3 },
+					damage = D(22000, nil, 340e3),
 					explosiongenerator = "custom:genericshellexplosion-medium",
 					soundhit = "xplomed2",
-					soundstart = "cannhvy1",
-					onlytargetcategory = "SURFACE",
+					soundstart = S_CAN1,
+					onlytargetcategory = T_S,
 				})
 			end,
 		},
@@ -409,7 +421,7 @@ do
 			"Heavy single-target continuous thermal beam",
 			function(u, src)
 				installWeapon(u, src, 1, "EXECUTIONER", {
-					weapontype = "BeamLaser",
+					weapontype = C_BLAS,
 					largebeamlaser = true,
 					range = 3600,
 					reloadtime = 2.0,
@@ -420,13 +432,13 @@ do
 					corethickness = 2.20,
 					laserflaresize = 26,
 					firestarter = 100,
-					damage = { default = 165000, shields = 90000, commandertoo = 30000 },
+					damage = D(165000, nil, 90000, 30000),
 					texture3 = "largebeam",
 					tilelength = 150,
 					explosiongenerator = "custom:laserhit-large-red",
 					rgbcolor = "1 0.12 0.02",
-					soundstart = "annigun1",
-					onlytargetcategory = "SURFACE",
+					soundstart = S_ANNI,
+					onlytargetcategory = T_S,
 				})
 			end,
 		},
@@ -446,7 +458,7 @@ do
 				for slot = 1, 3 do
 					local cfg = cfgs[slot]
 					installWeapon(u, src, slot, "PRISM_BEAM_" .. slot, {
-						weapontype = "BeamLaser",
+						weapontype = C_BLAS,
 						largebeamlaser = true,
 						range = 3400,
 						reloadtime = 1.2,
@@ -457,13 +469,13 @@ do
 						corethickness = cfg[3] * 2.4,
 						laserflaresize = 22,
 						firestarter = 100,
-						damage = { default = 52000, shields = 145000, commandertoo = 12000 },
+						damage = D(52000, nil, 145000, 12000),
 						texture3 = "largebeam",
 						tilelength = 150,
 						explosiongenerator = "custom:laserhit-large-blue",
 						rgbcolor = cfg[1],
-						soundstart = "annigun1",
-						onlytargetcategory = "SURFACE",
+						soundstart = S_ANNI,
+						onlytargetcategory = T_S,
 					})
 				end
 			end,
@@ -477,7 +489,7 @@ do
 			"Experimental super-heavy obliteration beam",
 			function(u, src)
 				installWeapon(u, src, 1, "HYPERION_LANCE", {
-					weapontype = "BeamLaser",
+					weapontype = C_BLAS,
 					largebeamlaser = true,
 					range = 3800,
 					reloadtime = 4.5,
@@ -488,13 +500,13 @@ do
 					corethickness = 3.40,
 					laserflaresize = 44,
 					firestarter = 100,
-					damage = { default = 680000, shields = 420000, commandertoo = 120000 },
+					damage = D(680000, nil, 420000, 120000),
 					texture3 = "largebeam",
 					tilelength = 150,
 					explosiongenerator = "custom:laserhit-large-sparks",
 					rgbcolor = "1 0.65 0.05",
-					soundstart = "annigun1",
-					onlytargetcategory = "SURFACE",
+					soundstart = S_ANNI,
+					onlytargetcategory = T_S,
 				})
 			end,
 		},
@@ -508,45 +520,32 @@ do
 			function(u, src)
 				u.hightrajectorytype = 1
 				installWeapon(u, src, 1, "ASTRAEUS_STARFALL", {
-					weapontype = "Cannon",
+					weapontype = C_CAN,
 					range = 9200,
 					reloadtime = 12.0,
-
-					-- 4 animation ticks (modulo 4 in legstarfall script)
 					burst = 8,
 					burstrate = 0.22,
-
-					-- 16 shells per barrel = 64 shells per barrage
 					projectilespershot = 24,
-
-					-- Wider spray angle so the 16-shell clusters fan out across the zone
 					sprayangle = 900,
 					accuracy = 140,
-
 					hightrajectory = 1,
 					weaponvelocity = 3400,
 					areaofeffect = 1100,
 					camerashake = 220,
-
-					-- 650 E per projectile = 10.4k E per barrel (41.6k E total salvo drain)
 					energypershot = 5200,
-
 					craterboost = 8.0,
 					cratermult = 6.0,
 					impulsefactor = 16.0,
 					impulseboost = 10.0,
 					firestarter = 100,
 					size = 14.0,
-
-					-- 64 shells * 950 = 60,800 raw surface damage / 179,200 shield damage
-					damage = { default = 92000, shields = 210000, commandertoo = 18000 },
-
+					damage = D(92000, nil, 210000, 18000),
 					cegtag = "starfire",
 					explosiongenerator = "custom:starfire-explosion",
-					soundstart = "cannhvy2",
+					soundstart = S_CAN2,
 					soundhit = "rflrpcexplo",
 					soundhitwet = "splshbig",
-					onlytargetcategory = "SURFACE",
+					onlytargetcategory = T_S,
 				})
 			end,
 		},
@@ -563,6 +562,7 @@ do
 			sanitize(u)
 
 			local st = spec[3]
+			st[1], st[2] = st[1] * 0.20, st[2] * 0.20
 			u.unitname, u.name = spec[1], spec[1]
 			u.health, u.maxdamage = st[3], st[3]
 			u.metalcost, u.energycost, u.buildtime = st[1], st[2], st[2]
@@ -593,7 +593,7 @@ do
 				local dName = spec[1] .. "_dummy"
 				local mainW = u.weapons[1] and u.weapondefs[u.weapons[1].def]
 				u.weapondefs[dName] = {
-					weapontype = "Cannon",
+					weapontype = C_CAN,
 					range = 1,
 					reloadtime = 9999,
 					damage = { default = 0 },
@@ -605,7 +605,7 @@ do
 					local sSlot = source.weapons[sIdx]
 					u.weapons[sIdx] = {
 						def = dName,
-						onlytargetcategory = sSlot and sSlot.onlytargetcategory or "SURFACE",
+						onlytargetcategory = sSlot and sSlot.onlytargetcategory or T_S,
 					}
 				end
 			end

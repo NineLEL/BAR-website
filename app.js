@@ -2,7 +2,7 @@
 /* ---------- server library (tweaks/ folder) ---------- */
 function libFetch() {
   var st = $("libStatus");
-  fetch("api/tweaks").then(function (r) {
+  fetch("api/tweaks?_=" + Date.now(), { cache: "no-store" }).then(function (r) {
     if (!r.ok) throw new Error("HTTP " + r.status);
     return r.json();
   }).then(function (data) {
@@ -18,7 +18,7 @@ function renderLib(data) {
   var nD = data.defs.length, nU = data.units.length;
   var eD = data.defs.filter(function (f) { return f.enabled; }).length;
   var eU = data.units.filter(function (f) { return f.enabled; }).length;
-  $("libStatus").innerHTML = "<p>Serving <strong>" + nD + " defs</strong> (" + eD + " enabled) + <strong>" + nU + " units</strong> (" + eU + " enabled) from <code>tweaks/</code>. Drop <code>.lua</code> files in the folder, hit Reload. Untick to disable without deleting — enabled files flow into the packer automatically.</p>";
+  $("libStatus").innerHTML = "<p>Serving <strong>" + nD + " defs</strong> (" + eD + " enabled) + <strong>" + nU + " units</strong> (" + eU + " enabled) from <code>tweaks/</code>. Library changes reload automatically while <code>server.js</code> is running. Untick to disable without deleting — enabled files flow into the packer automatically.</p>";
   window._lib = data;
   renderLibGroup($("libDefs"), "defs", data.defs);
   renderLibGroup($("libUnits"), "units", data.units);
@@ -68,11 +68,23 @@ function renderLibGroup(el, kind, files) {
     row.className = "row";
     var pv = document.createElement("button");
     pv.textContent = "Preview";
-    var pre = document.createElement("pre");
-    pre.className = "mono output";
-    pre.style.display = "none";
-    pre.textContent = f.content;
-    pv.onclick = function () { pre.style.display = pre.style.display === "none" ? "block" : "none"; };
+     var pre = document.createElement("pre");
+     pre.className = "mono output";
+     pre.style.display = "none";
+     // Keep large library scripts out of the DOM until the user asks to see
+     // them. This avoids creating hundreds of thousands of text nodes on load.
+     pv.onclick = function () {
+       var opening = pre.style.display === "none";
+       if (opening) {
+         pre.textContent = f.content;
+         pre.style.display = "block";
+         pv.textContent = "Hide script";
+       } else {
+         pre.textContent = "";
+         pre.style.display = "none";
+         pv.textContent = "Preview";
+       }
+     };
     row.appendChild(pv);
     div.appendChild(row);
     div.appendChild(pre);
@@ -114,6 +126,17 @@ function setAllLib(enabled) {
 $("libEnableAll").onclick = function () { setAllLib(true); };
 $("libDisableAll").onclick = function () { setAllLib(false); };
 libFetch();
+var libVersion = null;
+function watchLibrary() {
+  fetch("api/tweaks/version?_=" + Date.now(), { cache: "no-store" }).then(function (r) {
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    return r.json();
+  }).then(function (data) {
+    if (libVersion !== null && data.version !== libVersion) libFetch();
+    libVersion = data.version;
+  }).catch(function () {}).finally(function () { setTimeout(watchLibrary, 2000); });
+}
+watchLibrary();
 "use strict";
 /* BAR Tweak Packer — 100% client-side.
  * tweakdefs: arbitrary Lua run via loadstring after base64-decode.
@@ -314,11 +337,19 @@ function renderInputs(g) {
     var ll = document.createElement("span");
     ll.textContent = f.name + " (server, " + f.text.length + " chars)";
     lh.appendChild(ll);
-    var lt = document.createElement("textarea");
+     var lt = document.createElement("textarea");
     lt.value = f.text;
     lt.readOnly = true;
     lt.title = "Managed server-side in " + f.name;
-    lock.appendChild(lh); lock.appendChild(lt);
+     var lhbtn = document.createElement("button");
+     lhbtn.textContent = "Hide script";
+     lhbtn.onclick = function () {
+       var hidden = lt.style.display === "none";
+       lt.style.display = hidden ? "block" : "none";
+       lhbtn.textContent = hidden ? "Hide script" : "Show script";
+     };
+     lh.appendChild(lhbtn);
+     lock.appendChild(lh); lock.appendChild(lt);
     g.inputsEl.appendChild(lock);
   });
   g.snippets.forEach(function (text, i) {
@@ -327,19 +358,26 @@ function renderInputs(g) {
     var head = document.createElement("header");
     var lab = document.createElement("span");
     lab.textContent = "Snippet " + (i + 1);
-    var del = document.createElement("button");
+     var del = document.createElement("button");
     del.textContent = "Remove";
     del.onclick = function () {
       g.snippets.splice(i, 1);
       if (!g.snippets.length) g.snippets.push("");
       g.packed = null; g.packedNames = null;
       renderAll();
-    };
-    head.appendChild(lab); head.appendChild(del);
-    var ta = document.createElement("textarea");
+     };
+     var ta = document.createElement("textarea");
     ta.value = text;
     ta.placeholder = exampleText(g.kind);
-    ta.oninput = function () { g.snippets[i] = ta.value; g.packed = null; g.packedNames = null; renderSlots(g); };
+     ta.oninput = function () { g.snippets[i] = ta.value; g.packed = null; g.packedNames = null; renderSlots(g); };
+     var hide = document.createElement("button");
+     hide.textContent = "Hide script";
+     hide.onclick = function () {
+       var hidden = ta.style.display === "none";
+       ta.style.display = hidden ? "block" : "none";
+       hide.textContent = hidden ? "Hide script" : "Show script";
+     };
+     head.appendChild(lab); head.appendChild(hide); head.appendChild(del);
     box.appendChild(head); box.appendChild(ta);
     g.inputsEl.appendChild(box);
   });
@@ -405,31 +443,58 @@ function renderSlots(g) {
           "cmd " + total + "/" + limit
         ];
         st.textContent = parts.join(" · ") + (over ? " — OVER LIMIT" : " — OK");
-        st.className = "stats " + (over ? "bad" : "good");
+         st.className = "stats " + (over ? "bad" : "good");
+        if (over) {
+          var alert = document.createElement("div");
+          alert.className = "limit-alert";
+          alert.setAttribute("role", "alert");
+          alert.textContent = "⛔ DO NOT PASTE — " + (total - limit) + " characters over the lobby limit. Use Auto-pack or remove content.";
+          div.appendChild(alert);
+        }
         var pre = document.createElement("div");
         pre.className = "cmd";
-        pre.textContent = cmd;
+        pre.style.display = "none";
         div.appendChild(pre);
         var row = document.createElement("div");
         row.className = "row";
         var cp = document.createElement("button");
         cp.textContent = "Copy";
+        cp.disabled = over;
+        cp.title = over ? "Blocked: this command exceeds the lobby limit" : "Copy this command";
         (function (c) {
-          cp.onclick = function () { copyText(c); };
+           cp.onclick = function () { copyText(c); };
         })(cmd);
+        var showCmd = document.createElement("button");
+        showCmd.textContent = "Show command";
+        showCmd.onclick = function () {
+          var opening = pre.style.display === "none";
+          if (opening) {
+            pre.textContent = cmd;
+            pre.style.display = "block";
+            showCmd.textContent = "Hide command";
+          } else {
+            pre.textContent = "";
+            pre.style.display = "none";
+            showCmd.textContent = "Show command";
+          }
+        };
+        row.appendChild(showCmd);
         var pv = document.createElement("button");
         pv.textContent = "Show minified";
-        (function (m, box) {
-          pv.onclick = function () {
-            box.style.display = box.style.display === "none" ? "block" : "none";
-          };
-        })(min, null);
         var prev2 = document.createElement("pre");
         prev2.className = "mono output";
         prev2.style.display = "none";
-        prev2.textContent = min;
         pv.onclick = function () {
-          prev2.style.display = prev2.style.display === "none" ? "block" : "none";
+          var opening = prev2.style.display === "none";
+          if (opening) {
+            prev2.textContent = min;
+            prev2.style.display = "block";
+            pv.textContent = "Hide minified";
+          } else {
+            prev2.textContent = "";
+            prev2.style.display = "none";
+            pv.textContent = "Show minified";
+          }
         };
         row.appendChild(cp); row.appendChild(pv);
         div.appendChild(row);

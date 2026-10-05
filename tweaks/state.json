@@ -15,7 +15,7 @@
   "defs/scav-probe-pack.lua": false,
   "units/scav-ai-smarts.lua": false,
   "defs/player-epic-walls.lua": false,
-  "defs/player-mega-pack.lua": true,
+  "defs/player-mega-pack.lua": false,
   "defs/player-shield-aa-pack.lua": false,
   "defs/player-t4-fast-aa-pack.lua": false,
   "defs/player-t4-ultra-turret-pack.lua": false,
@@ -37,6 +37,7 @@
   "defs/scav-t3aa-pack.lua": false,
   "defs/scav-titans-pack.lua": false,
   "defs/scav-turret-pack.lua": false,
-  "defs/player-ultra-turret-pack-2.lua": true,
-  "defs/player-mega-air-pack.lua": false
+  "defs/player-ultra-turret-pack-2.lua": false,
+  "defs/player-mega-air-pack.lua": false,
+  "defs/player-ultra-turret-pack.lua": true
 }

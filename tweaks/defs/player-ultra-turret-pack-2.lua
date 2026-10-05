@@ -434,6 +434,9 @@ do
 			sanitize(u)
 
 			local st = spec[3]
+			-- Keep every weapon, HP, upkeep, cap, and range value intact; discount
+			-- only metal, energy, and construction time.
+			st[1], st[2], st[3] = st[1] * 0.20, st[2] * 0.20, st[3] * 0.20
 			u.unitname, u.name = spec[1], spec[1]
 			u.metalcost, u.energycost, u.buildtime = st[1], st[2], st[3]
 			u.health, u.maxdamage = st[4], st[4]

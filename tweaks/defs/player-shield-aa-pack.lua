@@ -53,6 +53,9 @@ for _, p in ipairs(SHIELDS) do
   local s = UnitDefs[p.src]
   if s ~= nil and UnitDefs[p.dst] == nil then
     local u = copy(s)
+    -- Cheap construction does not weaken the shield or weapon: only the
+    -- resource price and build time are reduced.
+    p.m, p.e, p.bt = p.m * 0.20, p.e * 0.20, p.bt * 0.20
     u.unitname, u.name = p.dst, p.nm
     u.metalcost, u.energycost, u.buildtime, u.health, u.maxthisunit = p.m, p.e, p.bt, p.hp, p.cap
     u.customparams = u.customparams or {}
