@@ -1,20 +1,3 @@
--- T3-T4 energy-to-metal converters for Armada, Cortex, Legion (tweakdefs, runnable with UnitDefs in scope).
--- Usage: !bset tweakdefs <b64(min(file))>  (single slot; comments stripped by minifier)
--- Baselines (T2 Moho makers, BAR master: cap 600 / eff 0.01724 ~= 10.3M @ 600E):
---   armmmkr: 380M / 21000E / BT35000 / HP445 | cormmkr, legadveconv: 370M / 21000E / BT31300 / HP560
--- Stats (clone of same-faction T2 maker, BAR model kept):
---   T3 Converter: cap 2400 / eff 0.015 (~36M @ 2400E, worse rate than T2), tech 3.
---       Arm 2600M / 90000E / BT60000 / HP2500; Cor/Leg 2800M / 95000E / BT65000 / HP2800.
---   T4 Converter: cap 6000 / eff 0.014 (~84M @ 6000E), tech 4.
---       Arm 9000M / 300000E / BT180000 / HP8000; Cor/Leg 10000M / 330000E / BT200000 / HP9000.
--- Balance: output 3.5x/8x vs T2 for ~7x/25x metal cost — late-game metal at a premium,
---   and efficiency per energy falls per tier (0.01724 > 0.015 > 0.014).
--- Blast: VERY explosive on purpose — 4 unique blast weapondefs, bigger than T4 energy storage.
---   convboom_t3 (+_selfd): 8000/960, 24000/1536. convboom_t4 (+_selfd): 20000/1200, 60000/1920.
--- Builders: T3 appended to same-faction T2 constructors (ack/acv/aca). T4 ideally belongs to
---   T3 constructors, but no baseline T3 builder keys exist, so T4 falls back to the same T2
---   constructors (see T4FALLBACK below); move T4 entries to real T3 builders when known.
--- Names: proper nouns shared across all 10 i18n langs (en,de,fr,es,it,ru,zh,cs,hr,lt).
 do
 local function copy(t)
   if type(t) ~= "table" then return t end

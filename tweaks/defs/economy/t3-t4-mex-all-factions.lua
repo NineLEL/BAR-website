@@ -1,18 +1,3 @@
--- T3-T4 metal extractors for Armada, Cortex, Legion (tweakdefs, runnable with UnitDefs in scope).
--- Usage: !bset tweakdefs <b64(min(file))>  (single slot; comments stripped by minifier)
--- Stats (T2 baseline: x0.004/up20/st600/tech2 | Arm 620M/7700E/BT14900/HP2800, Cor/Leg 640M/8100E/BT14100/HP3900):
---   T3: x0.008 (8x, metal_extractor 8), upkeep 90, storage 1200, tech 3.
---       Arm 4500M/60kE/BT52000/HP7500; Cor/Leg 5200M/78kE/BT58000/HP9500.
---   T4: x0.016 (16x, metal_extractor 16), upkeep 240, storage 2000, tech 4, non-explosive.
---       Arm 16000M/270kE/BT180000/HP17000; Cor/Leg 18500M/320kE/BT200000/HP20000.
--- Balance v2: outputs fixed, costs ~1.6x vs v1 — cost per metal rises per tier (T2<T3<T4).
--- Balance: monotonic T2<T3<T4; Armada slightly cheaper/fragiler, Cor/Leg tougher (mirrors T2).
--- Builders: T3 appended to same-faction T2 constructors only (ack/acv/aca of its faction;
---   supports water, which it does not, so subs are skipped at runtime). T4 ideally belongs to
---   T3 constructors, but no baseline T3 builder keys exist, so T4 falls back to the same T2
---   constructors (see T4FALLBACK below); move T4 entries to real T3 builders when known.
---   Every builder key is nil-guarded; unknown/missing siblings are skipped silently.
--- Names: proper nouns shared across all 10 i18n langs (en,de,fr,es,it,ru,zh,cs,hr,lt).
 do
 local function copy(t)
   if type(t) ~= "table" then return t end

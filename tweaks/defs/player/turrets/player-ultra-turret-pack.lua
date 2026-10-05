@@ -279,12 +279,12 @@ do
 					largebeamlaser = true,
 					range = 1400,
 					reloadtime = 0.02,
-					beamtime = 0.02,
+                    beamtime = 0.012,
 					beamttl = 2,
-					thickness = 14.0,
-					corethickness = 1.20,
+                    thickness = 4.0,
+                    corethickness = 0.40,
 					energypershot = 1400,
-					laserflaresize = 12,
+                    laserflaresize = 3,
 					damage = D(220, 9000, 3000),
 					explosiongenerator = "custom:laserhit-small-blue",
 					rgbcolor = "0.2 0.9 1",
@@ -354,32 +354,40 @@ do
 			end,
 		},
 		-- 7. HIVE ARRAY
-		{
-			"player_hivearray",
-			{ "legstarfall", "corint" },
-			{ 920e3, 1900e4, 850e3, 2, 64000, nil, 3200 },
-			"Hive Array",
-			"Guided missile barrage fortress",
+{
+			"player_hivearray", { "legstarfall", "corint" }, { 920e3, 1900e4, 850e3, 2, 64000, nil, 3200 },
+			"Hive Array", "Guided missile barrage fortress",
 			function(u, src)
-				installWeapon(u, src, 1, "HIVE_ARRAY", {
-					weapontype = C_MSL,
-					range = 4200,
-					reloadtime = 0.02,
-					weaponvelocity = 3800,
-					startvelocity = 1600,
-					weaponacceleration = 2000,
-					flighttime = 10.0,
-					tracks = true,
-					turnrate = 140e3,
-					dance = 12,
-					wobble = 400,
-					areaofeffect = 200,
-					energypershot = 3200,
-					damage = D(5200, 34000, 12000),
-					soundstart = "rocklit1",
-					onlytargetcategory = T_SV,
-				})
-				setMissileVis(u.weapondefs.HIVE_ARRAY, true)
+		installWeapon(u, src, 1, "HIVE_ARRAY", {
+			weapontype = C_MSL,
+			range = 4200,
+			reloadtime = 0.02,
+
+			-- Vertical clearing arc physics:
+			trajectoryheight = 1.5, -- Forces steep vertical launch clearance
+			startvelocity = 600, -- Slower initial launch to ascend cleanly
+			weaponvelocity = 3800,
+			weaponacceleration = 2400,
+			flighttime = 14.0,
+
+			-- Obstacle & friendly safety gates:
+			avoidfriendly = true, -- Holds fire if friendly bases/units block line
+			avoidfeature = true, -- Avoids rocks, trees, and wreckage
+			avoidground = true, -- Prevents descending below ground plane mid-flight
+
+			-- Guidance:
+			tracks = true,
+			turnrate = 190e3, -- Snappier correction once above obstacles
+			dance = 3, -- Reduced early weave to stop clipping
+			wobble = 60, -- Tighter flight pattern
+
+			areaofeffect = 200,
+			energypershot = 3200,
+			damage = D(5200, 34000, 12000),
+			soundstart = "rocklit1",
+			onlytargetcategory = T_SV,
+		})
+		setMissileVis(u.weapondefs.HIVE_ARRAY, true)
 			end,
 		},
 		-- 8. AEGIS ERASER
@@ -425,12 +433,12 @@ do
 					largebeamlaser = true,
 					range = 3600,
 					reloadtime = 2.0,
-					beamtime = 3.4,
+                    beamtime = 1.2,
 					beamttl = 170,
 					energypershot = 190e3,
-					thickness = 52,
-					corethickness = 2.20,
-					laserflaresize = 26,
+                    thickness = 8,
+                    corethickness = 0.80,
+                    laserflaresize = 5,
 					firestarter = 100,
 					damage = D(165000, nil, 90000, 30000),
 					texture3 = "largebeam",
@@ -465,9 +473,9 @@ do
 						beamtime = 0.55,
 						beamttl = 22,
 						energypershot = 44000,
-						thickness = cfg[2] * 2.6,
-						corethickness = cfg[3] * 2.4,
-						laserflaresize = 22,
+                        thickness = cfg[2] * 0.8,
+                        corethickness = cfg[3] * 0.8,
+                        laserflaresize = 5,
 						firestarter = 100,
 						damage = D(52000, nil, 145000, 12000),
 						texture3 = "largebeam",
@@ -493,12 +501,12 @@ do
 					largebeamlaser = true,
 					range = 3800,
 					reloadtime = 4.5,
-					beamtime = 4.2,
+                    beamtime = 1.5,
 					beamttl = 250,
 					energypershot = 620e3,
-					thickness = 90,
-					corethickness = 3.40,
-					laserflaresize = 44,
+                    thickness = 10,
+                    corethickness = 0.90,
+                    laserflaresize = 6,
 					firestarter = 100,
 					damage = D(680000, nil, 420000, 120000),
 					texture3 = "largebeam",

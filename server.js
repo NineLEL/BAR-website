@@ -38,9 +38,24 @@ function writeState(st) {
 }
 function safeName(name) {
   if (typeof name !== "string") return null;
-  const base = path.basename(name);
-  if (base !== name || !/^[A-Za-z0-9 _.\-]+\.lua$/i.test(base)) return null;
-  return base;
+  const rel = name.replace(/\\/g, "/");
+  const parts = rel.split("/");
+  if (!parts.length || parts.some(function (part) { return !part || part === "." || part === ".."; })) return null;
+  if (parts.some(function (part) { return !/^[A-Za-z0-9 _.\-]+$/i.test(part); })) return null;
+  if (!/^[A-Za-z0-9 _.\-]+\.lua$/i.test(parts[parts.length - 1])) return null;
+  return parts.join("/");
+}
+function luaFiles(dir, prefix) {
+  const out = [];
+  let entries = [];
+  try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch (e) { return out; }
+  for (const entry of entries) {
+    const rel = prefix ? prefix + "/" + entry.name : entry.name;
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) out.push.apply(out, luaFiles(full, rel));
+    else if (entry.isFile() && entry.name.toLowerCase().endsWith(".lua")) out.push(rel);
+  }
+  return out;
 }
 function listTweaks() {
   const state = readState();
@@ -48,13 +63,12 @@ function listTweaks() {
   for (const kind of KINDS) {
     const dir = path.join(TWEAKS_DIR, kind);
     let files = [];
-    try { files = fs.readdirSync(dir).filter(function (f) { return f.toLowerCase().endsWith(".lua"); }); }
-    catch (e) { files = []; }
+    files = luaFiles(dir, "");
     files.sort();
     for (const name of files) {
       const key = kind + "/" + name;
       let content = "";
-      try { content = fs.readFileSync(path.join(dir, name), "utf8"); }
+      try { content = fs.readFileSync(path.join(dir, ...name.split("/")), "utf8"); }
       catch (e) { content = "-- unreadable: " + e.message; }
       out[kind].push({ name: name, enabled: state[key] !== false, chars: content.length, content: content });
     }
@@ -66,8 +80,7 @@ function libraryVersion() {
   const files = [STATE_FILE];
   for (const kind of KINDS) {
     const dir = path.join(TWEAKS_DIR, kind);
-    try { fs.readdirSync(dir).forEach(function (name) { if (name.toLowerCase().endsWith(".lua")) files.push(path.join(dir, name)); }); }
-    catch (e) {}
+    luaFiles(dir, "").forEach(function (name) { files.push(path.join(dir, ...name.split("/"))); });
   }
   for (const file of files) {
     try {
@@ -124,6 +137,11 @@ const server = http.createServer(function (req, res) {
       try { data = JSON.parse((await readBody(req)) || "{}"); } catch (e) { data = {}; }
       const safe = safeName(data.name);
       if (KINDS.indexOf(data.kind) < 0 || !safe || typeof data.enabled !== "boolean") {
+        res.writeHead(400); res.end("bad request"); return;
+      }
+      const kindDir = path.resolve(TWEAKS_DIR, data.kind);
+      const target = path.resolve(kindDir, ...safe.split("/"));
+      if (!target.startsWith(kindDir + path.sep) || !fs.existsSync(target) || !fs.statSync(target).isFile()) {
         res.writeHead(400); res.end("bad request"); return;
       }
       const state = readState();

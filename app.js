@@ -620,6 +620,11 @@ function collectCommands(g) {
   }
   return cmds;
 }
+function collectCombinedCommands() {
+  // Keep tweakunits first: BAR applies the table edits before tweakdefs adds
+  // or modifies UnitDefs, matching the intended ScavX/EditP pipeline.
+  return collectCommands(units).concat(collectCommands(defs));
+}
 
 function copyText(t) {
   function done() { toast("Copied (" + t.length + " chars)"); }
@@ -668,12 +673,19 @@ $("defsCopyAll").onclick = function () {
   if (!c.length) return toast("No tweakdefs to copy");
   copyText(c.join("\n"));
 };
+function copyCombined() {
+  var c = collectCombinedCommands();
+  if (!c.length) return toast("No tweakdefs or tweakunits to copy");
+  copyText(c.join("\n"));
+}
+$("defsCopyCombined").onclick = copyCombined;
 $("defsReset").onclick = function () { copyText(resetCommands("tweakdefs").join("\n")); };
 $("unitsCopyAll").onclick = function () {
   var c = collectCommands(units);
   if (!c.length) return toast("No tweakunits to copy");
   copyText(c.join("\n"));
 };
+$("unitsCopyCombined").onclick = copyCombined;
 $("unitsReset").onclick = function () { copyText(resetCommands("tweakunits").join("\n")); };
 $("charLimit").oninput = function () { renderSlots(defs); renderSlots(units); };
 $("b64url").onchange = function () { renderAll(); };

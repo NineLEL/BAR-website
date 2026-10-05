@@ -115,6 +115,14 @@ describe("GET /api/tweaks contract", () => {
     assert.ok(!r.body.includes("notes.txt"));
     fs.unlinkSync(path.join(box.tweaks, "defs", "notes.txt"));
   });
+  it("discovers Lua files in nested kind folders with relative names", async () => {
+    const nested = path.join(box.tweaks, "defs", "economy", "late-game");
+    fs.mkdirSync(nested, { recursive: true });
+    fs.writeFileSync(path.join(nested, "mex.lua"), "-- nested mex\n");
+    const r = await req(port, "GET", "/api/tweaks");
+    const data = JSON.parse(r.body);
+    assert.equal(data.defs.find((f) => f.name === "economy/late-game/mex.lua").content, "-- nested mex\n");
+  });
 });
 
 describe("POST /api/tweaks/toggle — 200 happy path", () => {
@@ -132,6 +140,15 @@ describe("POST /api/tweaks/toggle — 200 happy path", () => {
     assert.equal(r.status, 200);
     list = JSON.parse((await req(port, "GET", "/api/tweaks")).body);
     assert.equal(list.defs.find((f) => f.name === "alpha.lua").enabled, true);
+  });
+  it("toggles a nested relative path and persists it independently", async () => {
+    const nested = path.join(box.tweaks, "defs", "economy", "late-game");
+    fs.mkdirSync(nested, { recursive: true });
+    fs.writeFileSync(path.join(nested, "mex.lua"), "-- nested mex\n");
+    const r = await postToggle(port, { kind: "defs", name: "economy/late-game/mex.lua", enabled: false });
+    assert.equal(r.status, 200);
+    const state = JSON.parse(fs.readFileSync(path.join(box.tweaks, "state.json"), "utf8"));
+    assert.equal(state["defs/economy/late-game/mex.lua"], false);
   });
 });
 
@@ -189,11 +206,11 @@ describe("405 method handling", () => {
 });
 
 describe("safeName unit matrix", () => {
-  const good = ["a.lua", "my tweak 1.LUA", "t3-t4-mex_all.factions.lua", "x.y_z-1 .lua", "UPPER.Lua"];
+  const good = ["a.lua", "my tweak 1.LUA", "t3-t4-mex_all.factions.lua", "x.y_z-1 .lua", "UPPER.Lua", "air/late game.lua"];
   for (const n of good) {
     it("accepts " + JSON.stringify(n), () => assert.equal(box.srv.safeName(n), n));
   }
-  const bad = ["../x.lua", "..\\x.lua", "a/b.lua", "/abs.lua", "", ".lua", "x.js", "x.lua ", " x.lua".replace(" ", "\0"), "é.lua", "a".repeat(300) + ".exe", null, undefined, 42, {}, "x.LUA.bak"];
+  const bad = ["../x.lua", "..\\x.lua", "a/../../x.lua", "/abs.lua", "", ".lua", "x.js", "x.lua ", " x.lua".replace(" ", "\0"), "é.lua", "a".repeat(300) + ".exe", null, undefined, 42, {}, "x.LUA.bak"];
   for (const n of bad) {
     it("rejects " + JSON.stringify(n), () => assert.equal(box.srv.safeName(n), null));
   }

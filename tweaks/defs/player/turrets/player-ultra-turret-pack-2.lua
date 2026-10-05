@@ -195,11 +195,11 @@ do
 					largebeamlaser = true,
 					range = 3600,
 					reloadtime = 0.03,
-					beamtime = 0.03,
+                    beamtime = 0.018,
 					beamttl = 2,
-					thickness = 9.0,
-					corethickness = 1.60,
-					laserflaresize = 16,
+                    thickness = 3.0,
+                    corethickness = 0.50,
+                    laserflaresize = 4,
 					energypershot = 3600,
 					rgbcolor = "1 0.96 0.82",
 					damage = { default = 2600, shields = 12000, vtol = 7000, commandertoo = 700 },
@@ -213,63 +213,75 @@ do
 			end,
 		},
 
-		-- 3. GRAVITY WELL: Kinetic Displacement Pulse
+		-- 3. AEGIS STARSPIRE: Long-Range Multi-Lock Continuous Sky-Melter
 		{
-			"player_gravitywell",
-			{ "armbrtha", "corint" },
-			{ 520e3, 1100e4, 1200e4, 560e3, 3, 26000, 750, 2000 },
-			"Gravity Well",
-			"Heavy kinetic displacement launcher that scatters advancing assault groups",
+			"player_aegisstarspire",
+			{ "legflak", "corflak", "armflak", "armmercury" },
+			{ 620e3, 1600e4, 1600e4, 780e3, 3, 38000, 1400, 3800 },
+			"Aegis Starspire",
+			"Multi-channel continuous laser spires. Locks 3 targets at 4400 range to disintegrate air raids.",
 			function(u, src)
-				installWeapon(u, src, 1, "GRAVITY_PULSE", {
-					weapontype = "Cannon",
-					range = 2600,
-					reloadtime = 3.5,
-					accuracy = 380,
-					areaofeffect = 1100,
-					weaponvelocity = 700,
-					energypershot = 52000,
-					impulsefactor = 90.0,
-					impulseboost = 60.0,
-					craterboost = 12.0,
-					cratermult = 9.0,
-					camerashake = 180,
-					size = 15.0,
-					rgbcolor = "0.3 0.1 0.5",
-					damage = { default = 2200, shields = 38000, commandertoo = 800 },
-					cegtag = "arty-large",
-					explosiongenerator = "custom:genericshellexplosion-huge",
-					soundhit = "lrpcexplo",
-					soundstart = "cannhvy2",
-					onlytargetcategory = "SURFACE",
-				})
+				local beamHues = { "0.0 0.95 1.0", "0.4 0.25 1.0", "0.0 0.75 1.0" }
+				for slot = 1, 3 do
+					installWeapon(u, src, 1, "AEGIS_STARBEAM_" .. slot, {
+						weapontype = "BeamLaser",
+						largebeamlaser = true,
+						range = 4400,
+						reloadtime = 0.04,
+                        beamtime = 0.022,
+						beamttl = 3,
+                        thickness = 4.0,
+                        corethickness = 0.55,
+                        laserflaresize = 5,
+						energypershot = 2400,
+						pulsespeed = 12,
+						scrollspeed = 10,
+						rgbcolor = beamHues[slot],
+						rgbcolor2 = "0.7 0.1 1.0",
+						texture3 = "largebeam",
+						tilelength = 120,
+						damage = { default = 4200, vtol = 42000, shields = 14000, commandertoo = 800 },
+						explosiongenerator = "custom:laserhit-large-blue",
+						soundstart = "beamlaserfire",
+						soundtrigger = 1,
+						onlytargetcategory = "VTOL",
+					}, {
+						fastautoretargeting = true,
+						onlytargetcategory = "VTOL",
+					})
+				end
 			end,
 		},
 
-		-- 4. THORN NEST: Cheap Anti-Rush Flechette Shotgun
+		-- 4. TEMPEST STORM: Electrified Arc & Thermite Anti-Swarm Matrix
 		{
 			"player_thornnest",
-			{ "corpun", "armguard" },
-			{ 240e3, 520e4, 560e4, 320e3, 5, 14000, 650, 1300 },
-			"Thorn Nest",
-			"Rapid close-range flechette shotgun for anti-swarm defense",
+			{ "corpun", "armguard", "corflak" },
+			{ 280e3, 620e4, 620e4, 450e3, 4, 18000, 850, 1800 },
+			"Tempest Storm",
+			"Electrified napalm chain-arc array. Vaporizes massed ground swarms and air raids.",
 			function(u, src)
-				installWeapon(u, src, 1, "THORN_SHOTGUN", {
-					weapontype = "Cannon",
-					range = 1200,
-					reloadtime = 0.5,
-					burst = 30,
-					burstrate = 0.015,
-					sprayangle = 2000,
-					accuracy = 600,
-					areaofeffect = 140,
-					weaponvelocity = 3200,
-					energypershot = 1400,
-					damage = { default = 2400, vtol = 9000, shields = 1600, commandertoo = 600 },
-					size = 5.0,
-					explosiongenerator = "custom:genericshellexplosion-tiny",
-					soundhit = "xplosml2",
-					soundstart = "cannon1",
+				installWeapon(u, src, 1, "TEMPEST_STORM", {
+					weapontype = "LightningCannon",
+					range = 1550,
+					reloadtime = 0.4,
+					burst = 12,
+					burstrate = 0.025,
+					projectilespershot = 8,
+					sprayangle = 2400,
+					weaponvelocity = 5400,
+					thickness = 16,
+					rgbcolor = "0.25 0.85 1.0",
+					areaofeffect = 220,
+					edgeeffectiveness = 0.9,
+					energypershot = 950,
+					firestarter = 100,
+					cegtag = "burnflame",
+					explosiongenerator = "custom:genericshellexplosion-small-lightning",
+					soundstart = "weapons/tecl_fire.wav",
+					soundhitdry = "weapons/lashit.wav",
+					soundhit = "xplomed1",
+					damage = { default = 3200, vtol = 12000, shields = 4500, commandertoo = 850 },
 					onlytargetcategory = "SURFACE VTOL",
 				})
 			end,
@@ -303,63 +315,77 @@ do
 			end,
 		},
 
-		-- 6. LEVIATHAN TRAP: Single-Target Stasis Clamp
+		-- 6. VOID VORTEX: Singular Gravitational Inversion Battery
 		{
-			"player_leviathantrap",
-			{ "armemp", "corgate" },
-			{ 480e3, 1000e4, 1100e4, 520e3, 3, 30000, 850, 2200 },
-			"Leviathan Trap",
-			"Specialist stasis mortar that locks down high-threat priority units",
+			"player_voidvortex",
+			{ "corpun", "armguard", "corint" },
+			{ 580e3, 1400e4, 1400e4, 620e3, 3, 36000, 950, 2600 },
+			"Void Vortex",
+			"Gravitational collapse artillery. Pulls, compresses, and shatters advancing armadas.",
 			function(u, src)
-				installWeapon(u, src, 1, "LEVIATHAN_STASIS", {
-					weapontype = "MissileLauncher",
-					range = 2600,
-					reloadtime = 4.0,
-					weaponvelocity = 900,
-					startvelocity = 500,
-					weaponacceleration = 300,
-					flighttime = 10.0,
-					tracks = true,
-					turnrate = 90e3,
-					areaofeffect = 200,
-					energypershot = 120e3,
-					paralyzer = true,
-					paralyzetime = 120,
-					damage = { default = 600, commandertoo = 600 },
-					smoketrail = false,
-					cegtag = nil,
-					explosiongenerator = "custom:emp_l_preventable",
-					soundhit = "emparm",
-					soundstart = "rocklit1",
+				installWeapon(u, src, 1, "VOID_VORTEX", {
+					weapontype = "Cannon",
+					range = 3400,
+					reloadtime = 2.4,
+					accuracy = 180,
+					areaofeffect = 850,
+					edgeeffectiveness = 0.9,
+					weaponvelocity = 1800,
+					energypershot = 45000,
+					impulsefactor = -75.0,
+					impulseboost = -55.0,
+					craterboost = 0,
+					cratermult = 0,
+					camerashake = 220,
+					size = 18.0,
+					stages = 36,
+					intensity = 3.0,
+					alpha = 0.95,
+					rgbcolor = "0.38 0.04 0.62",
+					cegtag = "heatcloud-rot-purple",
+					explosiongenerator = "custom:exp_emp_large",
+					soundhit = "weapons/xplonuk4.wav",
+					soundstart = "weapons/cannon_heavy.wav",
+					damage = { default = 28000, shields = 95000, commandertoo = 7000 },
 					onlytargetcategory = "SURFACE VTOL",
 				})
 			end,
 		},
 
-		-- 7. SWARM REAPER: Area Saturation Canister Battery
+		-- 7. INFERNO CRUCIBLE: Heavy Napalm Torrent Flamethrower
 		{
-			"player_swarmreaper",
-			{ "armbrtha", "corint" },
-			{ 600e3, 1300e4, 1400e4, 700e3, 3, 30000, 800, 2500 },
-			"Swarm Reaper",
-			"Medium-range canister artillery that blankets clustered formations in shrapnel",
+			"player_infernocrucible",
+			{ "corgol", "corkrog", "corpun", "armguard" },
+			{ 450e3, 980e4, 980e4, 620e3, 4, 24000, 950, 2000 },
+			"Inferno Crucible",
+			"Heavy multi-barrel chemical flamethrower. Envelops chokepoints in an inescapable sea of liquid fire.",
 			function(u, src)
-				installWeapon(u, src, 1, "SWARM_REAPER", {
-					weapontype = "Cannon",
-					range = 2800,
-					reloadtime = 1.6,
-					projectilespershot = 20,
-					sprayangle = 1500,
-					accuracy = 480,
-					areaofeffect = 300,
-					weaponvelocity = 3000,
-					energypershot = 16000,
-					size = 9.0,
-					damage = { default = 5200, shields = 14000, commandertoo = 1200 },
-					cegtag = "arty-small",
-					explosiongenerator = "custom:genericshellexplosion-medium",
-					soundhit = "xplomed2",
-					soundstart = "cannhvy2",
+				installWeapon(u, src, 1, "INFERNO_CRUCIBLE", {
+					weapontype = "Flame",
+					range = 1950,
+					reloadtime = 0.15,
+					burst = 28,
+					burstrate = 0.025,
+					projectilespershot = 4,
+					sprayangle = 1400,
+					weaponvelocity = 1100,
+					flamegfxtime = 75,
+					size = 7.5,
+					sizegrowth = 1.8,
+					intensity = 0.9,
+					rgbcolor = "1.0 0.38 0.05",
+					areaofeffect = 260,
+					edgeeffectiveness = 0.92,
+					energypershot = 1200,
+					firestarter = 100,
+					groundbounce = true,
+					bouncerebound = 0.45,
+					bounceminspeed = 180,
+					cegtag = "burnflame",
+					explosiongenerator = "custom:napalm_fire",
+					soundstart = "weapons/flamfir1.wav",
+					soundhit = "weapons/burn02.wav",
+					damage = { default = 4800, shields = 16000, commandertoo = 1100 },
 					onlytargetcategory = "SURFACE",
 				})
 			end,
@@ -373,52 +399,39 @@ do
 			"Cascade Mortar",
 			"Apocalyptic orbital plasma geyser. Rains devastating apocalyptic cataclysms across entire map sectors.",
 			function(u, src)
-		u.hightrajectorytype = 1
-		installWeapon(u, src, 1, "CASCADE_FOUNTAIN", {
-			weapontype = "Cannon",
-				range = 7200,
-				reloadtime = 0.3, -- Starts the next salvo almost immediately
-
-			-- 16 waves of 12 shells = 192 shells launched every cycle
-			burst = 24,
-			burstrate = 0.02,
-			projectilespershot = 20,
-
-			-- Broad geyser fountain dispersion
-			sprayangle = 1100,
-			accuracy = 320,
-
-			-- Crucial for keeping them in the sky:
-			hightrajectory = 1,
-			weaponvelocity = 1300, -- Slower speed = longer hang time in the air
-			mygravity = 0.55, -- Floats the arc higher for dramatic hang-time
-
-			-- AoE & Impact
-			areaofeffect = 1400,
-			edgeeffectiveness = 0.9,
-			energypershot = 2600, -- Kept manageable so 480 shells don't instantly stall the grid
-
-			-- Visual Presence
-			size = 18.0,
-			stages = 48,
-			intensity = 4.5,
-			alpha = 0.98,
-			rgbcolor = "0.1 0.85 1.0",
-			cegtag = "cruisemissiletrail-tacnuke",
-			explosiongenerator = "custom:FLASHNUKE280",
-			soundstart = "weapons/cannon_heavy.wav",
-			soundhit = "weapons/xplonuk4.wav",
-
-			craterboost = 11.0,
-			cratermult = 8.0,
-			impulsefactor = 30.0,
-			impulseboost = 22.0,
-			camerashake = 400,
-
-			-- 192 shells * 1800 dmg = ~345,600 raw barrage damage
-			damage = { default = 42000, shields = 180000, commandertoo = 9000 },
-			onlytargetcategory = "SURFACE",
-		})
+				u.hightrajectorytype = 1
+				installWeapon(u, src, 1, "CASCADE_FOUNTAIN", {
+					weapontype = "Cannon",
+					range = 7200,
+					reloadtime = 0.3,
+					burst = 24,
+					burstrate = 0.02,
+					projectilespershot = 20,
+					sprayangle = 1100,
+					accuracy = 320,
+					hightrajectory = 1,
+					weaponvelocity = 1300,
+					mygravity = 0.55,
+					areaofeffect = 1400,
+					edgeeffectiveness = 0.9,
+					energypershot = 2600,
+					size = 18.0,
+					stages = 48,
+					intensity = 4.5,
+					alpha = 0.98,
+					rgbcolor = "0.1 0.85 1.0",
+					cegtag = "cruisemissiletrail-tacnuke",
+					explosiongenerator = "custom:FLASHNUKE280",
+					soundstart = "weapons/cannon_heavy.wav",
+					soundhit = "weapons/xplonuk4.wav",
+					craterboost = 11.0,
+					cratermult = 8.0,
+					impulsefactor = 30.0,
+					impulseboost = 22.0,
+					camerashake = 400,
+					damage = { default = 42000, shields = 180000, commandertoo = 9000 },
+					onlytargetcategory = "SURFACE",
+				})
 			end,
 		},
 	}
@@ -434,8 +447,6 @@ do
 			sanitize(u)
 
 			local st = spec[3]
-			-- Keep every weapon, HP, upkeep, cap, and range value intact; discount
-			-- only metal, energy, and construction time.
 			st[1], st[2], st[3] = st[1] * 0.20, st[2] * 0.20, st[3] * 0.20
 			u.unitname, u.name = spec[1], spec[1]
 			u.metalcost, u.energycost, u.buildtime = st[1], st[2], st[3]
@@ -463,7 +474,6 @@ do
 			label(u, spec[4], spec[5])
 			spec[6](u, source)
 
-			-- COB DETONATE_WEAPON slot mismatch fix
 			if source.weapons and #u.weapons < #source.weapons then
 				local dName = spec[1] .. "_dummy"
 				local mainW = u.weapons[1] and u.weapondefs[u.weapons[1].def]

@@ -1,35 +1,3 @@
--- T3-T4 metal and energy storages for Armada, Cortex, Legion (tweakdefs, runnable with UnitDefs in scope).
--- Usage: !bset tweakdefs <b64(min(file))>  (single slot; comments stripped by minifier)
--- Baselines (T2 amphibious: maxwaterdepth = 9999):
---   Metal:  armuwadvms, coruwadvms, legamstor (~10k cap | ~755M / ~11k E / ~11k HP / tech 2)
---   Energy: armuwadves, coruwadves, legadvestore (~40k cap | ~835M / ~10.5k E / ~12k HP / tech 2)
--- Stats:
---   T3 Metal Storage:  40000 cap, tech 3, explode: storagemetalboom_t3 / storagemetalboom_t3_selfd
---       Armada: 4800M / 80000E / BT120000 / HP52000
---       Cortex & Legion: 5300M / 90000E / BT128000 / HP56000
---   T4 Metal Storage:  160000 cap, tech 4, explode: storagemetalboom_t4 / storagemetalboom_t4_selfd
---       Armada: 19000M / 340000E / BT480000 / HP195000
---       Cortex & Legion: 21500M / 390000E / BT520000 / HP225000
---   T3 Energy Storage: 250000 cap, tech 3, explode: storageenergyboom_t3 / storageenergyboom_t3_selfd
---       Armada: 5200M / 95000E / BT120000 / HP52000
---       Cortex & Legion: 5700M / 105000E / BT128000 / HP56000
---   T4 Energy Storage: 1500000 cap, tech 4, explode: storageenergyboom_t4 / storageenergyboom_t4_selfd
---       Armada: 20500M / 470000E / BT480000 / HP195000
---       Cortex & Legion: 23000M / 530000E / BT520000 / HP225000
--- Balance v2: caps and blasts fixed, costs ~1.6x vs v1, HP +~20% (pricier targets).
--- Balance: monotonic T2<T3<T4; Armada slightly cheaper/fragiler, Cortex/Legion tougher.
--- Blast: 8 unique blast weapondefs (explode + selfd per tier/type), field structure copied
---   from BAR master weapons/Unit_Explosions.lua; only damage + AreaOfEffect changed.
---   storagemetalboom_t3 (+_selfd): medium base 220/260, 1560/360 -> 440/390, 3120/540 (x2/x1.5)
---   storagemetalboom_t4 (+_selfd): large base 670/340, 2000/480 -> 2680/680, 8000/960 (x4/x2)
---   storageenergyboom_t3 (+_selfd): adv base 2650/480, 8300/768 -> 7950/960, 24900/1536 (x3/x2)
---   storageenergyboom_t4 (+_selfd): adv base 2650/480, 8300/768 -> 15900/1200, 49800/1920 (x6/x2.5)
---   Order kept: metal-T4 (2680) < energy-T3 (7950) < energy-T4 (15900).
--- Builders: T3 appended to same-faction T2 constructors (ack/acv/aca + acsub where amphibious).
---   T4 ideally belongs to T3 constructors, but no baseline T3 builder keys exist, so T4 falls back
---   to the same T2 constructors (see T4FALLBACK below); move T4 entries to real T3 builders when known.
---   Every builder key is nil-guarded; unknown/missing siblings are skipped silently.
--- Names: proper nouns shared across all 10 i18n langs (en,de,fr,es,it,ru,zh,cs,hr,lt).
 do
 local function copy(t)
   if type(t) ~= "table" then return t end
