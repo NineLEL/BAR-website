@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BAR Tweak Packer — tweakdefs &amp; tweakunits</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="logo">BAR</span>
+    <div>
+      <h1>Tweak Packer</h1>
+      <p>Beyond All Reason &mdash; tweakdefs 0&ndash;9 &amp; tweakunits 0&ndash;9 &rarr; minify &rarr; base64 &rarr; <code>!bset</code> commands</p>
+    </div>
+  </div>
+  <div class="limits">
+    <label>Max chars per <code>!bset</code> message
+      <input id="charLimit" type="number" value="16384" min="1000" max="65536" step="1">
+    </label>
+      <span class="hint">Teiserver caps messages at 16,384 chars incl. command.</span>
+      <label title="URL-safe alphabet (-_ instead of +/, no padding). BAR decodes tweaks with its standard decoder, so URL-safe payloads may be rejected in-game.">Base64URL output [advanced &mdash; touch only if you know what you&rsquo;re doing]
+        <input id="b64url" type="checkbox">
+      </label>
+  </div>
+</header>
+
+<main>
+  <section class="howto card">
+    <h2>How to use</h2>
+    <ol>
+      <li><strong>Server (optional):</strong> run <code>node server.js</code>, open <code>http://localhost:8080</code>, drop <code>.lua</code> files into <code>tweaks/defs</code> / <code>tweaks/units</code> and tick them in the <strong>server library</strong> tab &mdash; enabled files flow into the packer automatically.</li>
+      <li>Paste Lua below (<strong>tweakdefs</strong> = runnable Lua code with <code>UnitDefs</code> in scope, <strong>tweakunits</strong> = Lua table like <code>{ armpw = { metalcost = 10, }, }</code>).</li>
+      <li>Each slot is <strong>minified</strong>, then <strong>base64-encoded</strong>. Slots that exceed the limit turn red.</li>
+      <li>Use <strong>Auto-pack</strong> to combine small snippets into the fewest slots possible without exceeding the limit.</li>
+      <li>Press <strong>Copy</strong> per slot, or <strong>Copy all</strong>, become lobby boss (<code>!boss</code>), then paste each line into lobby chat.</li>
+      <li>To clear tweaks lobby-side, <strong>Copy reset</strong> and paste: each <code>!bset &lt;slot&gt; 0</code> line resets that slot to empty.</li>
+    </ol>
+  </section>
+
+  <nav class="tabs">
+    <button class="tab active" data-tab="defs">tweakdefs (code)</button>
+    <button class="tab" data-tab="units">tweakunits (tables)</button>
+    <button class="tab" data-tab="library">server library</button>
+    <button class="tab" data-tab="decode">decode / inspect</button>
+  </nav>
+
+  <section id="panel-defs" class="panel active">
+    <div class="toolbar">
+      <button id="defsAdd">+ Add snippet</button>
+      <button id="defsPack" class="primary">Auto-pack into fewest slots</button>
+      <button id="defsClear">Clear all</button>
+      <button id="defsCopyAll">Copy all commands</button>
+      <button id="defsReset">Copy reset (set all 10 slots to 0)</button>
+      <button id="defsLibReload">Reload server library</button>
+    </div>
+    <div id="defsInputs" class="inputs"></div>
+    <h2>Slots &mdash; <code>!bset tweakdefs</code> &hellip; <code>!bset tweakdefs9</code></h2>
+    <div id="defsSlots" class="slots"></div>
+  </section>
+
+  <section id="panel-units" class="panel">
+    <div class="toolbar">
+      <button id="unitsAdd">+ Add snippet</button>
+      <button id="unitsPack" class="primary">Auto-pack into fewest slots</button>
+      <button id="unitsClear">Clear all</button>
+      <button id="unitsCopyAll">Copy all commands</button>
+      <button id="unitsReset">Copy reset (set all 10 slots to 0)</button>
+      <button id="unitsLibReload">Reload server library</button>
+    </div>
+    <div id="unitsInputs" class="inputs"></div>
+    <h2>Slots &mdash; <code>!bset tweakunits</code> &hellip; <code>!bset tweakunits9</code></h2>
+    <div id="unitsSlots" class="slots"></div>
+  </section>
+
+  <section id="panel-library" class="panel">
+    <div id="libStatus" class="card"><p>Loading server library&hellip;</p></div>
+    <div class="toolbar">
+      <button id="libReload">Reload from server</button>
+      <button id="libEnableAll">Enable all</button>
+      <button id="libDisableAll">Disable all</button>
+    </div>
+    <h2>tweakdefs &mdash; <code>tweaks/defs/*.lua</code></h2>
+    <div id="libDefs" class="slots"></div>
+    <h2>tweakunits &mdash; <code>tweaks/units/*.lua</code></h2>
+    <div id="libUnits" class="slots"></div>
+  </section>
+
+  <section id="panel-decode" class="panel">
+    <div class="card">
+      <h2>Decode an existing command</h2>
+      <p>Paste a <code>!bset tweakdefsN ...</code> / <code>!bset tweakunitsN ...</code> line to inspect the minified Lua inside.</p>
+      <textarea id="decodeInput" rows="4" placeholder="!bset tweakdefs  Zm9yIG5hbWUsIHVkIGluIHBhaXJzKFVuaXREZWZzKSBkb..."></textarea>
+      <div class="toolbar">
+        <button id="decodeBtn" class="primary">Decode</button>
+      </div>
+      <pre id="decodeOutput" class="mono output">(nothing decoded yet)</pre>
+    </div>
+  </section>
+
+  <footer>
+    <p>100% client-side &mdash; nothing leaves your browser. tweakdefs slots run as Lua via <code>loadstring</code> after base64-decode; tweakunits tables are deep-merged into <code>UnitDefs</code>. Order: tweakunits first, then tweakdefs, index 0&rarr;9.</p>
+  </footer>
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>

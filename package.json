@@ -1,0 +1,15 @@
+{
+  "name": "bar-tweak-packer",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "description": "BAR Tweak Packer — single-writer test + verify system (node:test, zero deps)",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test tests/pure.test.js tests/server.test.js tests/tweak-srcs.test.js",
+    "check": "node --check app.js && node --check server.js && node --check tests/helpers/loadPure.js && node --check tests/pure.test.js && node --check tests/server.test.js && node --check tests/tweak-srcs.test.js",
+    "verify": "npm run check && npm test"
+  }
+}

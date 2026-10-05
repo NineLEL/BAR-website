@@ -1,0 +1,8 @@
+# Keep repo files as-is in the index; avoid CRLF churn in Lua/JSON payloads.
+* text=auto eol=lf
+*.lua text eol=lf
+*.json text eol=lf
+*.js text eol=lf
+*.css text eol=lf
+*.html text eol=lf
+*.md text eol=lf
