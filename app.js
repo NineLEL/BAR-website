@@ -466,36 +466,40 @@ function renderSlots(g) {
         })(cmd);
         var showCmd = document.createElement("button");
         showCmd.textContent = "Show command";
-        showCmd.onclick = function () {
-          var opening = pre.style.display === "none";
-          if (opening) {
-            pre.textContent = cmd;
-            pre.style.display = "block";
-            showCmd.textContent = "Hide command";
-          } else {
-            pre.textContent = "";
-            pre.style.display = "none";
-            showCmd.textContent = "Show command";
-          }
-        };
+         showCmd.onclick = (function (command, output, button) {
+           return function () {
+             var opening = output.style.display === "none";
+             if (opening) {
+               output.textContent = command;
+               output.style.display = "block";
+               button.textContent = "Hide command";
+             } else {
+               output.textContent = "";
+               output.style.display = "none";
+               button.textContent = "Show command";
+             }
+           };
+         })(cmd, pre, showCmd);
         row.appendChild(showCmd);
         var pv = document.createElement("button");
         pv.textContent = "Show minified";
         var prev2 = document.createElement("pre");
         prev2.className = "mono output";
         prev2.style.display = "none";
-        pv.onclick = function () {
-          var opening = prev2.style.display === "none";
-          if (opening) {
-            prev2.textContent = min;
-            prev2.style.display = "block";
-            pv.textContent = "Hide minified";
-          } else {
-            prev2.textContent = "";
-            prev2.style.display = "none";
-            pv.textContent = "Show minified";
-          }
-        };
+         pv.onclick = (function (source, output, button) {
+           return function () {
+             var opening = output.style.display === "none";
+             if (opening) {
+               output.textContent = source;
+               output.style.display = "block";
+               button.textContent = "Hide minified";
+             } else {
+               output.textContent = "";
+               output.style.display = "none";
+               button.textContent = "Show minified";
+             }
+           };
+         })(min, prev2, pv);
         row.appendChild(cp); row.appendChild(pv);
         div.appendChild(row);
         div.appendChild(prev2);

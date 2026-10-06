@@ -255,6 +255,21 @@ test("Phantom Leviathan uses its three corcrwh slots for combat and shielding", 
   assert.match(text, /{ 220e3, 48e5, 42e4, 72, 4, 3200, 0, 420, 0, true }/);
 });
 
+test("all player turret packs significantly reduce energy costs", () => {
+  for (const file of ["player-ultra-turret-pack.lua", "player-ultra-turret-pack-2.lua"]) {
+    const text = fs.readFileSync(path.join(__dirname, "..", "tweaks", "defs", "player", "turrets", file), "utf8");
+    assert.match(text, /TURRET_ENERGY_FACTOR\s*=\s*0\.25/);
+    assert.match(text, /energyupkeep, u\.energyuse = st\[[56]\] \* TURRET_ENERGY_FACTOR/);
+    assert.match(text, /weapon\.energypershot = weapon\.energypershot \* TURRET_ENERGY_FACTOR/);
+  }
+});
+
+test("slot preview buttons capture their own command and minified text", () => {
+  const text = fs.readFileSync(path.join(__dirname, "..", "app.js"), "utf8");
+  assert.match(text, /\}\)\(cmd, pre, showCmd\);/);
+  assert.match(text, /\}\)\(min, prev2, pv\);/);
+});
+
 test("Aegis Breaker has explicit shotgun projectile behavior", () => {
   const text = fs.readFileSync(path.join(__dirname, "..", "tweaks", "defs", "player", "megas", "player-mega-pack.lua"), "utf8");
   const body = text.match(/crack = W\([\s\S]*?\n\s*\}\),\n\s*sol =/u)?.[0] || "";
