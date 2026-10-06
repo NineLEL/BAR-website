@@ -42,8 +42,9 @@
   <nav class="tabs">
     <button class="tab active" data-tab="defs">tweakdefs (code)</button>
     <button class="tab" data-tab="units">tweakunits (tables)</button>
-    <button class="tab" data-tab="library">server library</button>
-    <button class="tab" data-tab="decode">decode / inspect</button>
+  <button class="tab" data-tab="library">server library</button>
+  <button class="tab" data-tab="decode">decode / inspect</button>
+  <button class="tab" data-tab="utilities">utilities</button>
   </nav>
 
   <section id="panel-defs" class="panel active">
@@ -98,6 +99,29 @@
         <button id="decodeBtn" class="primary">Decode</button>
       </div>
       <pre id="decodeOutput" class="mono output">(nothing decoded yet)</pre>
+    </div>
+  </section>
+
+  <section id="panel-utilities" class="panel">
+    <div class="card utility-card">
+      <h2>Lua &amp; Base64 utilities</h2>
+      <p>Run the same UTF-8 Base64 codec and Lua minifier used by the packer, or format Lua for editing.</p>
+      <label class="utility-label" for="utilityInput">Input</label>
+      <textarea id="utilityInput" class="utility-input" rows="12" placeholder="Paste Lua or Base64 here..."></textarea>
+      <div class="toolbar utility-toolbar">
+        <button id="utilityEncode" class="primary">Base64 encode</button>
+        <button id="utilityDecode">Base64 decode</button>
+        <button id="utilityMinify">Lua minify</button>
+        <button id="utilityPrettify">Lua prettier</button>
+        <button id="utilityClear">Clear</button>
+      </div>
+      <label class="utility-option"><input id="utilityUrlSafe" type="checkbox"> URL-safe Base64 (no padding)</label>
+      <label class="utility-label" for="utilityOutput">Output</label>
+      <textarea id="utilityOutput" class="utility-input" rows="12" readonly placeholder="Output appears here..."></textarea>
+      <div class="row">
+        <button id="utilityCopy">Copy output</button>
+      </div>
+      <p id="utilityStatus" class="utility-status" role="status"></p>
     </div>
   </section>
 

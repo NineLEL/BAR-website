@@ -91,6 +91,12 @@ button.danger { border-color: var(--danger); color: var(--danger); }
   width: 100%; font-family: var(--mono); background: #0d1117; color: var(--text);
   border: 1px solid var(--border); border-radius: 6px; padding: 8px;
 }
+.utility-card { max-width: 1000px; }
+.utility-label { display: block; color: var(--muted); font-size: .85rem; font-weight: 700; margin: 10px 0 6px; }
+.utility-input { width: 100%; min-height: 150px; resize: vertical; font-family: var(--mono); background: #0d1117; color: var(--text); border: 1px solid var(--border); border-radius: 7px; padding: 10px; line-height: 1.45; }
+.utility-toolbar { margin-top: 12px; margin-bottom: 8px; }
+.utility-option { display: inline-flex; gap: 6px; align-items: center; color: var(--muted); font-size: .85rem; }
+.utility-status { min-height: 1.3em; color: var(--muted); font-family: var(--mono); font-size: .8rem; }
 footer { color: var(--muted); font-size: 0.85rem; line-height: 1.6; }
 .toast {
   position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);

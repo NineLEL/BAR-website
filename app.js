@@ -275,12 +275,82 @@ function luaMinify(src) {
     return false;
   }
 
+  // Lua permits a final statement separator before block terminators and at
+  // EOF. Remove only those semicolons; separators between two statements are
+  // retained because whitespace alone cannot terminate every Lua statement.
+  function removableSemicolon(index) {
+    if (tokens[index].text !== ";") return false;
+    var next = tokens[index + 1];
+    return !next || /^(?:end|else|elseif|until|\}|\)|\])$/.test(next.text);
+  }
+
   var out = "";
   for (var ti = 0; ti < tokens.length; ti++) {
+    if (removableSemicolon(ti)) continue;
     if (ti > 0 && needsSpace(tokens[ti - 1], tokens[ti])) out += " ";
     out += tokens[ti].text;
   }
   return out;
+}
+
+/* Human-readable Lua formatting built on the exact minifier lexer contract.
+ * It intentionally avoids rewriting literals or identifiers; only token
+ * spacing, indentation, and statement/block line breaks are changed. */
+function luaPrettify(src) {
+  var compact = luaMinify(src), tokens = [], i = 0, n = compact.length;
+  var multi = ["...", "..", "==", "~=", "<=", ">=", "//", "<<", ">>", "::"];
+  function add(text, kind) { tokens.push({ text: text, kind: kind }); }
+  function quoted(at) {
+    var q = compact[at], j = at + 1;
+    while (j < n) { if (compact[j] === "\\") { j += 2; continue; } if (compact[j] === q) return j + 1; j++; }
+    return n;
+  }
+  function longAt(at) {
+    var m = compact.slice(at).match(/^\[(=*)\[/);
+    if (!m) return null;
+    var close = "]" + m[1] + "]", end = compact.indexOf(close, at + m[0].length);
+    return { end: end < 0 ? n : end + close.length };
+  }
+  while (i < n) {
+    var c = compact[i], lb = c === "[" ? longAt(i) : null;
+    if (c === "'" || c === '"') { var qe = quoted(i); add(compact.slice(i, qe), "literal"); i = qe; continue; }
+    if (lb) { add(compact.slice(i, lb.end), "literal"); i = lb.end; continue; }
+    if (/[A-Za-z_]/.test(c)) { var e = i + 1; while (e < n && /[A-Za-z0-9_]/.test(compact[e])) e++; add(compact.slice(i, e), "word"); i = e; continue; }
+    if (/[0-9]/.test(c) || (c === "." && /[0-9]/.test(compact[i + 1] || ""))) { var nm = compact.slice(i).match(/^(?:0[xX][0-9A-Fa-f]+(?:\.(?!\.)[0-9A-Fa-f]*)?(?:[pP][+-]?[0-9]+)?|[0-9]+(?:\.(?!\.)[0-9]*)?(?:[eE][+-]?[0-9]+)?|\.[0-9]+(?:[eE][+-]?[0-9]+)?)/); if (nm) { add(nm[0], "number"); i += nm[0].length; continue; } }
+    var op = null;
+    for (var k = 0; k < multi.length; k++) if (compact.slice(i, i + multi[k].length) === multi[k]) { op = multi[k]; break; }
+    add(op || c, "symbol"); i += (op || c).length;
+  }
+  var out = "", line = "", indent = 0, parens = 0, pendingSpace = false;
+  function flush() { if (line.trim()) out += "  ".repeat(indent) + line.trim() + "\n"; line = ""; pendingSpace = false; }
+  function append(s, space) { if (space && line && !/[\s(\[{.]$/.test(line)) line += " "; line += s; }
+  tokens.forEach(function (t, index) {
+    var x = t.text, prev = tokens[index - 1] && tokens[index - 1].text;
+    if (x === ";") { flush(); return; }
+    if (x === "end" || x === "else" || x === "elseif" || x === "until") {
+      flush();
+      indent = Math.max(0, indent - 1);
+      append(x, false);
+      flush();
+      if (x === "else" || x === "elseif") indent++;
+      return;
+    }
+    if (x === "then" || x === "do") { append(x, true); flush(); indent++; return; }
+    if (x === "{") { append(x, false); return; }
+    if (x === "}") { append(x, false); return; }
+    if (x === "(") { append(x, false); parens++; return; }
+    if (x === ")") { append(x, false); parens--; return; }
+    if (x === ",") { append(x, false); line += " "; return; }
+    var operator = /^(?:=|==|~=|<=|>=|\.\.|\.\.\.|[+*/%^#&|<>~-])$/.test(x);
+    if (operator) {
+      append(x, true);
+      line += " ";
+    } else {
+      append(x, !!(prev && /^[A-Za-z0-9_\])}]$/.test(prev.slice(-1)) && /^[A-Za-z_0-9"'\[]/.test(x)));
+    }
+  });
+  flush();
+  return out.replace(/\n+$/, "");
 }
 
 /* ---------- slot command ---------- */
@@ -706,5 +776,21 @@ $("decodeBtn").onclick = function () {
     $("decodeOutput").textContent = "Could not base64-decode that input: " + e;
   }
 };
+
+function utilitySetStatus(message, error) {
+  var el = $("utilityStatus"); el.textContent = message; el.style.color = error ? "var(--danger)" : "var(--muted)";
+}
+$("utilityEncode").onclick = function () {
+  try { var out = b64encode($("utilityInput").value, $("utilityUrlSafe").checked); $("utilityOutput").value = out; utilitySetStatus(out.length + " Base64 characters"); }
+  catch (e) { utilitySetStatus("Encode failed: " + e.message, true); }
+};
+$("utilityDecode").onclick = function () {
+  try { var out = b64decode($("utilityInput").value); $("utilityOutput").value = out; utilitySetStatus(out.length + " decoded UTF-8 characters"); }
+  catch (e) { $("utilityOutput").value = ""; utilitySetStatus("Decode failed: " + e.message, true); }
+};
+$("utilityMinify").onclick = function () { var out = luaMinify($("utilityInput").value); $("utilityOutput").value = out; utilitySetStatus($("utilityInput").value.length - out.length + " characters removed"); };
+$("utilityPrettify").onclick = function () { var out = luaPrettify($("utilityInput").value); $("utilityOutput").value = out; utilitySetStatus("Lua formatted"); };
+$("utilityClear").onclick = function () { $("utilityInput").value = ""; $("utilityOutput").value = ""; utilitySetStatus(""); };
+$("utilityCopy").onclick = function () { if ($("utilityOutput").value) copyText($("utilityOutput").value); };
 
 renderAll();

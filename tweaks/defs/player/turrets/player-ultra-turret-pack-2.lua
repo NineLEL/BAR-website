@@ -441,6 +441,7 @@ do
 	local BUILDERS =
 		"armack corack legack armacv coracv legacv armaca coraca legaca armacsub coracsub armcsa corcsa legnavyconship leganavyconsub legspcon armbehem corcrabe"
 	local created = {}
+	local TURRET_ENERGY_FACTOR = 0.25
 
 	for _, spec in ipairs(SPECS) do
 		local u, source, sourceName = createUnit(spec[1], spec[2])
@@ -453,7 +454,7 @@ do
 			u.unitname, u.name = spec[1], spec[1]
 			u.metalcost, u.energycost, u.buildtime = st[1], st[2], st[3]
 			u.health, u.maxdamage = st[4], st[4]
-			u.energyupkeep, u.energyuse = st[6], st[6]
+			u.energyupkeep, u.energyuse = st[6] * TURRET_ENERGY_FACTOR, st[6] * TURRET_ENERGY_FACTOR
 			if st[7] then
 				u.sightdistance = st[7]
 			end
@@ -475,6 +476,12 @@ do
 
 			label(u, spec[4], spec[5])
 			spec[6](u, source)
+			for _, weapon in pairs(u.weapondefs) do
+				if weapon.energypershot then
+					weapon.energypershot = weapon.energypershot * TURRET_ENERGY_FACTOR
+				end
+			end
+			u.customparams.turret_energy_factor = TURRET_ENERGY_FACTOR
 
 			if source.weapons and #u.weapons < #source.weapons then
 				local dName = spec[1] .. "_dummy"

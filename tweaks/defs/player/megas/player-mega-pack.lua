@@ -1,12 +1,12 @@
 do
 	local U, lower = UnitDefs, string.lower
-	local function copy(t)
+	local function C(t)
 		if type(t) ~= "table" then
 			return t
 		end
 		local r = {}
 		for k, v in pairs(t) do
-			r[copy(k)] = copy(v)
+			r[C(k)] = C(v)
 		end
 		return r
 	end
@@ -39,7 +39,7 @@ do
 		for idx, w in pairs(suite) do
 			local k = wep.is_suite and (key .. "_" .. idx) or key
 			w.noselfdamage, w.turret = true, true
-			u.weapondefs[k] = copy(w)
+			u.weapondefs[k] = C(w)
 			local m = { def = k, onlytargetcategory = w.onlytargetcategory or cat }
 			if oldW[idx] then
 				for pk, pv in pairs(oldW[idx]) do
@@ -49,7 +49,7 @@ do
 						and pk ~= "onlytargetcategory"
 						and (wep.is_suite or (pk ~= "maindir" and pk ~= "maxangledif"))
 					then
-						m[pk] = copy(pv)
+						m[pk] = C(pv)
 					end
 				end
 			end
@@ -276,11 +276,11 @@ do
 		}),
 		beam = W("Annihilation Lance", "BeamLaser", 2600, 3.5, 0, 0, 65e3, 36e3, 68e3, 9e3, nil, {
 			largebeamlaser = true,
-          beamtime = 1.1,
+			beamtime = 1.1,
 			beamttl = 120,
-          thickness = 7,
-          corethickness = 0.65,
-          laserflaresize = 5,
+			thickness = 7,
+			corethickness = 0.65,
+			laserflaresize = 5,
 			pulsespeed = 8,
 			scrollspeed = 8,
 			rgbcolor = "0.75 0.05 1",
@@ -371,7 +371,7 @@ do
 			firestarter = 100,
 			onlytargetcategory = T_S,
 		}),
-		phantomshield = {
+		pshield = {
 			name = "Abyssal Phase Shield",
 			weapontype = "Shield",
 			shieldradius = 520,
@@ -384,16 +384,14 @@ do
 			rgbcolor = "0.15 0.8 1",
 			visibleshield = true,
 			visibleShield = true,
-			customparams = { speceffect = "sector_fire", shieldfx = "electric_arc" },
 		},
-		phantombarrage = W("Leviathan Rift Barrage", "Cannon", 2300, 1.6, 4200, 180, 6800, 4200, 9500, nil, nil, {
+		pbarrage = W("Leviathan Rift Barrage", "Cannon", 2300, 1.6, 4200, 180, 6800, 4200, 9500, nil, nil, {
 			burst = 5,
 			burstrate = 0.1,
 			sprayangle = 520,
 			size = 8,
 			rgbcolor = "0.35 0.95 1",
-			beamlaser = true,
-			cegtag = "missiletrail-tacnuke",
+			cegtag = C_TAC,
 			explosiongenerator = "custom:genericshellexplosion-large",
 			soundstart = S_C1,
 			soundhitdry = S_M2,
@@ -423,7 +421,7 @@ do
 			"player_riftjump",
 			WEAPONS.jump,
 			"Rift Colossus",
-			"Kinetic titan. Shockwaves, knockback.",
+			"Kinetic titan. Shockwaves.",
 			{ 145e3, 32e5, 34e4, 56, 3, 2200, 0, 240 },
 		},
 		{
@@ -432,7 +430,7 @@ do
 			"player_vortexwell",
 			WEAPONS.vortex,
 			"Vortex Dominator",
-			"Gravitational titan. Inversion wells.",
+			"Gravitational titan.",
 			{ 140e3, 30e5, 32e4, 48, 3, 2400, 0, 220 },
 		},
 		{
@@ -441,7 +439,7 @@ do
 			"player_aegisbreaker",
 			WEAPONS.crack,
 			"Aegis Breaker",
-			"Siege shotgun titan. Sabot penetrators.",
+			"Shotgun titan.",
 			{ 135e3, 28e5, 29e4, 52, 3, 2000, 0, 200 },
 		},
 		{
@@ -450,7 +448,7 @@ do
 			"player_solardecimator",
 			WEAPONS.sol,
 			"Sol Decimator",
-			"Solar titan. Net +4000 E/s, supernovas.",
+			"Solar titan. Net +4000 E/s.",
 			{ 185e3, 44e5, 42e4, 38, 2, 2800, 6800, 360 },
 		},
 		{
@@ -459,7 +457,7 @@ do
 			"player_skyfurnace",
 			WEAPONS.flak,
 			"Sky Furnace",
-			"AA fortress. Thermite flak storm.",
+			"AA fortress.",
 			{ 120e3, 24e5, 26e4, 54, 4, 1800, 0, 180, 0, false, T_V },
 		},
 		{
@@ -468,7 +466,7 @@ do
 			"player_stormtesla",
 			WEAPONS.tesla,
 			"Storm Sovereign",
-			"Anti-swarm walker. Chaining tesla.",
+			"Chaining tesla walker.",
 			{ 125e3, 26e5, 27e4, 62, 4, 1900, 0, 200 },
 		},
 		{
@@ -477,7 +475,7 @@ do
 			"player_pyrocarpet",
 			WEAPONS.pyro,
 			"Pyroclast Dreadnought",
-			"Fire titan. Bouncing thermite mortars.",
+			"Fire titan.",
 			{ 130e3, 27e5, 28e4, 50, 4, 2000, 0, 200 },
 		},
 		{
@@ -486,7 +484,7 @@ do
 			"player_worldbeam",
 			WEAPONS.beam,
 			"World Beam",
-			"Beam titan. Annihilation lance.",
+			"Annihilation lance titan.",
 			{ 140e3, 31e5, 30e4, 52, 3, 2500, 0, 220 },
 		},
 		{
@@ -495,7 +493,7 @@ do
 			"player_singularityemp",
 			WEAPONS.emp,
 			"Singularity",
-			"Aerial EMP dreadnought. Shuts down, shatters frontlines.",
+			"Aerial EMP dreadnought.",
 			{ 150e3, 36e5, 28e4, 58, 2, 3200, 0, 220, 0, true },
 		},
 		{
@@ -507,16 +505,16 @@ do
 				slots = { [1] = WEAPONS.aether_aa, [2] = WEAPONS.aether_main, [3] = WEAPONS.aether_sec },
 			},
 			"Aether Siege Fortress",
-			"Aerial flagship. Siege mortars, cannons.",
+			"Aerial siege flagship.",
 			{ 155e3, 35e5, 29e4, 52, 3, 2800, 0, 240, 0, true },
 		},
 		{
 			"player_phantomleviathan",
 			{ "corcrwh", "corcrwt4" },
 			"player_phantomtorpedo",
-			{ is_suite = true, slots = { [1] = WEAPONS.torpedo, [2] = WEAPONS.phantomshield, [3] = WEAPONS.phantombarrage } },
+			{ is_suite = true, slots = { [1] = WEAPONS.torpedo, [2] = WEAPONS.pshield, [3] = WEAPONS.pbarrage } },
 			"Phantom Leviathan",
-			"Cloaked shield dreadnought. Void torpedoes, phase barrier, and rift barrage.",
+			"Cloaked dreadnought.",
 			{ 220e3, 48e5, 42e4, 72, 4, 3200, 0, 420, 0, true },
 		},
 		{
@@ -525,7 +523,7 @@ do
 			"player_archangelvulcan",
 			WEAPONS.vulcan,
 			"Archangel Gunship",
-			"CAS dreadnought. 60-round rotary Vulcan.",
+			"Rotary Vulcan dreadnought.",
 			{ 140e3, 31e5, 27e4, 66, 3, 2200, 0, 200, 0, true },
 		},
 	}
@@ -536,7 +534,7 @@ do
 		local p = SPECS[i]
 		local s = findSrc(p[2])
 		if s and not U[p[1]] then
-			local u = copy(s)
+			local u = C(s)
 			local st = p[7]
 			local isAir = st[10]
 
@@ -561,6 +559,7 @@ do
 				u.cloakcost, u.cloakcostmoving = 18, 42
 				u.mincloakdistance, u.decloakdistance = 220, 140
 				u.decloakonfire, u.decloaksonfire = false, false
+				u.customparams = u.customparams or {}
 				u.customparams.stealthhealth = 0.35
 				u.customparams.stealthregen = 240
 			end
@@ -576,10 +575,8 @@ do
 
 			u.customparams = u.customparams or {}
 			u.customparams.techlevel, u.customparams.unitgroup = 4, "weapon"
-			for l in ("en de fr es it ru zh cs hr lt"):gmatch("%S+") do
-				u.customparams["i18n_" .. l .. "_humanname"] = p[5]
-				u.customparams["i18n_" .. l .. "_tooltip"] = p[6]
-			end
+			u.customparams.i18n_en_humanname = p[5]
+			u.customparams.i18n_en_tooltip = p[6]
 
 			install(u, p[3], p[4], st[11])
 			U[p[1]] = u

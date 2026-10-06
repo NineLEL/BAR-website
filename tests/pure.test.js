@@ -141,6 +141,20 @@ describe("luaMinify", () => {
     const out = pure.luaMinify("local  tech  =  1");
     assert.equal(out, "local tech=1");
   });
+
+  it("removes only safe trailing Lua semicolons", () => {
+    assert.equal(pure.luaMinify("local a = 1;\nif a then print(a); end;"), "local a=1;if a then print(a)end");
+    assert.equal(pure.luaMinify("local a = 1; local b = 2;"), "local a=1;local b=2");
+    assert.equal(pure.luaMinify("return { a = 1; };"), "return{a=1}");
+  });
+  it("prettifies Lua without changing literals or block structure", () => {
+    const out = pure.luaPrettify("local s = 'a -- b'; if x then print(s); else print('no'); end");
+    assert.match(out, /local s = 'a -- b'/);
+    assert.match(out, /if x then\n/);
+    assert.match(out, /\n  print\(s\)/);
+    assert.match(out, /\nelse\n/);
+    assert.match(out, /\nend$/);
+  });
   it("handles empty / whitespace-only / comment-only input", () => {
     assert.equal(pure.luaMinify(""), "");
     assert.equal(pure.luaMinify("   \n\t  "), "");

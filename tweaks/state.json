@@ -37,8 +37,8 @@
   "defs/player/defenses/player-shield-aa-pack.lua": false,
   "defs/player/megas/player-mega-pack.lua": true,
   "defs/player/megas/player-mega-air-pack.lua": false,
-  "defs/player/turrets/player-ultra-turret-pack.lua": true,
-  "defs/player/turrets/player-ultra-turret-pack-2.lua": true,
+  "defs/player/turrets/player-ultra-turret-pack.lua": false,
+  "defs/player/turrets/player-ultra-turret-pack-2.lua": false,
   "units/scav/scav-ai-smarts.lua": true,
   "defs/scavx/scavx-tweakdefs.lua": false,
   "defs/scavx/scavx-tweakdefs1.lua": false,
@@ -48,11 +48,10 @@
   "defs/scavx/scavx-tweakdefs5.lua": false,
   "defs/scavx/scavx-tweakdefs6.lua": false,
   "units/scavx/scavx-tweakunits.lua": false,
-  "units/scavx/ScavXNightmare.lua": false,
+  "units/scavx/ScavXNightmare.lua": true,
   "units/raptorx/RaptorX.lua": true,
   "units/raptorx/RaptorX-support.lua": true,
-  "defs/raptorx/raptorx-custom-units.lua": true,
   "defs/raptorx/raptorx-custom-units-core.lua": true,
   "defs/raptorx/raptorx-artillery-pack.lua": true,
-  "units/scavx/ScavXNightmare-support.lua": false
+  "units/scavx/ScavXNightmare-support.lua": true
 }
