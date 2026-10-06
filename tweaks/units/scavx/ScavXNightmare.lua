@@ -1,5 +1,8 @@
 -- ScavX Nightmare Overhaul: Unified High-Intensity Squad Roster & Unit Patches
 -- Merges scav-ai-smarts and scavx-tweakunits into an extreme difficulty package.
+-- Custom ScavX units below require their matching tweaks/defs/scavx clone packs.
+-- Only mobile combat clones join squads; economy, builders and static defenses stay out.
+-- Enable ScavXNightmare-support.lua too for artillery, air and naval squads.
 {
   -- =========================================================================
   -- PHASE 1: EARLY-GAME SWARM HARASSMENT (Anger 0 - 35)
@@ -49,6 +52,23 @@
       scavcustomsquad = "1", scavsquadbehavior = "berserk", scavsquadbehaviorchance = 1,
       scavsquadbehaviordistance = 900, scavsquadminanger = 5, scavsquadmaxanger = 45,
       scavsquadrarity = "basic", scavsquadunitsamount = 65, scavsquadweight = 150,
+    },
+    stealth = true,
+  },
+
+  armstump = {
+    customparams = {
+      scavcustomsquad = "1", scavsquadbehavior = "raider", scavsquadbehaviorchance = 1,
+      scavsquadbehaviordistance = 850, scavsquadminanger = 5, scavsquadmaxanger = 45,
+      scavsquadrarity = "basic", scavsquadunitsamount = 65, scavsquadweight = 140,
+    },
+    stealth = true,
+  },
+  corraid = {
+    customparams = {
+      scavcustomsquad = "1", scavsquadbehavior = "raider", scavsquadbehaviorchance = 1,
+      scavsquadbehaviordistance = 850, scavsquadminanger = 5, scavsquadmaxanger = 45,
+      scavsquadrarity = "basic", scavsquadunitsamount = 65, scavsquadweight = 140,
     },
     stealth = true,
   },
@@ -147,13 +167,47 @@
     },
   },
 
+  armrock = {
+    customparams = {
+      scavcustomsquad = "1", scavsquadbehavior = "berserk", scavsquadbehaviorchance = 1,
+      scavsquadbehaviordistance = 1000, scavsquadminanger = 15, scavsquadmaxanger = 65,
+      scavsquadrarity = "basic", scavsquadunitsamount = 45, scavsquadweight = 120,
+    },
+    stealth = true,
+  },
+  corstorm = {
+    customparams = {
+      scavcustomsquad = "1", scavsquadbehavior = "berserk", scavsquadbehaviorchance = 1,
+      scavsquadbehaviordistance = 1000, scavsquadminanger = 15, scavsquadmaxanger = 65,
+      scavsquadrarity = "basic", scavsquadunitsamount = 45, scavsquadweight = 120,
+    },
+    stealth = true,
+  },
+  armzeus = {
+    customparams = {
+      scavcustomsquad = "1", scavsquadbehavior = "berserk", scavsquadbehaviorchance = 1,
+      scavsquadbehaviordistance = 1300, scavsquadminanger = 25, scavsquadmaxanger = 100,
+      scavsquadrarity = "basic", scavsquadunitsamount = 35, scavsquadweight = 130,
+    },
+    stealth = true,
+  },
+  corsumo = {
+    customparams = {
+      scavcustomsquad = "1", scavsquadbehavior = "berserk", scavsquadbehaviorchance = 1,
+      scavsquadbehaviordistance = 1500, scavsquadminanger = 35, scavsquadmaxanger = 130,
+      scavsquadrarity = "basic", scavsquadunitsamount = 20, scavsquadweight = 130,
+    },
+    stealth = true,
+  },
+
   -- =========================================================================
-  -- PHASE 3: LATE-GAME EXPERIMENTAL TITANS & SIEGE ARMS (Anger 40 - 150)
+  -- PHASE 3: LATE-GAME EXPERIMENTAL TITANS & SIEGE ARMS (Anger 45 - 150)
+  -- Rift Colossus uses the armbanth base and is intentionally gated at 55%.
   -- =========================================================================
   armbanth = {
     customparams = {
       scavcustomsquad = "1", scavsquadbehavior = "raider", scavsquadbehaviorchance = 1,
-      scavsquadbehaviordistance = 2000, scavsquadminanger = 35, scavsquadmaxanger = 100,
+       scavsquadbehaviordistance = 2000, scavsquadminanger = 55, scavsquadmaxanger = 100,
       scavsquadrarity = "basic", scavsquadunitsamount = 85, scavsquadweight = 160,
     },
     mass = 145000,
@@ -163,7 +217,7 @@
   armpwt4 = {
     customparams = {
       scavcustomsquad = "1", scavsquadbehavior = "berserk", scavsquadbehaviorchance = 1,
-      scavsquadbehaviordistance = 2000, scavsquadminanger = 45, scavsquadmaxanger = 110,
+       scavsquadbehaviordistance = 2000, scavsquadminanger = 50, scavsquadmaxanger = 110,
       scavsquadrarity = "basic", scavsquadunitsamount = 65, scavsquadweight = 175,
     },
     stealth = true,
@@ -171,7 +225,7 @@
   armrattet4 = {
     customparams = {
       scavcustomsquad = "1", scavsquadbehavior = "berserk", scavsquadbehaviorchance = 1,
-      scavsquadbehaviordistance = 900, scavsquadminanger = 35, scavsquadmaxanger = 80,
+       scavsquadbehaviordistance = 900, scavsquadminanger = 45, scavsquadmaxanger = 80,
       scavsquadrarity = "basic", scavsquadunitsamount = 50, scavsquadweight = 130,
     },
     speed = 36,
@@ -180,7 +234,7 @@
   legfort = {
     customparams = {
       scavcustomsquad = "1", scavsquadbehavior = "berserk", scavsquadbehaviorchance = 1,
-      scavsquadbehaviordistance = 1200, scavsquadminanger = 35, scavsquadmaxanger = 140,
+       scavsquadbehaviordistance = 1200, scavsquadminanger = 40, scavsquadmaxanger = 140,
       scavsquadrarity = "basic", scavsquadunitsamount = 75, scavsquadweight = 130,
     },
     mass = 65000,
@@ -189,7 +243,7 @@
   legfortt4 = {
     customparams = {
       scavcustomsquad = "1", scavsquadbehavior = "berserk", scavsquadbehaviorchance = 1,
-      scavsquadbehaviordistance = 1200, scavsquadminanger = 50, scavsquadmaxanger = 110,
+       scavsquadbehaviordistance = 1200, scavsquadminanger = 55, scavsquadmaxanger = 110,
       scavsquadrarity = "basic", scavsquadunitsamount = 45, scavsquadweight = 185,
     },
     speed = 44,
@@ -198,7 +252,7 @@
   legmost3 = {
     customparams = {
       scavcustomsquad = "1", scavsquadbehavior = "berserk", scavsquadbehaviorchance = 1,
-      scavsquadbehaviordistance = 2000, scavsquadminanger = 35, scavsquadmaxanger = 140,
+       scavsquadbehaviordistance = 2000, scavsquadminanger = 45, scavsquadmaxanger = 140,
       scavsquadrarity = "basic", scavsquadunitsamount = 40, scavsquadweight = 130,
     },
     health = 18500,
@@ -216,181 +270,79 @@
   },
 
   -- =========================================================================
-  -- ARTILLERY BARRAGES & FORWARD SPOTTERS
+  -- CUSTOM SCAVX HEAVIES (requires scavx-tweakdefs through scavx-tweakdefs6)
+  -- Keep boss-sized squads small; their health and weapons come from the defs packs.
   -- =========================================================================
-  armmart = {
-    customparams = {
-      scavcustomsquad = "1", scavsquadbehavior = "artillery", scavsquadbehaviorchance = 1,
-      scavsquadbehaviordistance = 1250, scavsquadminanger = 15, scavsquadmaxanger = 80,
-      scavsquadrarity = "basic", scavsquadunitsamount = 18, scavsquadweight = 100,
-    },
-    stealth = true,
-  },
-  cormart = {
-    customparams = {
-      scavcustomsquad = "1", scavsquadbehavior = "artillery", scavsquadbehaviorchance = 1,
-      scavsquadbehaviordistance = 1250, scavsquadminanger = 15, scavsquadmaxanger = 80,
-      scavsquadrarity = "basic", scavsquadunitsamount = 18, scavsquadweight = 100,
-    },
-    stealth = true,
-  },
-  armvang = {
-    customparams = {
-      scavcustomsquad = "1", scavsquadbehavior = "artillery", scavsquadbehaviorchance = 1,
-      scavsquadbehaviordistance = 1300, scavsquadminanger = 20, scavsquadmaxanger = 70,
-      scavsquadrarity = "basic", scavsquadunitsamount = 26, scavsquadweight = 175,
-    },
-    mass = 35000,
-    sightdistance = 3600,
-    stealth = true,
-    weapondefs = {
-      shocker_low = { weaponvelocity = 1050 },
-    },
-  },
-  armseer = {
-    customparams = {
-      scavcustomsquad = "1", scavsquadbehavior = "artillery", scavsquadbehaviorchance = 1,
-      scavsquadbehaviordistance = 1400, scavsquadminanger = 25, scavsquadmaxanger = 120,
-      scavsquadrarity = "basic", scavsquadunitsamount = 12, scavsquadweight = 110,
-    },
-    stealth = true,
-  },
-  cornecro = {
-    customparams = {
-      scavcustomsquad = "1", scavsquadbehavior = "healer", scavsquadbehaviorchance = 1,
-      scavsquadbehaviordistance = 850, scavsquadminanger = 30, scavsquadmaxanger = 150,
-      scavsquadrarity = "special", scavsquadunitsamount = 8, scavsquadweight = 120,
-    },
-    speed = 42,
-    stealth = true,
-  },
-
-  -- =========================================================================
-  -- AIR CORPS (RECON, INTERCEPTORS, GUNSHIPS, BOMBERS)
-  -- =========================================================================
-  armpeep = {
-    customparams = {
-      scavcustomsquad = "1", scavsquadbehavior = "raider", scavsquadbehaviorchance = 1,
-      scavsquadbehaviordistance = 1800, scavsquadminanger = 5, scavsquadmaxanger = 130,
-      scavsquadrarity = "basic", scavsquadunitsamount = 14, scavsquadweight = 130,
-    },
-  },
-  corfink = {
-    customparams = {
-      scavcustomsquad = "1", scavsquadbehavior = "raider", scavsquadbehaviorchance = 1,
-      scavsquadbehaviordistance = 1800, scavsquadminanger = 5, scavsquadmaxanger = 130,
-      scavsquadrarity = "basic", scavsquadunitsamount = 14, scavsquadweight = 130,
-    },
-  },
-  armbrawl = {
+  busters = {
     customparams = {
       scavcustomsquad = "1", scavsquadbehavior = "berserk", scavsquadbehaviorchance = 1,
-      scavsquadbehaviordistance = 1100, scavsquadminanger = 10, scavsquadmaxanger = 70,
-      scavsquadrarity = "basic", scavsquadunitsamount = 20, scavsquadweight = 120,
+      scavsquadbehaviordistance = 2000, scavsquadminanger = 50, scavsquadmaxanger = 150,
+      scavsquadrarity = "basic", scavsquadunitsamount = 26, scavsquadweight = 140,
     },
+    stealth = true,
   },
-  corbw = {
+  fatherbehe = {
     customparams = {
       scavcustomsquad = "1", scavsquadbehavior = "berserk", scavsquadbehaviorchance = 1,
-      scavsquadbehaviordistance = 1100, scavsquadminanger = 10, scavsquadmaxanger = 70,
-      scavsquadrarity = "basic", scavsquadunitsamount = 20, scavsquadweight = 120,
-    },
-  },
-  armhawk = {
-    customparams = {
-      scavcustomsquad = "1", scavsquadbehavior = "raider", scavsquadbehaviorchance = 1,
-      scavsquadbehaviordistance = 900, scavsquadminanger = 5, scavsquadmaxanger = 60,
-      scavsquadrarity = "basic", scavsquadunitsamount = 22, scavsquadweight = 110,
-    },
-  },
-  corvamp = {
-    customparams = {
-      scavcustomsquad = "1", scavsquadbehavior = "raider", scavsquadbehaviorchance = 1,
-      scavsquadbehaviordistance = 900, scavsquadminanger = 5, scavsquadmaxanger = 60,
-      scavsquadrarity = "basic", scavsquadunitsamount = 22, scavsquadweight = 110,
-    },
-  },
-  armthund = {
-    customparams = {
-      scavcustomsquad = "1", scavsquadbehavior = "raider", scavsquadbehaviorchance = 1,
-      scavsquadbehaviordistance = 900, scavsquadminanger = 10, scavsquadmaxanger = 65,
-      scavsquadrarity = "basic", scavsquadunitsamount = 16, scavsquadweight = 90,
-    },
-  },
-  corshad = {
-    customparams = {
-      scavcustomsquad = "1", scavsquadbehavior = "raider", scavsquadbehaviorchance = 1,
-      scavsquadbehaviordistance = 900, scavsquadminanger = 10, scavsquadmaxanger = 65,
-      scavsquadrarity = "basic", scavsquadunitsamount = 16, scavsquadweight = 90,
-    },
-  },
-  armjeth = {
-    customparams = {
-      scavcustomsquad = "1", scavsquadbehavior = "raider", scavsquadbehaviorchance = 1,
-      scavsquadbehaviordistance = 1100, scavsquadminanger = 15, scavsquadmaxanger = 110,
-      scavsquadrarity = "basic", scavsquadunitsamount = 18, scavsquadweight = 110,
+      scavsquadbehaviordistance = 2000, scavsquadminanger = 60, scavsquadmaxanger = 150,
+      scavsquadrarity = "basic", scavsquadunitsamount = 18, scavsquadweight = 140,
     },
     stealth = true,
   },
-  coraak = {
+  kingchimera = {
     customparams = {
-      scavcustomsquad = "1", scavsquadbehavior = "raider", scavsquadbehaviorchance = 1,
-      scavsquadbehaviordistance = 1100, scavsquadminanger = 15, scavsquadmaxanger = 110,
-      scavsquadrarity = "basic", scavsquadunitsamount = 18, scavsquadweight = 110,
+      scavcustomsquad = "1", scavsquadbehavior = "berserk", scavsquadbehaviorchance = 1,
+      scavsquadbehaviordistance = 2000, scavsquadminanger = 90, scavsquadmaxanger = 150,
+      scavsquadrarity = "special", scavsquadunitsamount = 3, scavsquadweight = 160,
     },
     stealth = true,
   },
-
-  -- =========================================================================
-  -- NAVAL DOMINANCE (AMPHIBIOUS, CRUISERS, SUBMARINES)
-  -- =========================================================================
-  armcroc = {
+  ratteking = {
     customparams = {
-      scavcustomsquad = "1", scavsquadbehavior = "raider", scavsquadbehaviorchance = 1,
-      scavsquadbehaviordistance = 950, scavsquadminanger = 30, scavsquadmaxanger = 130,
-      scavsquadrarity = "basic", scavsquadunitsamount = 16, scavsquadweight = 120,
+      scavcustomsquad = "1", scavsquadbehavior = "berserk", scavsquadbehaviorchance = 1,
+      scavsquadbehaviordistance = 900, scavsquadminanger = 80, scavsquadmaxanger = 150,
+      scavsquadrarity = "special", scavsquadunitsamount = 4, scavsquadweight = 140,
     },
     stealth = true,
   },
-  corgarp = {
+  thetyrannus = {
     customparams = {
-      scavcustomsquad = "1", scavsquadbehavior = "raider", scavsquadbehaviorchance = 1,
-      scavsquadbehaviordistance = 950, scavsquadminanger = 30, scavsquadmaxanger = 130,
-      scavsquadrarity = "basic", scavsquadunitsamount = 16, scavsquadweight = 120,
+      scavcustomsquad = "1", scavsquadbehavior = "berserk", scavsquadbehaviorchance = 1,
+      scavsquadbehaviordistance = 1200, scavsquadminanger = 90, scavsquadmaxanger = 150,
+      scavsquadrarity = "special", scavsquadunitsamount = 12, scavsquadweight = 160,
     },
     stealth = true,
   },
-  armcrus = {
+  titaniator = {
+    customparams = {
+      scavcustomsquad = "1", scavsquadbehavior = "raider", scavsquadbehaviorchance = 1,
+      scavsquadbehaviordistance = 2000, scavsquadminanger = 85, scavsquadmaxanger = 150,
+      scavsquadrarity = "basic", scavsquadunitsamount = 36, scavsquadweight = 160,
+    },
+    stealth = true,
+  },
+  quincy = {
     customparams = {
       scavcustomsquad = "1", scavsquadbehavior = "artillery", scavsquadbehaviorchance = 1,
-      scavsquadbehaviordistance = 1700, scavsquadminanger = 65, scavsquadmaxanger = 150,
-      scavsquadrarity = "special", scavsquadunitsamount = 8, scavsquadweight = 110,
+      scavsquadbehaviordistance = 1300, scavsquadminanger = 80, scavsquadmaxanger = 150,
+      scavsquadrarity = "special", scavsquadunitsamount = 24, scavsquadweight = 175,
     },
     stealth = true,
   },
-  corcrus = {
+  walkingfort = {
     customparams = {
       scavcustomsquad = "1", scavsquadbehavior = "artillery", scavsquadbehaviorchance = 1,
-      scavsquadbehaviordistance = 1700, scavsquadminanger = 65, scavsquadmaxanger = 150,
-      scavsquadrarity = "special", scavsquadunitsamount = 8, scavsquadweight = 110,
+      scavsquadbehaviordistance = 1300, scavsquadminanger = 80, scavsquadmaxanger = 150,
+      scavsquadrarity = "special", scavsquadunitsamount = 12, scavsquadweight = 175,
     },
     stealth = true,
   },
-  armsub = {
+  wallnut = {
     customparams = {
-      scavcustomsquad = "1", scavsquadbehavior = "raider", scavsquadbehaviorchance = 1,
-      scavsquadbehaviordistance = 1100, scavsquadminanger = 50, scavsquadmaxanger = 150,
-      scavsquadrarity = "special", scavsquadunitsamount = 10, scavsquadweight = 95,
+      scavcustomsquad = "1", scavsquadbehavior = "berserk", scavsquadbehaviorchance = 1,
+      scavsquadbehaviordistance = 1200, scavsquadminanger = 70, scavsquadmaxanger = 150,
+      scavsquadrarity = "special", scavsquadunitsamount = 6, scavsquadweight = 130,
     },
-    stealth = true,
-  },
-  corsub = {
-    customparams = {
-      scavcustomsquad = "1", scavsquadbehavior = "raider", scavsquadbehaviorchance = 1,
-      scavsquadbehaviordistance = 1100, scavsquadminanger = 50, scavsquadmaxanger = 150,
-      scavsquadrarity = "special", scavsquadunitsamount = 10, scavsquadweight = 95,
-    },
-    stealth = true,
   },
 
   -- =========================================================================
@@ -415,6 +367,12 @@
     },
   },
   armsptkt4 = {
+    customparams = {
+      scavcustomsquad = "1", scavsquadbehavior = "artillery", scavsquadbehaviorchance = 1,
+      scavsquadbehaviordistance = 1400, scavsquadminanger = 55, scavsquadmaxanger = 150,
+      scavsquadrarity = "special", scavsquadunitsamount = 18, scavsquadweight = 140,
+    },
+    stealth = true,
     weapondefs = {
       adv_rocket = { reloadtime = 3 },
     },

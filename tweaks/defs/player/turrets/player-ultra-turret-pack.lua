@@ -279,12 +279,12 @@ do
 					largebeamlaser = true,
 					range = 1400,
 					reloadtime = 0.02,
-                    beamtime = 0.012,
+					beamtime = 0.012,
 					beamttl = 2,
-                    thickness = 4.0,
-                    corethickness = 0.40,
+					thickness = 4.0,
+					corethickness = 0.40,
 					energypershot = 1400,
-                    laserflaresize = 3,
+					laserflaresize = 3,
 					damage = D(220, 9000, 3000),
 					explosiongenerator = "custom:laserhit-small-blue",
 					rgbcolor = "0.2 0.9 1",
@@ -354,40 +354,36 @@ do
 			end,
 		},
 		-- 7. HIVE ARRAY
-{
-			"player_hivearray", { "legstarfall", "corint" }, { 920e3, 1900e4, 850e3, 2, 64000, nil, 3200 },
-			"Hive Array", "Guided missile barrage fortress",
+		{
+			"player_hivearray",
+			{ "legstarfall", "corint" },
+			{ 920e3, 1900e4, 850e3, 2, 64000, nil, 3200 },
+			"Hive Array",
+			"Guided missile barrage fortress",
 			function(u, src)
-		installWeapon(u, src, 1, "HIVE_ARRAY", {
-			weapontype = C_MSL,
-			range = 4200,
-			reloadtime = 0.02,
-
-			-- Vertical clearing arc physics:
-			trajectoryheight = 1.5, -- Forces steep vertical launch clearance
-			startvelocity = 600, -- Slower initial launch to ascend cleanly
-			weaponvelocity = 3800,
-			weaponacceleration = 2400,
-			flighttime = 14.0,
-
-			-- Obstacle & friendly safety gates:
-			avoidfriendly = true, -- Holds fire if friendly bases/units block line
-			avoidfeature = true, -- Avoids rocks, trees, and wreckage
-			avoidground = true, -- Prevents descending below ground plane mid-flight
-
-			-- Guidance:
-			tracks = true,
-			turnrate = 190e3, -- Snappier correction once above obstacles
-			dance = 3, -- Reduced early weave to stop clipping
-			wobble = 60, -- Tighter flight pattern
-
-			areaofeffect = 200,
-			energypershot = 3200,
-			damage = D(5200, 34000, 12000),
-			soundstart = "rocklit1",
-			onlytargetcategory = T_SV,
-		})
-		setMissileVis(u.weapondefs.HIVE_ARRAY, true)
+				installWeapon(u, src, 1, "HIVE_ARRAY", {
+					weapontype = C_MSL,
+					range = 4200,
+					reloadtime = 0.02,
+					trajectoryheight = 1.5,
+					startvelocity = 600,
+					weaponvelocity = 3800,
+					weaponacceleration = 2400,
+					flighttime = 14.0,
+					avoidfriendly = true,
+					avoidfeature = true,
+					avoidground = true,
+					tracks = true,
+					turnrate = 190e3,
+					dance = 3,
+					wobble = 60,
+					areaofeffect = 200,
+					energypershot = 3200,
+					damage = D(5200, 34000, 12000),
+					soundstart = "rocklit1",
+					onlytargetcategory = T_SV,
+				})
+				setMissileVis(u.weapondefs.HIVE_ARRAY, true)
 			end,
 		},
 		-- 8. AEGIS ERASER
@@ -433,12 +429,12 @@ do
 					largebeamlaser = true,
 					range = 3600,
 					reloadtime = 2.0,
-                    beamtime = 1.2,
+					beamtime = 1.2,
 					beamttl = 170,
 					energypershot = 190e3,
-                    thickness = 8,
-                    corethickness = 0.80,
-                    laserflaresize = 5,
+					thickness = 8,
+					corethickness = 0.80,
+					laserflaresize = 5,
 					firestarter = 100,
 					damage = D(165000, nil, 90000, 30000),
 					texture3 = "largebeam",
@@ -473,9 +469,9 @@ do
 						beamtime = 0.55,
 						beamttl = 22,
 						energypershot = 44000,
-                        thickness = cfg[2] * 0.8,
-                        corethickness = cfg[3] * 0.8,
-                        laserflaresize = 5,
+						thickness = cfg[2] * 0.8,
+						corethickness = cfg[3] * 0.8,
+						laserflaresize = 5,
 						firestarter = 100,
 						damage = D(52000, nil, 145000, 12000),
 						texture3 = "largebeam",
@@ -501,12 +497,12 @@ do
 					largebeamlaser = true,
 					range = 3800,
 					reloadtime = 4.5,
-                    beamtime = 1.5,
+					beamtime = 1.5,
 					beamttl = 250,
 					energypershot = 620e3,
-                    thickness = 10,
-                    corethickness = 0.90,
-                    laserflaresize = 6,
+					thickness = 10,
+					corethickness = 0.90,
+					laserflaresize = 6,
 					firestarter = 100,
 					damage = D(680000, nil, 420000, 120000),
 					texture3 = "largebeam",
@@ -518,36 +514,47 @@ do
 				})
 			end,
 		},
-		-- 12. ASTRAEUS STARFALL
+		-- 12. ASTRAEUS STARFALL: Massive Saturation Celestial Bombardment
 		{
 			"player_starfallcataclysm",
 			{ "legstarfall", "corint", "armbrtha" },
 			{ 1300e3, 2800e4, 1100e3, 2, 94000, 800, 4200 },
 			"Astraeus Starfall",
-			"Orbital-arc siege artillery",
+			"Orbital-arc saturation artillery. Rains apocalyptic spreads of celestial plasma.",
 			function(u, src)
 				u.hightrajectorytype = 1
 				installWeapon(u, src, 1, "ASTRAEUS_STARFALL", {
 					weapontype = C_CAN,
-					range = 9200,
-					reloadtime = 12.0,
-					burst = 8,
-					burstrate = 0.22,
-					projectilespershot = 24,
-					sprayangle = 900,
-					accuracy = 140,
+					range = 9600,
+					reloadtime = 1.8,
+
+					-- 16 salvo waves of 32 shells = 512 shells per barrage
+					burst = 16,
+					burstrate = 0.05,
+					projectilespershot = 32,
+
+					-- Broad apocalyptic spread across the entire front
+					sprayangle = 2200,
+					accuracy = 540,
+
+					-- Ballistics: High loft with floating hang-time
 					hightrajectory = 1,
-					weaponvelocity = 3400,
-					areaofeffect = 1100,
-					camerashake = 220,
-					energypershot = 5200,
-					craterboost = 8.0,
-					cratermult = 6.0,
-					impulsefactor = 16.0,
-					impulseboost = 10.0,
+					weaponvelocity = 2800,
+					mygravity = 0.52,
+
+					areaofeffect = 650,
+					camerashake = 180,
+					energypershot = 320,
+
+					craterboost = 4.5,
+					cratermult = 3.5,
+					impulsefactor = 10.0,
+					impulseboost = 6.0,
 					firestarter = 100,
-					size = 14.0,
-					damage = D(92000, nil, 210000, 18000),
+					size = 12.0,
+
+					-- 512 shells * 1800 dmg = ~921,600 saturation damage per barrage
+					damage = D(1800, nil, 4200, 600),
 					cegtag = "starfire",
 					explosiongenerator = "custom:starfire-explosion",
 					soundstart = S_CAN2,

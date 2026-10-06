@@ -51,4 +51,30 @@
   corgarp = { customparams = { scavcustomsquad = "1", scavsquadbehavior = "raider", scavsquadbehaviorchance = 1, scavsquadbehaviordistance = 900, scavsquadmaxanger = 120, scavsquadminanger = 35, scavsquadrarity = "basic", scavsquadunitsamount = 10, scavsquadweight = 100, }, },
   armsub = { customparams = { scavcustomsquad = "1", scavsquadbehavior = "raider", scavsquadbehaviorchance = 1, scavsquadbehaviordistance = 1000, scavsquadmaxanger = 150, scavsquadminanger = 60, scavsquadrarity = "special", scavsquadunitsamount = 6, scavsquadweight = 75, }, },
   corsub = { customparams = { scavcustomsquad = "1", scavsquadbehavior = "raider", scavsquadbehaviorchance = 1, scavsquadbehaviordistance = 1000, scavsquadmaxanger = 150, scavsquadminanger = 60, scavsquadrarity = "special", scavsquadunitsamount = 6, scavsquadweight = 75, }, },
+
+  -- Tactical layer: scouts and jammers create information advantage before the
+  -- main wave. Keep these squads small so they probe, flank and survive rather
+  -- than simply becoming another front-loaded blob.
+  armspy = { customparams = { scavcustomsquad = "1", scavsquadbehavior = "raider", scavsquadbehaviorchance = 1, scavsquadbehaviordistance = 1800, scavsquadmaxanger = 90, scavsquadminanger = 10, scavsquadrarity = "basic", scavsquadunitsamount = 6, scavsquadweight = 120, }, stealth = true, },
+  corspy = { customparams = { scavcustomsquad = "1", scavsquadbehavior = "raider", scavsquadbehaviorchance = 1, scavsquadbehaviordistance = 1800, scavsquadmaxanger = 90, scavsquadminanger = 10, scavsquadrarity = "basic", scavsquadunitsamount = 6, scavsquadweight = 120, }, stealth = true, },
+  armjam = { customparams = { scavcustomsquad = "1", scavsquadbehavior = "raider", scavsquadbehaviorchance = 1, scavsquadbehaviordistance = 1500, scavsquadmaxanger = 130, scavsquadminanger = 25, scavsquadrarity = "special", scavsquadunitsamount = 5, scavsquadweight = 95, }, stealth = true, },
+  corjamt = { customparams = { scavcustomsquad = "1", scavsquadbehavior = "raider", scavsquadbehaviorchance = 1, scavsquadbehaviordistance = 1500, scavsquadmaxanger = 130, scavsquadminanger = 25, scavsquadrarity = "special", scavsquadunitsamount = 5, scavsquadweight = 95, }, stealth = true, },
+  armveil = { customparams = { scavcustomsquad = "1", scavsquadbehavior = "raider", scavsquadbehaviorchance = 1, scavsquadbehaviordistance = 1200, scavsquadmaxanger = 100, scavsquadminanger = 20, scavsquadrarity = "basic", scavsquadunitsamount = 8, scavsquadweight = 100, }, stealth = true, },
+  corvoyr = { customparams = { scavcustomsquad = "1", scavsquadbehavior = "raider", scavsquadbehaviorchance = 1, scavsquadbehaviordistance = 1200, scavsquadmaxanger = 100, scavsquadminanger = 20, scavsquadrarity = "basic", scavsquadunitsamount = 8, scavsquadweight = 100, }, stealth = true, },
+
+  -- Combined-arms responses: interceptors protect siege units, while healers
+  -- and repair-capable support stay behind the assault line.
+  armsehak = { customparams = { scavcustomsquad = "1", scavsquadbehavior = "raider", scavsquadbehaviorchance = 1, scavsquadbehaviordistance = 1400, scavsquadmaxanger = 150, scavsquadminanger = 35, scavsquadrarity = "special", scavsquadunitsamount = 8, scavsquadweight = 110, }, },
+  corseah = { customparams = { scavcustomsquad = "1", scavsquadbehavior = "raider", scavsquadbehaviorchance = 1, scavsquadbehaviordistance = 1400, scavsquadmaxanger = 150, scavsquadminanger = 35, scavsquadrarity = "special", scavsquadunitsamount = 8, scavsquadweight = 110, }, },
+  armliche = { customparams = { scavcustomsquad = "1", scavsquadbehavior = "healer", scavsquadbehaviorchance = 1, scavsquadbehaviordistance = 1000, scavsquadmaxanger = 150, scavsquadminanger = 55, scavsquadrarity = "special", scavsquadunitsamount = 4, scavsquadweight = 100, }, },
+  cornecro = { customparams = { scavcustomsquad = "1", scavsquadbehavior = "healer", scavsquadbehaviorchance = 1, scavsquadbehaviordistance = 1000, scavsquadmaxanger = 150, scavsquadminanger = 55, scavsquadrarity = "special", scavsquadunitsamount = 4, scavsquadweight = 100, }, },
+  armhawk = { customparams = { scavcustomsquad = "1", scavsquadbehavior = "raider", scavsquadbehaviorchance = 1, scavsquadbehaviordistance = 1300, scavsquadmaxanger = 150, scavsquadminanger = 25, scavsquadrarity = "basic", scavsquadunitsamount = 10, scavsquadweight = 115, }, },
+  corvamp = { customparams = { scavcustomsquad = "1", scavsquadbehavior = "raider", scavsquadbehaviorchance = 1, scavsquadbehaviordistance = 1300, scavsquadmaxanger = 150, scavsquadminanger = 25, scavsquadrarity = "basic", scavsquadunitsamount = 10, scavsquadweight = 115, }, },
+
+  -- Counterattack groups: fast gunships and amphibious units pressure exposed
+  -- mexes and retreat routes instead of joining every frontal assault.
+  armthund = { customparams = { scavcustomsquad = "1", scavsquadbehavior = "raider", scavsquadbehaviorchance = 1, scavsquadbehaviordistance = 1200, scavsquadmaxanger = 150, scavsquadminanger = 30, scavsquadrarity = "basic", scavsquadunitsamount = 8, scavsquadweight = 90, }, },
+  corshad = { customparams = { scavcustomsquad = "1", scavsquadbehavior = "raider", scavsquadbehaviorchance = 1, scavsquadbehaviordistance = 1200, scavsquadmaxanger = 150, scavsquadminanger = 30, scavsquadrarity = "basic", scavsquadunitsamount = 8, scavsquadweight = 90, }, },
+  armcroc = { customparams = { scavcustomsquad = "1", scavsquadbehavior = "raider", scavsquadbehaviorchance = 1, scavsquadbehaviordistance = 1200, scavsquadmaxanger = 150, scavsquadminanger = 45, scavsquadrarity = "basic", scavsquadunitsamount = 8, scavsquadweight = 95, }, },
+  corgarp = { customparams = { scavcustomsquad = "1", scavsquadbehavior = "raider", scavsquadbehaviorchance = 1, scavsquadbehaviordistance = 1200, scavsquadmaxanger = 150, scavsquadminanger = 45, scavsquadrarity = "basic", scavsquadunitsamount = 8, scavsquadweight = 95, }, },
 }
