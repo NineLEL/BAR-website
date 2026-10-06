@@ -158,18 +158,18 @@ test("RaptorX files are enabled, packable and use actual Raptor units", () => {
 });
 
 test("RaptorX custom definitions are enabled, verified and wired into squads", () => {
-  const definition = fs.readFileSync(path.join(__dirname, "..", "tweaks", "defs", "raptorx", "raptorx-custom-units.lua"), "utf8");
+  const definition = fs.readFileSync(path.join(__dirname, "..", "tweaks", "defs", "raptorx", "raptorx-custom-units-core.lua"), "utf8");
   const state = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "tweaks", "state.json"), "utf8"));
-  assert.equal(state["defs/raptorx/raptorx-custom-units.lua"], true);
-  const specs = [...definition.matchAll(/src = "(raptor_\w+)", dst = "(raptorx_\w+)"/g)];
-  assert.equal(specs.length, 16, "expected sixteen Raptor custom definitions");
+  assert.equal(state["defs/raptorx/raptorx-custom-units-core.lua"], true);
+  const specs = [...definition.matchAll(/\{"(raptor_\w+)","(raptorx_\w+)"/g)];
+  assert.equal(specs.length, 25, "expected twenty-five Raptor custom definitions");
   const destinations = new Set();
   for (const [, source, destination] of specs) {
     assert.ok(known.has(source), `${source} is not a verified BAR Raptor unit`);
     assert.equal(destinations.has(destination), false, `duplicate custom unit: ${destination}`);
     destinations.add(destination);
-    assert.match(definition, /UnitDefs\[spec\.dst\] = unit/);
-    assert.match(definition, new RegExp(`dst = "${destination}"[\\s\\S]*?hp =`));
+    assert.match(definition, /UnitDefs\[s\[2\]\] = unit/);
+    assert.match(definition, new RegExp(`"${destination}"`));
   }
   const roster = new Map(raptorSources().flatMap((text) =>
     [...text.matchAll(/^  (\w+) = \{([\s\S]*?)(?=^  \w+ = \{|^\})/gm)].map(([, unit, body]) => [unit, body])));
@@ -212,6 +212,15 @@ test("RaptorX squad metadata and progression are valid", () => {
   assert.match(allRaptorUnits, /raptorx_overmatriarch[\s\S]*?raptorsquadunitsamount = 3/);
   assert.match(allRaptorUnits, /raptorx_elderqueen[\s\S]*?raptorsquadminanger = 105/);
   assert.match(allRaptorUnits, /raptorx_elderqueen[\s\S]*?raptorsquadunitsamount = 2/);
+  for (const unit of ["raptorx_earlycrusher", "raptorx_earlytalon", "raptorx_midravager", "raptorx_midfirewing", "raptorx_latebehemoth", "raptorx_lateskyreaper"]) {
+    assert.match(allRaptorUnits, new RegExp(`${unit}[\\s\\S]*?raptorcustomsquad = "1"`), `${unit} needs a squad`);
+  }
+  assert.match(allRaptorUnits, /raptorx_earlycrusher[\s\S]*?raptorsquadminanger = 5/);
+  assert.match(allRaptorUnits, /raptorx_midravager[\s\S]*?raptorsquadminanger = 35/);
+  assert.match(allRaptorUnits, /raptorx_latebehemoth[\s\S]*?raptorsquadminanger = 75/);
+  assert.match(allRaptorUnits, /raptorx_earlytalon[\s\S]*?raptorsquadunitsamount = 12/);
+  assert.match(allRaptorUnits, /raptorx_midfirewing[\s\S]*?raptorsquadunitsamount = 8/);
+  assert.match(allRaptorUnits, /raptorx_lateskyreaper[\s\S]*?raptorsquadunitsamount = 4/);
 });
 
 test("RaptorX uses the native Raptors squad metadata keys", () => {
@@ -221,4 +230,39 @@ test("RaptorX uses the native Raptors squad metadata keys", () => {
   assert.match(text, /raptorsquadunitsamount = \d+/);
   assert.doesNotMatch(text, /scavcustomsquad|scavsquad(?:behavior|unitsamount|weight|maxanger|minanger)/,
     "RaptorX must not use Scavenger squad keys");
+});
+
+test("RaptorX custom units have explicit weapon mechanics and effects", () => {
+  const text = fs.readFileSync(path.join(__dirname, "..", "tweaks", "defs", "raptorx", "raptorx-artillery-pack.lua"), "utf8");
+  for (const mechanic of ["range = 2700", "burst = 7", "paralyzer = true", "paralyzetime = 8", "disruption = true"]) {
+    assert.match(text, new RegExp(mechanic.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), `missing mechanic: ${mechanic}`);
+  }
+  assert.match(text, /custom:exp_emp_large/);
+  assert.match(text, /custom:genericshellexplosion-large/);
+  assert.match(text, /custom:exp_emp_large/);
+  for (const weapon of ["siege", "cluster", "empmortar"]) {
+    assert.match(text, new RegExp(`${weapon} = \\{`), `missing artillery weapon identity: ${weapon}`);
+  }
+});
+
+test("Aegis Breaker has explicit shotgun projectile behavior", () => {
+  const text = fs.readFileSync(path.join(__dirname, "..", "tweaks", "defs", "player", "megas", "player-mega-pack.lua"), "utf8");
+  const body = text.match(/crack = W\([\s\S]*?\n\s*\}\),\n\s*sol =/u)?.[0] || "";
+  assert.match(body, /projectilespershot = 8/);
+  assert.match(body, /burst = 2/);
+  assert.match(body, /burstrate = 0\.08/);
+  assert.match(body, /sprayangle = 850/);
+  assert.match(body, /customparams = \{ shotgun = true/);
+});
+
+test("Mirror Array is configured as the Prism Disruptor", () => {
+  const text = fs.readFileSync(path.join(__dirname, "..", "tweaks", "defs", "player", "turrets", "player-ultra-turret-pack-2.lua"), "utf8");
+  const start = text.indexOf('"player_mirrorarray"');
+  const end = text.indexOf('"player_voidvortex"');
+  const body = start >= 0 && end > start ? text.slice(start, end) : "";
+  assert.match(body, /"Prism Disruptor"/);
+  assert.match(body, /weapontype = "BeamLaser"/);
+  assert.match(body, /paralyzer = true/);
+  assert.match(body, /paralyzetime = 5/);
+  assert.doesNotMatch(body, /"Mirror Array"/);
 });
