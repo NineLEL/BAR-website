@@ -371,6 +371,34 @@ do
 			firestarter = 100,
 			onlytargetcategory = T_S,
 		}),
+		phantomshield = {
+			name = "Abyssal Phase Shield",
+			weapontype = "Shield",
+			shieldradius = 520,
+			shieldpower = 125e3,
+			shieldpowerregen = 950,
+			shieldpowerregenenergy = 180,
+			shieldrepulser = true,
+			shieldintercepttype = 1,
+			shieldalpha = 0.32,
+			rgbcolor = "0.15 0.8 1",
+			visibleshield = true,
+			visibleShield = true,
+			customparams = { speceffect = "sector_fire", shieldfx = "electric_arc" },
+		},
+		phantombarrage = W("Leviathan Rift Barrage", "Cannon", 2300, 1.6, 4200, 180, 6800, 4200, 9500, nil, nil, {
+			burst = 5,
+			burstrate = 0.1,
+			sprayangle = 520,
+			size = 8,
+			rgbcolor = "0.35 0.95 1",
+			beamlaser = true,
+			cegtag = "missiletrail-tacnuke",
+			explosiongenerator = "custom:genericshellexplosion-large",
+			soundstart = S_C1,
+			soundhitdry = S_M2,
+			onlytargetcategory = T_S,
+		}),
 		vulcan = W("Rotary Vulcan Array", "Cannon", 1800, 2.4, 3800, 0, 220, 1200, 1600, 350, 3600, {
 			burst = 60,
 			burstrate = 0.02,
@@ -486,10 +514,10 @@ do
 			"player_phantomleviathan",
 			{ "corcrwh", "corcrwt4" },
 			"player_phantomtorpedo",
-			WEAPONS.torpedo,
+			{ is_suite = true, slots = { [1] = WEAPONS.torpedo, [2] = WEAPONS.phantomshield, [3] = WEAPONS.phantombarrage } },
 			"Phantom Leviathan",
-			"Stealth dreadnought. Jammer, torpedoes.",
-			{ 140e3, 32e5, 26e4, 64, 3, 2600, 0, 200, 1100, true },
+			"Cloaked shield dreadnought. Void torpedoes, phase barrier, and rift barrage.",
+			{ 220e3, 48e5, 42e4, 72, 4, 3200, 0, 420, 0, true },
 		},
 		{
 			"player_archangel",
@@ -527,6 +555,15 @@ do
 			u.transportcapacity, u.transportsize = nil, nil
 			u.cancloak, u.cloakable, u.initcloaked = false, false, false
 			u.radardistancejam = (st[9] and st[9] > 0) and st[9] or 0
+			if p[1] == "player_phantomleviathan" then
+				u.cancloak, u.cloakable, u.initcloaked = true, true, true
+				u.stealth = true
+				u.cloakcost, u.cloakcostmoving = 18, 42
+				u.mincloakdistance, u.decloakdistance = 220, 140
+				u.decloakonfire, u.decloaksonfire = false, false
+				u.customparams.stealthhealth = 0.35
+				u.customparams.stealthregen = 240
+			end
 
 			if isAir then
 				u.canfly, u.hoverattack, u.airhoverfactor = true, true, 0.15

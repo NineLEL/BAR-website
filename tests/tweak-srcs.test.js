@@ -245,6 +245,16 @@ test("RaptorX custom units have explicit weapon mechanics and effects", () => {
   }
 });
 
+test("Phantom Leviathan uses its three corcrwh slots for combat and shielding", () => {
+  const text = fs.readFileSync(path.join(__dirname, "..", "tweaks", "defs", "player", "megas", "player-mega-pack.lua"), "utf8");
+  assert.match(text, /phantomshield\s*=\s*\{/);
+  assert.match(text, /weapontype\s*=\s*"Shield"/);
+  assert.match(text, /slots\s*=\s*\{\s*\[1\]\s*=\s*WEAPONS\.torpedo,\s*\[2\]\s*=\s*WEAPONS\.phantomshield,\s*\[3\]\s*=\s*WEAPONS\.phantombarrage/);
+  assert.match(text, /u\.cancloak, u\.cloakable, u\.initcloaked = true, true, true/);
+  assert.match(text, /u\.customparams\.stealthhealth = 0\.35/);
+  assert.match(text, /{ 220e3, 48e5, 42e4, 72, 4, 3200, 0, 420, 0, true }/);
+});
+
 test("Aegis Breaker has explicit shotgun projectile behavior", () => {
   const text = fs.readFileSync(path.join(__dirname, "..", "tweaks", "defs", "player", "megas", "player-mega-pack.lua"), "utf8");
   const body = text.match(/crack = W\([\s\S]*?\n\s*\}\),\n\s*sol =/u)?.[0] || "";
