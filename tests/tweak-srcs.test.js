@@ -183,6 +183,21 @@ test("Player Mega Units are included in ScavX squads", () => {
   }
 });
 
+test("Everything Experimental exposes every player Mega Unit", () => {
+  const text = fs.readFileSync(path.join(__dirname, "..", "tweaks", "defs", "scavx", "scavx-custom-unit-pack-01.lua"), "utf8");
+  const megaIds = [
+    "player_riftcolossus", "player_riftjump", "player_vortexdominator", "player_vortexwell",
+    "player_aegisbreaker", "player_solardecimator", "player_skyfurnace", "player_stormsovereign",
+    "player_pyroclast", "player_worldbeam", "player_singularity", "player_aethersiege",
+    "player_phantomleviathan", "player_archangel",
+  ];
+  assert.match(text, /local megaUnits = \{/);
+  for (const name of megaIds) {
+    assert.match(text, new RegExp(`"${name}"`), `${name} must be available from everyexpe`);
+  }
+  assert.equal(JSON.parse(fs.readFileSync(path.join(__dirname, "..", "tweaks", "state.json"), "utf8"))["defs/player/megas/player-mega-units.lua"], true);
+});
+
 test("Scav AI smarts is enabled and has tactical role coverage", () => {
   const file = path.join(__dirname, "..", "tweaks", "units", "scav", "scav-tactical-ai.lua");
   const body = fs.readFileSync(file, "utf8");

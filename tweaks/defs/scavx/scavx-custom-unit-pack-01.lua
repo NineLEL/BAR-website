@@ -241,6 +241,28 @@ do
 			u.buildoptions = bo
 			clone_set_name(u, "Everything Experimental", "???")
 			clone_sync_shield_visuals(u)
+			-- player-mega-units.lua runs before this ScavX clone is created.
+			-- Add the Mega roster here so Everything Experimental always exposes it.
+			local megaUnits = {
+				"player_riftcolossus", "player_riftjump", "player_vortexdominator", "player_vortexwell",
+				"player_aegisbreaker", "player_solardecimator", "player_skyfurnace", "player_stormsovereign",
+				"player_pyroclast", "player_worldbeam", "player_singularity", "player_aethersiege",
+				"player_phantomleviathan", "player_archangel",
+			}
+			for _, megaName in ipairs(megaUnits) do
+				if UnitDefs[megaName] then
+					local alreadyListed = false
+					for _, buildName in ipairs(u.buildoptions) do
+						if buildName == megaName then
+							alreadyListed = true
+							break
+						end
+					end
+					if not alreadyListed then
+						u.buildoptions[#u.buildoptions + 1] = megaName
+					end
+				end
+			end
 		end
 	end
 	do
