@@ -47,7 +47,7 @@ function nightmareRoster() {
 }
 
 function nightmareSources() {
-  return ["ScavXNightmare.lua", "ScavXNightmare-support.lua"].map((name) =>
+  return ["scavx-nightmare-ground-roster.lua", "scavx-nightmare-support-roster.lua", "scavx-nightmare-hardmode-roster.lua"].map((name) =>
     fs.readFileSync(path.join(__dirname, "..", "tweaks", "units", "scavx", name), "utf8"));
 }
 
@@ -66,6 +66,8 @@ test("Nightmare unit keys resolve to BAR units or our ScavX clones", () => {
     const text = fs.readFileSync(file, "utf8");
     for (const [, name] of text.matchAll(/local n = "(\w+)"/g)) clones.add(name);
   }
+  const megaText = fs.readFileSync(path.join(__dirname, "..", "tweaks", "defs", "player", "megas", "player-mega-units.lua"), "utf8");
+  for (const [, name] of megaText.matchAll(/\n\s*"(player_[a-z0-9]+)",/g)) clones.add(name);
   for (const name of nightmareRoster().keys()) {
     assert.ok(known.has(name) || clones.has(name), `unknown Nightmare unit: ${name}`);
   }
@@ -112,15 +114,79 @@ test("Nightmare squad metadata has valid behaviors, anger windows and spawn weig
   }
 });
 
-test("Rift Colossus is gated until 55% anger", () => {
+test("ScavX hard mode adds distinct supported mechanics", () => {
+  const text = fs.readFileSync(path.join(__dirname, "..", "tweaks", "units", "scavx", "scavx-nightmare-hardmode-roster.lua"), "utf8");
+  for (const behavior of ["raider", "healer", "berserk", "artillery"]) {
+    assert.match(text, new RegExp(`scavsquadbehavior = \\\"${behavior}\\\"`));
+  }
+  assert.match(text, /projectilespershot = 6/);
+  assert.match(text, /paralyzer = true, paralyzetime = 7/);
+  assert.match(text, /cancloak = true/);
+  assert.match(text, /radarjamdistance = 650/);
+  assert.match(text, /builddistance = 300, workertime = 600/);
+  assert.match(text, /burst = 3, burstrate = 0\.25/);
+  assert.doesNotMatch(text, /shield_power|shield_radius/);
+  const state = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "tweaks", "state.json"), "utf8"));
+  assert.equal(state["units/scavx/scavx-nightmare-hardmode-roster.lua"], true);
+});
+
+test("Late-game T3/T4 units begin at 35% anger", () => {
   const body = nightmareRoster().get("armbanth");
-  assert.match(body || "", /scavsquadminanger = 55/, "armbanth/Rift Colossus must start at 55% anger");
+  assert.match(body || "", /scavsquadminanger = 35/, "armbanth/Rift Colossus must start at 35% anger");
+  for (const name of ["armpwt4", "armrattet4", "legfort", "legfortt4", "legmost3", "corjugg", "busters", "fatherbehe", "kingchimera", "ratteking", "thetyrannus", "titaniator", "quincy", "walkingfort", "wallnut"]) {
+    assert.match(nightmareRoster().get(name) || "", /scavsquadminanger = 35/, `${name} must start at 35% anger`);
+  }
+});
+
+test("T4 Nightmare units spawn in reinforced squads", () => {
+  const roster = nightmareRoster();
+  const minimums = {
+    armbanth: 110, armpwt4: 90, armrattet4: 70, legfortt4: 65, corjugg: 65,
+    busters: 40, fatherbehe: 28, kingchimera: 5, ratteking: 6, thetyrannus: 18,
+    titaniator: 50, quincy: 36, walkingfort: 18, wallnut: 10,
+  };
+  for (const [name, minimum] of Object.entries(minimums)) {
+    const match = (roster.get(name) || "").match(/scavsquadunitsamount = (\d+)/);
+    assert.ok(match, `${name} needs a squad size`);
+    assert.ok(Number(match[1]) >= minimum, `${name} squad should be at least ${minimum}`);
+  }
+});
+
+test("ScavX mega units have frequent reinforced spawns", () => {
+  const roster = nightmareRoster();
+  const minimums = {
+    busters: [60, 210], fatherbehe: [42, 210], kingchimera: [8, 220],
+    ratteking: [9, 200], thetyrannus: [27, 220], titaniator: [75, 220],
+    quincy: [54, 230], walkingfort: [27, 230], wallnut: [15, 190],
+  };
+  for (const [name, [units, weight]] of Object.entries(minimums)) {
+    const body = roster.get(name) || "";
+    assert.match(body, new RegExp(`scavsquadunitsamount = ${units}`), `${name} needs a larger squad`);
+    assert.match(body, new RegExp(`scavsquadweight = ${weight}`), `${name} needs a higher spawn weight`);
+  }
+});
+
+test("Player Mega Units are included in ScavX squads", () => {
+  const roster = nightmareRoster();
+  const megaIds = [
+    "player_riftcolossus", "player_riftjump", "player_vortexdominator", "player_vortexwell",
+    "player_aegisbreaker", "player_solardecimator", "player_skyfurnace", "player_stormsovereign",
+    "player_pyroclast", "player_worldbeam", "player_singularity", "player_aethersiege",
+    "player_phantomleviathan", "player_archangel",
+  ];
+  assert.ok(megaIds.length >= 14, "expected the player mega pack roster");
+  for (const name of megaIds) {
+    const body = roster.get(name) || "";
+    assert.match(body, /scavcustomsquad = "1"/, `${name} needs a ScavX squad entry`);
+    assert.match(body, /scavsquadunitsamount = \d+/, `${name} needs a squad size`);
+    assert.match(body, /scavsquadweight = \d+/, `${name} needs a spawn weight`);
+  }
 });
 
 test("Scav AI smarts is enabled and has tactical role coverage", () => {
-  const file = path.join(__dirname, "..", "tweaks", "units", "scav", "scav-ai-smarts.lua");
+  const file = path.join(__dirname, "..", "tweaks", "units", "scav", "scav-tactical-ai.lua");
   const body = fs.readFileSync(file, "utf8");
-  assert.equal(JSON.parse(fs.readFileSync(path.join(__dirname, "..", "tweaks", "state.json"), "utf8"))["units/scav/scav-ai-smarts.lua"], true);
+  assert.equal(JSON.parse(fs.readFileSync(path.join(__dirname, "..", "tweaks", "state.json"), "utf8"))["units/scav/scav-tactical-ai.lua"], true);
   for (const role of ["scavsquadbehavior = \"raider\"", "scavsquadbehavior = \"artillery\"", "scavsquadbehavior = \"healer\""]) {
     assert.match(body, new RegExp(role.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), `missing tactical role: ${role}`);
   }
@@ -130,7 +196,7 @@ test("Scav AI smarts is enabled and has tactical role coverage", () => {
 });
 
 function raptorSources() {
-  return ["RaptorX.lua", "RaptorX-support.lua"].map((name) =>
+  return ["raptorx-assault-roster.lua", "raptorx-support-roster.lua"].map((name) =>
     fs.readFileSync(path.join(__dirname, "..", "tweaks", "units", "raptorx", name), "utf8"));
 }
 
@@ -145,8 +211,8 @@ function raptorRoster() {
 
 test("RaptorX files are enabled, packable and use actual Raptor units", () => {
   const state = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "tweaks", "state.json"), "utf8"));
-  assert.equal(state["units/raptorx/RaptorX.lua"], true);
-  assert.equal(state["units/raptorx/RaptorX-support.lua"], true);
+  assert.equal(state["units/raptorx/raptorx-assault-roster.lua"], true);
+  assert.equal(state["units/raptorx/raptorx-support-roster.lua"], true);
   const pure = require("./helpers/loadPure").loadPure();
   for (const text of raptorSources()) {
     assert.ok((pure.cmdPrefix("tweakunits", 9) + pure.b64encode(pure.luaMinify(text))).length <= 16384);
@@ -158,9 +224,9 @@ test("RaptorX files are enabled, packable and use actual Raptor units", () => {
 });
 
 test("RaptorX custom definitions are enabled, verified and wired into squads", () => {
-  const definition = fs.readFileSync(path.join(__dirname, "..", "tweaks", "defs", "raptorx", "raptorx-custom-units-core.lua"), "utf8");
+  const definition = fs.readFileSync(path.join(__dirname, "..", "tweaks", "defs", "raptorx", "raptorx-custom-unit-core.lua"), "utf8");
   const state = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "tweaks", "state.json"), "utf8"));
-  assert.equal(state["defs/raptorx/raptorx-custom-units-core.lua"], true);
+  assert.equal(state["defs/raptorx/raptorx-custom-unit-core.lua"], true);
   const specs = [...definition.matchAll(/\{"(raptor_\w+)","(raptorx_\w+)"/g)];
   assert.equal(specs.length, 25, "expected twenty-five Raptor custom definitions");
   const destinations = new Set();
@@ -233,7 +299,7 @@ test("RaptorX uses the native Raptors squad metadata keys", () => {
 });
 
 test("RaptorX custom units have explicit weapon mechanics and effects", () => {
-  const text = fs.readFileSync(path.join(__dirname, "..", "tweaks", "defs", "raptorx", "raptorx-artillery-pack.lua"), "utf8");
+  const text = fs.readFileSync(path.join(__dirname, "..", "tweaks", "defs", "raptorx", "raptorx-artillery-units.lua"), "utf8");
   for (const mechanic of ["range = 2700", "burst = 7", "paralyzer = true", "paralyzetime = 8", "disruption = true"]) {
     assert.match(text, new RegExp(mechanic.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), `missing mechanic: ${mechanic}`);
   }
@@ -246,7 +312,7 @@ test("RaptorX custom units have explicit weapon mechanics and effects", () => {
 });
 
 test("Phantom Leviathan uses its three corcrwh slots for combat and shielding", () => {
-  const text = fs.readFileSync(path.join(__dirname, "..", "tweaks", "defs", "player", "megas", "player-mega-pack.lua"), "utf8");
+  const text = fs.readFileSync(path.join(__dirname, "..", "tweaks", "defs", "player", "megas", "player-mega-units.lua"), "utf8");
   assert.match(text, /pshield\s*=\s*\{/);
   assert.match(text, /weapontype\s*=\s*"Shield"/);
   assert.match(text, /slots\s*=\s*\{\s*\[1\]\s*=\s*WEAPONS\.torpedo,\s*\[2\]\s*=\s*WEAPONS\.pshield,\s*\[3\]\s*=\s*WEAPONS\.pbarrage/);
@@ -256,7 +322,7 @@ test("Phantom Leviathan uses its three corcrwh slots for combat and shielding", 
 });
 
 test("all player turret packs significantly reduce energy costs", () => {
-  for (const file of ["player-ultra-turret-pack.lua", "player-ultra-turret-pack-2.lua"]) {
+  for (const file of ["player-turrets-ultra.lua", "player-turrets-ultra-advanced.lua"]) {
     const text = fs.readFileSync(path.join(__dirname, "..", "tweaks", "defs", "player", "turrets", file), "utf8");
     assert.match(text, /TURRET_ENERGY_FACTOR\s*=\s*0\.25/);
     assert.match(text, /energyupkeep, u\.energyuse = st\[[56]\] \* TURRET_ENERGY_FACTOR/);
@@ -271,7 +337,7 @@ test("slot preview buttons capture their own command and minified text", () => {
 });
 
 test("Aegis Breaker has explicit shotgun projectile behavior", () => {
-  const text = fs.readFileSync(path.join(__dirname, "..", "tweaks", "defs", "player", "megas", "player-mega-pack.lua"), "utf8");
+  const text = fs.readFileSync(path.join(__dirname, "..", "tweaks", "defs", "player", "megas", "player-mega-units.lua"), "utf8");
   const body = text.match(/crack = W\([\s\S]*?\n\s*\}\),\n\s*sol =/u)?.[0] || "";
   assert.match(body, /projectilespershot = 8/);
   assert.match(body, /burst = 2/);
@@ -281,7 +347,7 @@ test("Aegis Breaker has explicit shotgun projectile behavior", () => {
 });
 
 test("Mirror Array is configured as the Prism Disruptor", () => {
-  const text = fs.readFileSync(path.join(__dirname, "..", "tweaks", "defs", "player", "turrets", "player-ultra-turret-pack-2.lua"), "utf8");
+  const text = fs.readFileSync(path.join(__dirname, "..", "tweaks", "defs", "player", "turrets", "player-turrets-ultra-advanced.lua"), "utf8");
   const start = text.indexOf('"player_mirrorarray"');
   const end = text.indexOf('"player_voidvortex"');
   const body = start >= 0 && end > start ? text.slice(start, end) : "";

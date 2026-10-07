@@ -201,14 +201,14 @@
   },
 
   -- =========================================================================
-  -- PHASE 3: LATE-GAME EXPERIMENTAL TITANS & SIEGE ARMS (Anger 45 - 150)
-  -- Rift Colossus uses the armbanth base and is intentionally gated at 55%.
+  -- PHASE 3: LATE-GAME EXPERIMENTAL TITANS & SIEGE ARMS (Anger 35 - 150)
+  -- All T3/T4 late-game entries begin at 35% anger for earlier escalation.
   -- =========================================================================
   armbanth = {
     customparams = {
       scavcustomsquad = "1", scavsquadbehavior = "raider", scavsquadbehaviorchance = 1,
-       scavsquadbehaviordistance = 2000, scavsquadminanger = 55, scavsquadmaxanger = 100,
-      scavsquadrarity = "basic", scavsquadunitsamount = 85, scavsquadweight = 160,
+        scavsquadbehaviordistance = 2000, scavsquadminanger = 35, scavsquadmaxanger = 100,
+       scavsquadrarity = "basic", scavsquadunitsamount = 110, scavsquadweight = 160,
     },
     mass = 145000,
     speed = 55,
@@ -217,16 +217,16 @@
   armpwt4 = {
     customparams = {
       scavcustomsquad = "1", scavsquadbehavior = "berserk", scavsquadbehaviorchance = 1,
-       scavsquadbehaviordistance = 2000, scavsquadminanger = 50, scavsquadmaxanger = 110,
-      scavsquadrarity = "basic", scavsquadunitsamount = 65, scavsquadweight = 175,
+        scavsquadbehaviordistance = 2000, scavsquadminanger = 35, scavsquadmaxanger = 110,
+       scavsquadrarity = "basic", scavsquadunitsamount = 90, scavsquadweight = 175,
     },
     stealth = true,
   },
   armrattet4 = {
     customparams = {
       scavcustomsquad = "1", scavsquadbehavior = "berserk", scavsquadbehaviorchance = 1,
-       scavsquadbehaviordistance = 900, scavsquadminanger = 45, scavsquadmaxanger = 80,
-      scavsquadrarity = "basic", scavsquadunitsamount = 50, scavsquadweight = 130,
+        scavsquadbehaviordistance = 900, scavsquadminanger = 35, scavsquadmaxanger = 80,
+       scavsquadrarity = "basic", scavsquadunitsamount = 70, scavsquadweight = 130,
     },
     speed = 36,
     stealth = true,
@@ -234,7 +234,7 @@
   legfort = {
     customparams = {
       scavcustomsquad = "1", scavsquadbehavior = "berserk", scavsquadbehaviorchance = 1,
-       scavsquadbehaviordistance = 1200, scavsquadminanger = 40, scavsquadmaxanger = 140,
+        scavsquadbehaviordistance = 1200, scavsquadminanger = 35, scavsquadmaxanger = 140,
       scavsquadrarity = "basic", scavsquadunitsamount = 75, scavsquadweight = 130,
     },
     mass = 65000,
@@ -243,8 +243,8 @@
   legfortt4 = {
     customparams = {
       scavcustomsquad = "1", scavsquadbehavior = "berserk", scavsquadbehaviorchance = 1,
-       scavsquadbehaviordistance = 1200, scavsquadminanger = 55, scavsquadmaxanger = 110,
-      scavsquadrarity = "basic", scavsquadunitsamount = 45, scavsquadweight = 185,
+        scavsquadbehaviordistance = 1200, scavsquadminanger = 35, scavsquadmaxanger = 110,
+       scavsquadrarity = "basic", scavsquadunitsamount = 65, scavsquadweight = 185,
     },
     speed = 44,
     stealth = true,
@@ -252,7 +252,7 @@
   legmost3 = {
     customparams = {
       scavcustomsquad = "1", scavsquadbehavior = "berserk", scavsquadbehaviorchance = 1,
-       scavsquadbehaviordistance = 2000, scavsquadminanger = 45, scavsquadmaxanger = 140,
+        scavsquadbehaviordistance = 2000, scavsquadminanger = 35, scavsquadmaxanger = 140,
       scavsquadrarity = "basic", scavsquadunitsamount = 40, scavsquadweight = 130,
     },
     health = 18500,
@@ -261,8 +261,8 @@
   corjugg = {
     customparams = {
       scavcustomsquad = "1", scavsquadbehavior = "berserk", scavsquadbehaviorchance = 1,
-      scavsquadbehaviordistance = 2000, scavsquadminanger = 60, scavsquadmaxanger = 150,
-      scavsquadrarity = "special", scavsquadunitsamount = 50, scavsquadweight = 180,
+       scavsquadbehaviordistance = 2000, scavsquadminanger = 35, scavsquadmaxanger = 150,
+       scavsquadrarity = "special", scavsquadunitsamount = 65, scavsquadweight = 180,
     },
     mass = 220000,
     speed = 32,
@@ -276,72 +276,72 @@
   busters = {
     customparams = {
       scavcustomsquad = "1", scavsquadbehavior = "berserk", scavsquadbehaviorchance = 1,
-      scavsquadbehaviordistance = 2000, scavsquadminanger = 50, scavsquadmaxanger = 150,
-      scavsquadrarity = "basic", scavsquadunitsamount = 26, scavsquadweight = 140,
+       scavsquadbehaviordistance = 2000, scavsquadminanger = 35, scavsquadmaxanger = 150,
+       scavsquadrarity = "basic", scavsquadunitsamount = 60, scavsquadweight = 210,
     },
     stealth = true,
   },
   fatherbehe = {
     customparams = {
       scavcustomsquad = "1", scavsquadbehavior = "berserk", scavsquadbehaviorchance = 1,
-      scavsquadbehaviordistance = 2000, scavsquadminanger = 60, scavsquadmaxanger = 150,
-      scavsquadrarity = "basic", scavsquadunitsamount = 18, scavsquadweight = 140,
+       scavsquadbehaviordistance = 2000, scavsquadminanger = 35, scavsquadmaxanger = 150,
+       scavsquadrarity = "basic", scavsquadunitsamount = 42, scavsquadweight = 210,
     },
     stealth = true,
   },
   kingchimera = {
     customparams = {
       scavcustomsquad = "1", scavsquadbehavior = "berserk", scavsquadbehaviorchance = 1,
-      scavsquadbehaviordistance = 2000, scavsquadminanger = 90, scavsquadmaxanger = 150,
-      scavsquadrarity = "special", scavsquadunitsamount = 3, scavsquadweight = 160,
+       scavsquadbehaviordistance = 2000, scavsquadminanger = 35, scavsquadmaxanger = 150,
+       scavsquadrarity = "special", scavsquadunitsamount = 8, scavsquadweight = 220,
     },
     stealth = true,
   },
   ratteking = {
     customparams = {
       scavcustomsquad = "1", scavsquadbehavior = "berserk", scavsquadbehaviorchance = 1,
-      scavsquadbehaviordistance = 900, scavsquadminanger = 80, scavsquadmaxanger = 150,
-      scavsquadrarity = "special", scavsquadunitsamount = 4, scavsquadweight = 140,
+       scavsquadbehaviordistance = 900, scavsquadminanger = 35, scavsquadmaxanger = 150,
+       scavsquadrarity = "special", scavsquadunitsamount = 9, scavsquadweight = 200,
     },
     stealth = true,
   },
   thetyrannus = {
     customparams = {
       scavcustomsquad = "1", scavsquadbehavior = "berserk", scavsquadbehaviorchance = 1,
-      scavsquadbehaviordistance = 1200, scavsquadminanger = 90, scavsquadmaxanger = 150,
-      scavsquadrarity = "special", scavsquadunitsamount = 12, scavsquadweight = 160,
+       scavsquadbehaviordistance = 1200, scavsquadminanger = 35, scavsquadmaxanger = 150,
+       scavsquadrarity = "special", scavsquadunitsamount = 27, scavsquadweight = 220,
     },
     stealth = true,
   },
   titaniator = {
     customparams = {
       scavcustomsquad = "1", scavsquadbehavior = "raider", scavsquadbehaviorchance = 1,
-      scavsquadbehaviordistance = 2000, scavsquadminanger = 85, scavsquadmaxanger = 150,
-      scavsquadrarity = "basic", scavsquadunitsamount = 36, scavsquadweight = 160,
+       scavsquadbehaviordistance = 2000, scavsquadminanger = 35, scavsquadmaxanger = 150,
+       scavsquadrarity = "basic", scavsquadunitsamount = 75, scavsquadweight = 220,
     },
     stealth = true,
   },
   quincy = {
     customparams = {
       scavcustomsquad = "1", scavsquadbehavior = "artillery", scavsquadbehaviorchance = 1,
-      scavsquadbehaviordistance = 1300, scavsquadminanger = 80, scavsquadmaxanger = 150,
-      scavsquadrarity = "special", scavsquadunitsamount = 24, scavsquadweight = 175,
+       scavsquadbehaviordistance = 1300, scavsquadminanger = 35, scavsquadmaxanger = 150,
+       scavsquadrarity = "special", scavsquadunitsamount = 54, scavsquadweight = 230,
     },
     stealth = true,
   },
   walkingfort = {
     customparams = {
       scavcustomsquad = "1", scavsquadbehavior = "artillery", scavsquadbehaviorchance = 1,
-      scavsquadbehaviordistance = 1300, scavsquadminanger = 80, scavsquadmaxanger = 150,
-      scavsquadrarity = "special", scavsquadunitsamount = 12, scavsquadweight = 175,
+       scavsquadbehaviordistance = 1300, scavsquadminanger = 35, scavsquadmaxanger = 150,
+       scavsquadrarity = "special", scavsquadunitsamount = 27, scavsquadweight = 230,
     },
     stealth = true,
   },
   wallnut = {
     customparams = {
       scavcustomsquad = "1", scavsquadbehavior = "berserk", scavsquadbehaviorchance = 1,
-      scavsquadbehaviordistance = 1200, scavsquadminanger = 70, scavsquadmaxanger = 150,
-      scavsquadrarity = "special", scavsquadunitsamount = 6, scavsquadweight = 130,
+       scavsquadbehaviordistance = 1200, scavsquadminanger = 35, scavsquadmaxanger = 150,
+       scavsquadrarity = "special", scavsquadunitsamount = 15, scavsquadweight = 190,
     },
   },
 
@@ -369,8 +369,8 @@
   armsptkt4 = {
     customparams = {
       scavcustomsquad = "1", scavsquadbehavior = "artillery", scavsquadbehaviorchance = 1,
-      scavsquadbehaviordistance = 1400, scavsquadminanger = 55, scavsquadmaxanger = 150,
-      scavsquadrarity = "special", scavsquadunitsamount = 18, scavsquadweight = 140,
+       scavsquadbehaviordistance = 1400, scavsquadminanger = 35, scavsquadmaxanger = 150,
+       scavsquadrarity = "special", scavsquadunitsamount = 26, scavsquadweight = 140,
     },
     stealth = true,
     weapondefs = {

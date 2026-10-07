@@ -59,7 +59,7 @@
     customparams = {
       scavcustomsquad = "1", scavsquadbehavior = "healer", scavsquadbehaviorchance = 1,
       scavsquadbehaviordistance = 850, scavsquadminanger = 30, scavsquadmaxanger = 150,
-      scavsquadrarity = "special", scavsquadunitsamount = 8, scavsquadweight = 120,
+       scavsquadrarity = "special", scavsquadunitsamount = 12, scavsquadweight = 120,
     },
     speed = 42,
     stealth = true,
@@ -125,14 +125,14 @@
   armliche = {
     customparams = {
       scavcustomsquad = "1", scavsquadbehavior = "raider", scavsquadbehaviorchance = 1,
-      scavsquadbehaviordistance = 1600, scavsquadminanger = 55, scavsquadmaxanger = 150,
+       scavsquadbehaviordistance = 1600, scavsquadminanger = 35, scavsquadmaxanger = 150,
       scavsquadrarity = "special", scavsquadunitsamount = 8, scavsquadweight = 120,
     },
   },
   corhurc = {
     customparams = {
       scavcustomsquad = "1", scavsquadbehavior = "raider", scavsquadbehaviorchance = 1,
-      scavsquadbehaviordistance = 1600, scavsquadminanger = 45, scavsquadmaxanger = 150,
+       scavsquadbehaviordistance = 1600, scavsquadminanger = 35, scavsquadmaxanger = 150,
       scavsquadrarity = "basic", scavsquadunitsamount = 14, scavsquadweight = 120,
     },
   },
@@ -189,32 +189,32 @@
   armcrus = {
     customparams = {
       scavcustomsquad = "1", scavsquadbehavior = "artillery", scavsquadbehaviorchance = 1,
-      scavsquadbehaviordistance = 1700, scavsquadminanger = 65, scavsquadmaxanger = 150,
-      scavsquadrarity = "special", scavsquadunitsamount = 8, scavsquadweight = 110,
+       scavsquadbehaviordistance = 1700, scavsquadminanger = 35, scavsquadmaxanger = 150,
+       scavsquadrarity = "special", scavsquadunitsamount = 12, scavsquadweight = 110,
     },
     stealth = true,
   },
   corcrus = {
     customparams = {
       scavcustomsquad = "1", scavsquadbehavior = "artillery", scavsquadbehaviorchance = 1,
-      scavsquadbehaviordistance = 1700, scavsquadminanger = 65, scavsquadmaxanger = 150,
-      scavsquadrarity = "special", scavsquadunitsamount = 8, scavsquadweight = 110,
+       scavsquadbehaviordistance = 1700, scavsquadminanger = 35, scavsquadmaxanger = 150,
+       scavsquadrarity = "special", scavsquadunitsamount = 12, scavsquadweight = 110,
     },
     stealth = true,
   },
   armsub = {
     customparams = {
       scavcustomsquad = "1", scavsquadbehavior = "raider", scavsquadbehaviorchance = 1,
-      scavsquadbehaviordistance = 1100, scavsquadminanger = 50, scavsquadmaxanger = 150,
-      scavsquadrarity = "special", scavsquadunitsamount = 10, scavsquadweight = 95,
+       scavsquadbehaviordistance = 1100, scavsquadminanger = 35, scavsquadmaxanger = 150,
+       scavsquadrarity = "special", scavsquadunitsamount = 14, scavsquadweight = 95,
     },
     stealth = true,
   },
   corsub = {
     customparams = {
       scavcustomsquad = "1", scavsquadbehavior = "raider", scavsquadbehaviorchance = 1,
-      scavsquadbehaviordistance = 1100, scavsquadminanger = 50, scavsquadmaxanger = 150,
-      scavsquadrarity = "special", scavsquadunitsamount = 10, scavsquadweight = 95,
+       scavsquadbehaviordistance = 1100, scavsquadminanger = 35, scavsquadmaxanger = 150,
+       scavsquadrarity = "special", scavsquadunitsamount = 14, scavsquadweight = 95,
     },
     stealth = true,
   },
