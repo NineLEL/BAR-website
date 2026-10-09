@@ -7,6 +7,7 @@ const { test } = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
+const { loadPure } = require("./helpers/loadPure");
 
 const defsDir = path.join(__dirname, "..", "tweaks", "defs");
 const known = new Set(JSON.parse(fs.readFileSync(path.join(__dirname, "bar-unit-names.json"), "utf8")));
@@ -388,6 +389,38 @@ test("all player turret packs significantly reduce energy costs", () => {
     assert.match(text, /energyupkeep, u\.energyuse = st\[[56]\] \* TURRET_ENERGY_FACTOR/);
     assert.match(text, /weapon\.energypershot = weapon\.energypershot \* TURRET_ENERGY_FACTOR/);
   }
+});
+
+test("Needle Swarm is a fast-tracking long-range AA interceptor", () => {
+  const text = fs.readFileSync(path.join(__dirname, "..", "tweaks", "defs", "player", "turrets", "player-turrets-ultra.lua"), "utf8");
+  const start = text.indexOf('"player_needleswarm"');
+  const end = text.indexOf("-- 3. BLACKOUT CASCADE", start);
+  assert.ok(start >= 0 && end > start, "Needle Swarm spec was not found");
+  const body = text.slice(start, end);
+  assert.ok(known.has("armmercury") && known.has("corscreamer"), "AA turret donor units must exist in BAR");
+  assert.match(body, /\{\s*"armmercury",\s*"corscreamer"\s*\}/, "must use stationary AA missile turret sources");
+  assert.match(body, /installWeapon\(u, src, 1, "NEEDLE_SWARM"/);
+  assert.match(body, /"Fast-tracking long-range AA missiles"/);
+  assert.match(body, /weapontype = C_MSL/);
+  assert.match(body, /range = 3200/);
+  assert.match(body, /reloadtime = 1\.8/);
+  assert.match(body, /burst = 6/);
+  assert.match(body, /burstrate = 0\.08/);
+  assert.match(body, /tracks = true/);
+  assert.match(body, /turnrate = 200e3/);
+  assert.match(body, /dance = 0/);
+  assert.match(body, /wobble = 0/);
+  assert.match(body, /onlytargetcategory = T_V/);
+  assert.match(text, /created\[#created \+ 1\] = spec\[1\]/);
+  assert.match(text, /teach\(BUILDERS, unitName\)/, "generated turret must flow into builder build menus");
+});
+
+test("player ultra turrets pack into one BAR command", () => {
+  const pure = loadPure();
+  const source = fs.readFileSync(path.join(__dirname, "..", "tweaks", "defs", "player", "turrets", "player-turrets-ultra.lua"), "utf8");
+  const minified = pure.luaMinify(source);
+  const command = pure.buildCommand("tweakdefs", 1, minified, true).cmd;
+  assert.ok(command.length <= pure.getLimit(), `${command.length}/${pure.getLimit()} characters`);
 });
 
 test("slot preview buttons capture their own command and minified text", () => {
