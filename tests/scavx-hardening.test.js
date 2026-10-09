@@ -55,10 +55,36 @@ test("extreme final boss covers current and legacy difficulty variants safely", 
   assert.doesNotMatch(weapons, /sensor_|setting_turbo_delay|special_botcannon/);
   assert.match(lua, /if not u\.customparams\.scavx_extreme_boss then/);
   assert.match(lua, /u\.health \* 12/);
+  assert.match(lua, /u\.speed = u\.speed \* 3\s/);
+  assert.match(lua, /u\.maxacc = u\.maxacc \* 6/);
+  assert.match(lua, /u\.maxdec = u\.maxdec \* 6/);
+  assert.match(lua, /u\.turnrate = u\.turnrate \* 3/);
   assert.match(lua, /damage \* 4/);
   assert.match(lua, /volley \+ 0\.05/);
   assert.match(lua, /w\.range < 10000/);
   assert.doesNotMatch(lua, /u\.weapons\s*=|u\.script\s*=|u\.objectname\s*=|scavsquad\w+\s*=/);
   const pure = loadPure();
   assert.ok(pure.buildCommand("tweakdefs", 9, pure.luaMinify(lua), false).cmd.length <= 16384);
+});
+
+test("all player Mega squads spawn three units starting at 20 percent anger", () => {
+  const lua = fs.readFileSync(path.join(root, "tweaks/units/scavx/scavx-nightmare-hardmode-roster.lua"), "utf8");
+  const expected = {
+    riftcolossus: [20, 900], riftjump: [30, 875], vortexdominator: [20, 900],
+    vortexwell: [25, 850], aegisbreaker: [40, 950], solardecimator: [20, 900],
+    skyfurnace: [40, 950], stormsovereign: [30, 950], pyroclast: [30, 950],
+    worldbeam: [20, 900], singularity: [25, 900], aethersiege: [20, 900],
+    phantomleviathan: [25, 1000], archangel: [40, 1000],
+  };
+  const entries = [...lua.matchAll(/player_(\w+) = \{ customparams = \{([^\n]+)\} \},/g)];
+  assert.equal(entries.length, Object.keys(expected).length);
+  for (const [, name, body] of entries) {
+    assert.ok(expected[name], name);
+    assert.match(body, /scavsquadunitsamount = 3\b/);
+    assert.match(body, new RegExp(`scavsquadweight = ${expected[name][1]}\\b`));
+    assert.match(body, /scavsquadrarity = "basic"/);
+    assert.match(body, /scavsquadminanger = 20, scavsquadmaxanger = 150/);
+  }
+  const pure = loadPure();
+  assert.ok(pure.buildCommand("tweakunits", 9, pure.luaMinify(lua), false).cmd.length <= 16384);
 });

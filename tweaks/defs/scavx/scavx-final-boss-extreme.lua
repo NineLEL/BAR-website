@@ -21,10 +21,10 @@ do
           u.customparams.scavx_extreme_boss = 1
           u.health = u.health * 12
           u.autoheal = math.max(tonumber(u.autoheal) or 0, u.health * 0.0005)
-          u.speed = u.speed * 1.3
-          u.maxacc = u.maxacc * 2
-          u.maxdec = u.maxdec * 2
-          u.turnrate = u.turnrate * 1.5
+          u.speed = u.speed * 3
+          u.maxacc = u.maxacc * 6
+          u.maxdec = u.maxdec * 6
+          u.turnrate = u.turnrate * 3
           u.sightdistance = math.max(u.sightdistance or 0, 3000)
           u.radardistance = math.max(u.radardistance or 0, 3500)
           u.sonardistance = math.max(u.sonardistance or 0, 2000)
