@@ -526,35 +526,35 @@ do
 				installWeapon(u, src, 1, "ASTRAEUS_STARFALL", {
 					weapontype = C_CAN,
 					range = 9600,
-					reloadtime = 1.8,
+					reloadtime = 1.4,
 
-					-- 16 salvo waves of 32 shells = 512 shells per barrage
-					burst = 16,
+					-- 20 salvo waves of 40 shells = 800 shells per barrage
+					burst = 20,
 					burstrate = 0.05,
-					projectilespershot = 32,
+					projectilespershot = 40,
 
-					-- Broad apocalyptic spread across the entire front
-					sprayangle = 2200,
-					accuracy = 540,
+					-- Keep the huge barrage concentrated around the selected target
+					sprayangle = 700,
+					accuracy = 75,
 
-					-- Ballistics: High loft with floating hang-time
+					-- Ballistics: faster shells on an even higher, longer arc
 					hightrajectory = 1,
-					weaponvelocity = 2800,
-					mygravity = 0.52,
+					weaponvelocity = 3200,
+					mygravity = 0.28,
 
-					areaofeffect = 650,
-					camerashake = 180,
-					energypershot = 320,
+					areaofeffect = 950,
+					camerashake = 240,
+					energypershot = 480,
 
-					craterboost = 4.5,
-					cratermult = 3.5,
-					impulsefactor = 10.0,
-					impulseboost = 6.0,
+					craterboost = 6.5,
+					cratermult = 4.5,
+					impulsefactor = 14.0,
+					impulseboost = 8.0,
 					firestarter = 100,
-					size = 12.0,
+					size = 20.0,
 
-					-- 512 shells * 1800 dmg = ~921,600 saturation damage per barrage
-					damage = D(1800, nil, 4200, 600),
+					-- 800 shells * 9000 default damage = 7.2M direct damage per barrage
+					damage = D(9000, nil, 18000, 3000),
 					cegtag = "starfire",
 					explosiongenerator = "custom:starfire-explosion",
 					soundstart = S_CAN2,
