@@ -67,7 +67,7 @@ test("extreme final boss covers current and legacy difficulty variants safely", 
   assert.ok(pure.buildCommand("tweakdefs", 9, pure.luaMinify(lua), false).cmd.length <= 16384);
 });
 
-test("all player Mega squads spawn three units starting at 20 percent anger", () => {
+test("all Scav-only Mega squads spawn three units starting at 20 percent anger", () => {
   const lua = fs.readFileSync(path.join(root, "tweaks/units/scavx/scavx-nightmare-hardmode-roster.lua"), "utf8");
   const expected = {
     riftcolossus: [20, 900], riftjump: [30, 875], vortexdominator: [20, 900],
@@ -76,7 +76,7 @@ test("all player Mega squads spawn three units starting at 20 percent anger", ()
     worldbeam: [20, 900], singularity: [25, 900], aethersiege: [20, 900],
     phantomleviathan: [25, 1000], archangel: [40, 1000],
   };
-  const entries = [...lua.matchAll(/player_(\w+) = \{ customparams = \{([^\n]+)\} \},/g)];
+  const entries = [...lua.matchAll(/scavx_mega_(\w+) = \{ customparams = \{([^\n]+)\} \},/g)];
   assert.equal(entries.length, Object.keys(expected).length);
   for (const [, name, body] of entries) {
     assert.ok(expected[name], name);
@@ -87,4 +87,38 @@ test("all player Mega squads spawn three units starting at 20 percent anger", ()
   }
   const pure = loadPure();
   assert.ok(pure.buildCommand("tweakunits", 9, pure.luaMinify(lua), false).cmd.length <= 16384);
+});
+
+test("enemy Mega definitions have existing sources, isolated weapons and no player build path", () => {
+  const relative = "defs/scavx/scavx-mega-enemy-variants.lua";
+  const lua = fs.readFileSync(path.join(root, "tweaks", relative), "utf8");
+  const player = fs.readFileSync(path.join(root, "tweaks/defs/player/megas/player-mega-units.lua"), "utf8");
+  const defined = new Set([...player.matchAll(/^\s*"(player_\w+)",/gm)].map(m => m[1]));
+  const specs = [...lua.matchAll(/\{ "(scavx_(?:mega|boss)_\w+)", "(player_\w+)"/g)];
+  assert.equal(specs.length, 17);
+  assert.equal(new Set(specs.map(m => m[1])).size, 17);
+  for (const [, , source] of specs) assert.ok(defined.has(source), `missing source ${source}`);
+  assert.match(lua, /local u = copy\(source\)/);
+  assert.match(lua, /u\.maxthisunit, u\.buildoptions, u\.builder = nil, nil, false/);
+  assert.match(lua, /hp, damage, reload, speed, shield = 3, 2, 0\.7, 1\.2, 2\.5/);
+  assert.match(lua, /hp, damage, reload, speed, shield = 10, 4, 0\.55, 1\.5, 5/);
+  assert.match(lua, /volley \+ 0\.05/);
+  assert.doesNotMatch(lua, /source\.\w+\s*=|teach\(|u\.script\s*=|u\.objectname\s*=|u\.weapons\s*=/);
+  const state = JSON.parse(fs.readFileSync(path.join(root, "tweaks/state.json"), "utf8"));
+  assert.equal(state[relative], true);
+  assert.equal(state["defs/player/megas/player-mega-units.lua"], true);
+  assert.ok("defs/player/megas/player-mega-units.lua" < relative);
+  const pure = loadPure();
+  assert.ok(pure.buildCommand("tweakdefs", 9, pure.luaMinify(lua), false).cmd.length <= 16384);
+});
+
+test("three distinct boss-class waves stay rare and solo", () => {
+  const lua = fs.readFileSync(path.join(root, "tweaks/units/scavx/scavx-nightmare-hardmode-roster.lua"), "utf8");
+  const entries = [...lua.matchAll(/scavx_boss_(\w+) = \{ customparams = \{([^\n]+)\} \},/g)];
+  assert.equal(entries.length, 3);
+  for (const [, , body] of entries) {
+    assert.match(body, /scavsquadunitsamount = 1,/);
+    assert.match(body, /scavsquadrarity = "special"/);
+    assert.ok(Number(body.match(/scavsquadminanger = (\d+)/)[1]) >= 55);
+  }
 });

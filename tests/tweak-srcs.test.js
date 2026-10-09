@@ -65,6 +65,7 @@ test("Nightmare unit keys resolve to BAR units or our ScavX clones", () => {
   for (const file of luaFiles(path.join(defsDir, "scavx"))) {
     const text = fs.readFileSync(file, "utf8");
     for (const [, name] of text.matchAll(/local n = "(\w+)"/g)) clones.add(name);
+    for (const [, name] of text.matchAll(/\{ "(scavx_(?:mega|boss)_\w+)", "player_\w+"/g)) clones.add(name);
   }
   const megaText = fs.readFileSync(path.join(__dirname, "..", "tweaks", "defs", "player", "megas", "player-mega-units.lua"), "utf8");
   for (const [, name] of megaText.matchAll(/\n\s*"(player_[a-z0-9]+)",/g)) clones.add(name);
@@ -166,7 +167,7 @@ test("ScavX mega units have frequent reinforced spawns", () => {
   }
 });
 
-test("Player Mega Units are included in ScavX squads", () => {
+test("Scav-only Mega variants replace player Mega Units in ScavX squads", () => {
   const roster = nightmareRoster();
   const megaIds = [
     "player_riftcolossus", "player_riftjump", "player_vortexdominator", "player_vortexwell",
@@ -176,7 +177,8 @@ test("Player Mega Units are included in ScavX squads", () => {
   ];
   assert.ok(megaIds.length >= 14, "expected the player mega pack roster");
   for (const name of megaIds) {
-    const body = roster.get(name) || "";
+    assert.equal(roster.has(name), false, `${name} must stay player-only`);
+    const body = roster.get(name.replace("player_", "scavx_mega_")) || "";
     assert.match(body, /scavcustomsquad = "1"/, `${name} needs a ScavX squad entry`);
     assert.match(body, /scavsquadunitsamount = \d+/, `${name} needs a squad size`);
     assert.match(body, /scavsquadweight = \d+/, `${name} needs a spawn weight`);
@@ -217,7 +219,7 @@ function raptorSources() {
 
 function raptorRoster() {
   const entries = raptorSources().flatMap((text) =>
-    [...text.matchAll(/^  (raptor_\w+) = \{([\s\S]*?)(?=^  raptor_\w+ = \{|^\})/gm)]);
+    [...text.matchAll(/^  (raptor(?:x)?_\w+) = \{([^\n]+)/gm)]);
   const roster = new Map(entries.map(([, name, body]) => [name, body]));
   assert.ok(entries.length > 0, "RaptorX roster is empty");
   assert.equal(roster.size, entries.length, "duplicate RaptorX unit keys");
@@ -252,6 +254,9 @@ test("RaptorX custom definitions are enabled, verified and wired into squads", (
     assert.match(definition, /UnitDefs\[s\[2\]\] = unit/);
     assert.match(definition, new RegExp(`"${destination}"`));
   }
+  assert.match(definition, /unit\.unitname, unit\.name = s\[2\], s\[3\]/);
+  assert.match(definition, /local languages = \{ "en", "de", "fr", "es", "it", "ru", "zh", "cs", "hr", "lt" \}/);
+  assert.match(definition, /cp\["i18n_" \..*\] = s\[3\]/, "localized Raptor names must use the custom display name");
   const roster = new Map(raptorSources().flatMap((text) =>
     [...text.matchAll(/^  (\w+) = \{([\s\S]*?)(?=^  \w+ = \{|^\})/gm)].map(([, unit, body]) => [unit, body])));
   for (const destination of destinations) assert.match(roster.get(destination) || "", /raptorcustomsquad/);
@@ -276,32 +281,47 @@ test("RaptorX squad metadata and progression are valid", () => {
     assert.ok(n("raptorsquadbehaviorchance") === 1 && n("raptorsquadunitsamount") > 0 && n("raptorsquadweight") > 0 && n("raptorsquadbehaviordistance") > 0, `${name}: squad values`);
     assert.ok(n("raptorsquadminanger") >= 0 && n("raptorsquadminanger") < n("raptorsquadmaxanger") && n("raptorsquadmaxanger") <= 150, `${name}: anger window`);
   }
-  assert.ok((roster.get("raptor_land_assault_basic_t4_v1") || "").includes("raptorsquadminanger = 65"));
-  assert.ok((roster.get("raptor_queen_hard") || "").includes("raptorsquadminanger = 110"));
+  assert.ok((roster.get("raptor_land_assault_basic_t4_v1") || "").includes("raptorsquadminanger = 35"));
+  assert.ok((roster.get("raptor_queen_hard") || "").includes("raptorsquadminanger = 75"));
   const allRaptorUnits = raptorSources().join("\n");
-  assert.match(allRaptorUnits, /raptorx_razorclaw[\s\S]*?raptorsquadunitsamount = 14/);
-  assert.match(allRaptorUnits, /raptorx_stormmaw[\s\S]*?raptorsquadunitsamount = 10/);
-  assert.match(allRaptorUnits, /raptorx_broodlord[\s\S]*?raptorsquadunitsamount = 5/);
-  assert.match(allRaptorUnits, /raptorx_ironfang[\s\S]*?raptorsquadminanger = 8/);
-  assert.match(allRaptorUnits, /raptorx_dreadrunner[\s\S]*?raptorsquadunitsamount = 18/);
-  assert.match(allRaptorUnits, /raptorx_burnmaw[\s\S]*?raptorsquadminanger = 18/);
+  assert.match(allRaptorUnits, /raptorx_razorclaw[^\n]*raptorsquadunitsamount = 42/);
+  assert.match(allRaptorUnits, /raptorx_stormmaw[^\n]*raptorsquadunitsamount = 20/);
+  assert.match(allRaptorUnits, /raptorx_broodlord[^\n]*raptorsquadunitsamount = 10/);
+  assert.match(allRaptorUnits, /raptorx_ironfang[\s\S]*?raptorsquadminanger = 20/);
+  assert.match(allRaptorUnits, /raptorx_dreadrunner[^\n]*raptorsquadunitsamount = 54/);
+  assert.match(allRaptorUnits, /raptorx_burnmaw[\s\S]*?raptorsquadminanger = 30/);
   for (const unit of ["raptorx_apex_colossus", "raptorx_spectre_overlord", "raptorx_queen_ascendant"]) {
     assert.match(allRaptorUnits, new RegExp(`${unit}[\\s\\S]*?raptorsquadunitsamount = 1`), `${unit} must spawn alone`);
   }
-  assert.match(allRaptorUnits, /raptorx_queen_ascendant[\s\S]*?raptorsquadminanger = 145/);
-  assert.match(allRaptorUnits, /raptorx_overmatriarch[\s\S]*?raptorsquadminanger = 75/);
-  assert.match(allRaptorUnits, /raptorx_overmatriarch[\s\S]*?raptorsquadunitsamount = 3/);
-  assert.match(allRaptorUnits, /raptorx_elderqueen[\s\S]*?raptorsquadminanger = 105/);
-  assert.match(allRaptorUnits, /raptorx_elderqueen[\s\S]*?raptorsquadunitsamount = 2/);
+  assert.match(allRaptorUnits, /raptorx_queen_ascendant[^\n]*raptorsquadminanger = 100/);
+  assert.match(allRaptorUnits, /raptorx_overmatriarch[^\n]*raptorsquadminanger = 70/);
+  assert.match(allRaptorUnits, /raptorx_overmatriarch[^\n]*raptorsquadunitsamount = 6/);
+  assert.match(allRaptorUnits, /raptorx_elderqueen[^\n]*raptorsquadminanger = 80/);
+  assert.match(allRaptorUnits, /raptorx_elderqueen[^\n]*raptorsquadunitsamount = 4/);
   for (const unit of ["raptorx_earlycrusher", "raptorx_earlytalon", "raptorx_midravager", "raptorx_midfirewing", "raptorx_latebehemoth", "raptorx_lateskyreaper"]) {
     assert.match(allRaptorUnits, new RegExp(`${unit}[\\s\\S]*?raptorcustomsquad = "1"`), `${unit} needs a squad`);
   }
-  assert.match(allRaptorUnits, /raptorx_earlycrusher[\s\S]*?raptorsquadminanger = 5/);
-  assert.match(allRaptorUnits, /raptorx_midravager[\s\S]*?raptorsquadminanger = 35/);
-  assert.match(allRaptorUnits, /raptorx_latebehemoth[\s\S]*?raptorsquadminanger = 75/);
-  assert.match(allRaptorUnits, /raptorx_earlytalon[\s\S]*?raptorsquadunitsamount = 12/);
-  assert.match(allRaptorUnits, /raptorx_midfirewing[\s\S]*?raptorsquadunitsamount = 8/);
-  assert.match(allRaptorUnits, /raptorx_lateskyreaper[\s\S]*?raptorsquadunitsamount = 4/);
+  assert.match(allRaptorUnits, /raptorx_earlycrusher[\s\S]*?raptorsquadminanger = 10/);
+  assert.match(allRaptorUnits, /raptorx_midravager[^\n]*raptorsquadminanger = 30/);
+  assert.match(allRaptorUnits, /raptorx_latebehemoth[^\n]*raptorsquadminanger = 40/);
+  assert.match(allRaptorUnits, /raptorx_earlytalon[^\n]*raptorsquadunitsamount = 36/);
+  assert.match(allRaptorUnits, /raptorx_midfirewing[^\n]*raptorsquadunitsamount = 16/);
+  assert.match(allRaptorUnits, /raptorx_lateskyreaper[^\n]*raptorsquadunitsamount = 8/);
+
+  const customTiers = new Map([...roster]
+    .filter(([name]) => name.startsWith("raptorx_"))
+    .map(([name, body]) => [name, Number(body.match(/raptorsquadminanger = (\d+)/)?.[1])]));
+  const core = fs.readFileSync(path.join(__dirname, "..", "tweaks", "defs", "raptorx", "raptorx-custom-unit-core.lua"), "utf8");
+  const coreTiers = new Map([...core.matchAll(/^\s*(raptorx_\w+) = \{"\w+",(\d+),/gm)]
+    .map(([, name, anger]) => [name, Number(anger)]));
+  assert.equal(customTiers.size, 25);
+  assert.equal(coreTiers.size, customTiers.size);
+  for (const [name, anger] of customTiers) assert.equal(coreTiers.get(name), anger, `${name}: core and roster anger tiers differ`);
+  for (let anger = 10; anger <= 100; anger += 10) {
+    assert.ok([...customTiers.values()].includes(anger), `missing RaptorX unlock at ${anger}% anger`);
+  }
+  assert.equal(Number(roster.get("raptor_land_swarmer_basic_t1_v1").match(/raptorsquadminanger = (\d+)/)?.[1]), 0,
+    "0-9% anger should retain the baseline Raptor wave");
 });
 
 test("RaptorX uses the native Raptors squad metadata keys", () => {
@@ -313,9 +333,32 @@ test("RaptorX uses the native Raptors squad metadata keys", () => {
     "RaptorX must not use Scavenger squad keys");
 });
 
+test("RaptorX custom clones get stronger hardening without further buffing base Raptors", () => {
+  const text = fs.readFileSync(path.join(__dirname, "..", "tweaks", "defs", "raptorx", "raptorx-unit-hardening.lua"), "utf8");
+  assert.match(text, /local customUnit = name:sub\(1, 8\) == "raptorx_"/);
+  assert.match(text, /if customUnit then\s+hp, damage, reload, speed, floor = hp \* 2, damage \* 2, reload \* 0\.85, speed \* 1\.1, floor \* 2/);
+  assert.match(text, /local hp, damage, reload, speed, floor = 20, 6, 0\.65, 1\.2, 200000/);
+});
+
+test("RaptorX custom squads outweight default Raptor squads", () => {
+  const text = fs.readFileSync(path.join(__dirname, "..", "tweaks", "defs", "raptorx", "raptorx-unit-hardening.lua"), "utf8");
+  assert.match(text, /local bias = customUnit and 3 or 0\.4/);
+  assert.match(text, /if minimumAnger < 25 then\s+bias = customUnit and 1\.5 or 0\.75/);
+  assert.match(text, /squadData\.raptorsquadweight = math\.max\(1, math\.floor\(weight \* bias \+ 0\.5\)\)/);
+  assert.match(text, /not squadData\.raptorx_squadweight_adjusted/);
+});
+
+test("RaptorX custom units scale health and damage at every 10% anger tier", () => {
+  const text = fs.readFileSync(path.join(__dirname, "..", "tweaks", "defs", "raptorx", "raptorx-unit-hardening.lua"), "utf8");
+  assert.match(text, /local angerTier = math\.min\(10, math\.floor\(minimumAnger \/ 10\)\)/);
+  assert.match(text, /local angerScale = customUnit and \(1\.25 \^ angerTier\) or 1/);
+  assert.match(text, /u\.health = math\.max\(health \* hp, floor\) \* angerScale/);
+  assert.match(text, /w\.damage\[armor\] = value \* damage \* angerScale/);
+});
+
 test("RaptorX custom units have explicit weapon mechanics and effects", () => {
-  const text = fs.readFileSync(path.join(__dirname, "..", "tweaks", "defs", "raptorx", "raptorx-artillery-units.lua"), "utf8");
-  for (const mechanic of ["range = 2700", "burst = 7", "paralyzer = true", "paralyzetime = 8", "disruption = true"]) {
+  const text = fs.readFileSync(path.join(__dirname, "..", "tweaks", "defs", "raptorx", "raptorx-siege-artillery.lua"), "utf8");
+  for (const mechanic of ["range = 10200", "burst = 7", "paralyzer = true", "paralyzetime = 12", "disruption = true"]) {
     assert.match(text, new RegExp(mechanic.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), `missing mechanic: ${mechanic}`);
   }
   assert.match(text, /custom:exp_emp_large/);
