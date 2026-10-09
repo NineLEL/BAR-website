@@ -48,6 +48,7 @@
   "defs/scavx/scavx-custom-unit-pack-05.lua": true,
   "defs/scavx/scavx-custom-unit-pack-06.lua": true,
   "defs/scavx/scavx-unit-hardening.lua": true,
+  "defs/scavx/scavx-final-boss-extreme.lua": true,
   "units/scavx/scavx-standard-overrides.lua": false,
   "units/scavx/scavx-nightmare-ground-roster.lua": true,
   "units/raptorx/raptorx-assault-roster.lua": false,

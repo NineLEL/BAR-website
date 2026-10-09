@@ -41,3 +41,24 @@ test("hardening preserves mechanics and guards against repeated multiplication",
   assert.match(source, /shield\[field\] \* 1\.5/);
   assert.doesNotMatch(source, /scavsquad\w+\s*=|\.range\s*=|\.buildoptions\s*=|\.energypershot\s*=/);
 });
+
+test("extreme final boss covers current and legacy difficulty variants safely", () => {
+  const relative = "defs/scavx/scavx-final-boss-extreme.lua";
+  const lua = fs.readFileSync(path.join(root, "tweaks", relative), "utf8");
+  const state = JSON.parse(fs.readFileSync(path.join(root, "tweaks", "state.json"), "utf8"));
+  assert.equal(state[relative], true);
+  assert.match(lua, /"scavengerbossv4_", "armscavengerbossv2_"/);
+  for (const difficulty of ["veryeasy", "easy", "normal", "hard", "veryhard", "epic"]) {
+    assert.ok(lua.includes(`"${difficulty}"`));
+  }
+  const weapons = lua.match(/local combat = \{([\s\S]*?)\n  \}/)[1];
+  assert.doesNotMatch(weapons, /sensor_|setting_turbo_delay|special_botcannon/);
+  assert.match(lua, /if not u\.customparams\.scavx_extreme_boss then/);
+  assert.match(lua, /u\.health \* 12/);
+  assert.match(lua, /damage \* 4/);
+  assert.match(lua, /volley \+ 0\.05/);
+  assert.match(lua, /w\.range < 10000/);
+  assert.doesNotMatch(lua, /u\.weapons\s*=|u\.script\s*=|u\.objectname\s*=|scavsquad\w+\s*=/);
+  const pure = loadPure();
+  assert.ok(pure.buildCommand("tweakdefs", 9, pure.luaMinify(lua), false).cmd.length <= 16384);
+});
