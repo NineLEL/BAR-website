@@ -25,23 +25,41 @@ code { font-family: var(--mono); background: var(--surface-2); padding: 1px 5px;
 
 /* Topbar */
 .topbar {
-  display: flex; flex-wrap: wrap; gap: 16px; align-items: center;
-  justify-content: space-between; padding: 14px 24px;
-  background: var(--surface); border-bottom: 1px solid var(--line);
+  display: flex; flex-wrap: wrap; gap: 20px; align-items: center;
+  justify-content: space-between; padding: 16px clamp(18px, 3vw, 40px);
+  background: linear-gradient(112deg, #15191f 0%, #171b20 58%, #1d1b17 100%);
+  border-bottom: 1px solid #e8a33d38;
+  box-shadow: 0 10px 30px #0005;
+  backdrop-filter: blur(16px);
   position: sticky; top: 0; z-index: 10;
 }
-.brand { display: flex; gap: 12px; align-items: center; }
-.logo {
-  background: var(--accent); color: #16100a; font-weight: 800;
-  padding: 7px 10px; border-radius: var(--radius);
+.topbar::after {
+  content: ""; position: absolute; left: clamp(18px, 3vw, 40px); right: clamp(18px, 3vw, 40px); bottom: -1px;
+  height: 1px; pointer-events: none;
+  background: linear-gradient(90deg, transparent, #e8a33d99 28%, #e8a33d30 72%, transparent);
 }
-.topbar h1 { margin: 0; font-size: 1.25rem; }
-.topbar p { margin: 2px 0 0; color: var(--fg-dim); font-size: 0.84rem; }
-.limits { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
-.limits input { width: 90px; padding: 6px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--surface-2); color: var(--fg); }
-.limits label { color: var(--fg-dim); font-size: .82rem; }
+.brand { display: flex; gap: 15px; align-items: center; min-width: 0; }
+.logo {
+  display: grid; place-items: center; flex: 0 0 54px; width: 54px; height: 54px;
+  background: linear-gradient(145deg, #ffd078, #e8a33d 58%, #c47a20);
+  color: #21170b; font-weight: 900; letter-spacing: .06em;
+  border: 1px solid #ffe0a366; border-radius: 16px;
+  box-shadow: 0 5px 16px #e8a33d30, inset 0 1px #fff8;
+}
+.topbar h1 { margin: 0; font-size: 1.35rem; letter-spacing: -.035em; line-height: 1.15; }
+.topbar p { max-width: 660px; margin: 5px 0 0; color: #9ba5b1; font-size: 0.8rem; line-height: 1.4; }
+.limits {
+  display: flex; gap: 12px; align-items: center; flex-wrap: wrap; justify-content: flex-end;
+  padding: 9px 12px; border: 1px solid #ffffff12; border-radius: 14px;
+  background: #0b0e1170; box-shadow: inset 0 1px #ffffff08;
+}
+.limits input { width: 90px; padding: 7px 8px; border-radius: 8px; border: 1px solid #ffffff20; background: #20262e; color: var(--fg); }
+.limits input:focus-visible { border-color: var(--accent); }
+.limits label { color: #aab3bd; font-size: .78rem; }
+.limits > label:first-child { display: grid; grid-template-columns: max-content 90px; align-items: center; gap: 10px; white-space: nowrap; }
 .limits label:has(input[type=checkbox]) { display: flex; align-items: center; gap: 6px; max-width: 330px; }
-.hint { color: var(--fg-dim); font-size: 0.8rem; max-width: 220px; }
+.limits input[type=checkbox] { accent-color: var(--accent); }
+.hint { color: var(--fg-dim); font-size: 0.75rem; max-width: 220px; padding-left: 12px; border-left: 1px solid #ffffff1a; }
 
 /* Layout */
 main { max-width: 1240px; margin: 0 auto; padding: 28px 24px 48px; }
@@ -154,10 +172,16 @@ footer { color: var(--fg-dim); font-size: 0.85rem; line-height: 1.6; }
 ::selection { background: #e8a33d55; color: #fff; }
 
 @media (max-width: 720px) {
-  .topbar { padding: 12px 16px; }
-  .brand { width: 100%; }
-  .limits { justify-content: flex-start; width: 100%; }
-  .limits .hint { display: none; }
+  .topbar { gap: 13px; padding: 13px 16px; }
+  .topbar::after { left: 16px; right: 16px; }
+  .brand { width: 100%; gap: 12px; }
+  .logo { flex-basis: 48px; width: 48px; height: 48px; border-radius: 14px; }
+  .topbar h1 { font-size: 1.2rem; }
+  .topbar p { font-size: .74rem; }
+  .limits { display: grid; grid-template-columns: minmax(0, 1fr); gap: 9px; justify-content: flex-start; width: 100%; padding: 11px; }
+  .limits > label:first-child { grid-template-columns: minmax(0, 1fr) 84px; white-space: normal; }
+  .limits .hint { display: block; max-width: none; padding-left: 0; border-left: 0; }
+  .limits label:has(input[type=checkbox]) { max-width: none; }
   main { padding: 18px 12px 36px; }
   .howto { padding: 14px 16px; }
   .howto ol { padding-left: 12px; margin-left: 8px; }
