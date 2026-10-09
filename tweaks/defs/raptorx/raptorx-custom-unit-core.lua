@@ -69,7 +69,7 @@ do
     if source and not UnitDefs[s[2]] then
       local unit = copy(source)
       unit.unitname, unit.name = s[2], s[3]
-      unit.description = "RaptorX custom combat variant"
+      unit.description = "???"
       local hp = tonumber(unit.health) or tonumber(unit.maxdamage) or 1
       unit.health, unit.maxdamage = hp * s[4], hp * s[4]
       unit.speed = (unit.speed or 1) * s[5]

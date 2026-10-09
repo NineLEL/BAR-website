@@ -255,8 +255,10 @@ test("RaptorX custom definitions are enabled, verified and wired into squads", (
     assert.match(definition, new RegExp(`"${destination}"`));
   }
   assert.match(definition, /unit\.unitname, unit\.name = s\[2\], s\[3\]/);
+  assert.match(definition, /unit\.description = "\?\?\?"/, "all RaptorX custom units must have a mystery description");
   assert.match(definition, /local languages = \{ "en", "de", "fr", "es", "it", "ru", "zh", "cs", "hr", "lt" \}/);
   assert.match(definition, /cp\["i18n_" \..*\] = s\[3\]/, "localized Raptor names must use the custom display name");
+  assert.match(definition, /cp\["i18n_" \..*"_tooltip"\] = unit\.description/, "localized tooltips must use the mystery description");
   const roster = new Map(raptorSources().flatMap((text) =>
     [...text.matchAll(/^  (\w+) = \{([\s\S]*?)(?=^  \w+ = \{|^\})/gm)].map(([, unit, body]) => [unit, body])));
   for (const destination of destinations) assert.match(roster.get(destination) || "", /raptorcustomsquad/);
