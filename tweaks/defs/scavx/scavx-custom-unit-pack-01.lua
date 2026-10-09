@@ -1,5 +1,6 @@
 -- Imported from https://github.com/PixelAlien0/ScavX
 -- Original module: tweakdefs1
+-- Verified release source: ScavX_Commands_SunlessK (1).txt; local Mega build-menu extension retained.
 -- Decoded and restored from the ScavX project payload.
 -- Description: Clones Epic Pluto (legflak), Epic Sanctuary (corgatet3), Epic
 -- Wall (legforti), Everything Experimental (leghavp), Father of All Behemoth

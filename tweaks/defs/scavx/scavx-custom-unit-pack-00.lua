@@ -1,5 +1,6 @@
 -- Imported from https://github.com/PixelAlien0/ScavX
 -- Original module: tweakdefs
+-- Verified release source: ScavX_Commands_SunlessK (1).txt
 -- Decoded and restored from the ScavX project payload.
 -- Description: Clones Buster (legkeres), Ground Decimator (corbuzz), Epic
 -- Xyston (leglraa), Epic Bastion (scavbeacon_t4), Epic Basilica (armbrtha),

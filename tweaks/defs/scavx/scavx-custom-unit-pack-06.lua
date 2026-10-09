@@ -1,5 +1,6 @@
 -- Imported from https://github.com/PixelAlien0/ScavX
 -- Original module: tweakdefs6
+-- Verified release source: ScavX_Commands_SunlessK (1).txt
 -- Decoded and restored from the ScavX project payload.
 -- Description: Patches Basic and Advanced Metal Generators, Epic Construction
 -- Turret, Sanctuary of All Sanctuary (500.5k shield power), Queen Tyrannus

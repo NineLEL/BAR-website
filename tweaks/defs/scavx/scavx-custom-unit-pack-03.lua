@@ -1,5 +1,6 @@
 -- Imported from https://github.com/PixelAlien0/ScavX
 -- Original module: tweakdefs3
+-- Verified release source: ScavX_Commands_SunlessK (1).txt
 -- Decoded and restored from the ScavX project payload.
 -- Description: Clones Walking Fortress (armlunchbox) and Floating Wall-nut
 -- (corcrwt4), then injects custom clones into Arm, Core, and Legion builder

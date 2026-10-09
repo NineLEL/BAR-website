@@ -1,5 +1,6 @@
 -- Imported from https://github.com/PixelAlien0/ScavX
 -- Original module: tweakdefs2
+-- Verified release source: ScavX_Commands_SunlessK (1).txt
 -- Decoded and restored from the ScavX project payload.
 -- Description: Clones Pulsinator (armannit3), Quincy King (armsptkt4), King
 -- Ratte (armrattet4), Basic Metal Generator (armuwes), Advanced Metal

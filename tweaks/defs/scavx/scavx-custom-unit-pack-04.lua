@@ -1,5 +1,6 @@
 -- Imported from https://github.com/PixelAlien0/ScavX
 -- Original module: tweakdefs4
+-- Verified release source: ScavX_Commands_SunlessK (1).txt
 -- Decoded and restored from the ScavX project payload.
 -- Description: Installs high-tier nano-turret death profiles and patches
 -- Buster (150k HP, cloak), Decimator (32 max cap, 60k LRPC), Epic Xyston,

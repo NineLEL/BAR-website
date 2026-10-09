@@ -1,5 +1,6 @@
 -- Imported from https://github.com/PixelAlien0/ScavX
 -- Original module: tweakdefs5
+-- Verified release source: ScavX_Commands_SunlessK (1).txt
 -- Decoded and restored from the ScavX project payload.
 -- Description: Patches Epic Sanctuary (126.5k shield, 8.65k regen), Epic
 -- Wall (1.5M HP), Everything Experimental, Behemoth (535k HP), Fountain

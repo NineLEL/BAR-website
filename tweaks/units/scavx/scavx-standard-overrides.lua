@@ -1,5 +1,6 @@
 -- Imported from https://github.com/PixelAlien0/ScavX
 -- Original module: tweakunits
+-- Verified release source: ScavX_Commands_SunlessK (1).txt
 -- Decoded and restored from the ScavX project payload.
 -- Description: Scavenger squad AI behavior overhaul (raider, berserk,
 -- artillery, kamikaze), anger windows, unit counts, flak AA buffs, movement
