@@ -28,14 +28,56 @@
 
 <main>
   <section class="howto card">
-    <h2>How to use</h2>
-    <ol>
-      <li><strong>Server (optional):</strong> run <code>node server.js</code>, open <code>http://localhost:8080</code>, drop <code>.lua</code> files into <code>tweaks/defs</code> / <code>tweaks/units</code> and tick them in the <strong>server library</strong> tab &mdash; enabled files flow into the packer automatically.</li>
-      <li>Paste Lua below (<strong>tweakdefs</strong> = runnable Lua code with <code>UnitDefs</code> in scope, <strong>tweakunits</strong> = Lua table like <code>{ armpw = { metalcost = 10, }, }</code>).</li>
-      <li>Each slot is <strong>minified</strong>, then <strong>base64-encoded</strong>. Slots that exceed the limit turn red.</li>
-      <li>Use <strong>Auto-pack</strong> to combine small snippets into the fewest slots possible without exceeding the limit.</li>
-      <li>Press <strong>Copy</strong> per slot, or <strong>Copy all</strong>, become lobby boss (<code>!boss</code>), then paste each line into lobby chat.</li>
-      <li>To clear tweaks lobby-side, <strong>Copy reset</strong> and paste: each <code>!bset &lt;slot&gt; 0</code> line resets that slot to empty.</li>
+    <div class="howto-heading">
+      <div>
+        <span class="howto-kicker">Quick start</span>
+        <h2>How to use</h2>
+      </div>
+      <p>Turn your Lua tweaks into ready-to-paste BAR commands in a few easy steps.</p>
+    </div>
+    <ol class="howto-steps">
+      <li>
+        <span class="step-number" aria-hidden="true">01</span>
+        <div class="howto-step-copy">
+          <h3>Load a library <span class="step-optional">Optional</span></h3>
+          <p>Run <code>node server.js</code> and open <code>localhost:8080</code>. Add <code>.lua</code> files to <code>tweaks/defs</code> or <code>tweaks/units</code>, then pick them in the server library tab.</p>
+        </div>
+      </li>
+      <li>
+        <span class="step-number" aria-hidden="true">02</span>
+        <div class="howto-step-copy">
+          <h3>Add your Lua</h3>
+          <p>Use <strong>tweakdefs</strong> for runnable Lua (with <code>UnitDefs</code> in scope), or <strong>tweakunits</strong> for a Lua unit table. Library files work too.</p>
+        </div>
+      </li>
+      <li>
+        <span class="step-number" aria-hidden="true">03</span>
+        <div class="howto-step-copy">
+          <h3>Check your slots</h3>
+          <p>Your tweaks are minified and encoded for you. A slot turns red if its command is over the character limit.</p>
+        </div>
+      </li>
+      <li>
+        <span class="step-number" aria-hidden="true">04</span>
+        <div class="howto-step-copy">
+          <h3>Pack if you like</h3>
+          <p><strong>Auto-pack</strong> combines snippets into as few slots as possible without exceeding the limit.</p>
+        </div>
+      </li>
+      <li>
+        <span class="step-number" aria-hidden="true">05</span>
+        <div class="howto-step-copy">
+          <h3>Copy &amp; send</h3>
+          <p>Copy a slot or all commands, then paste each command into BAR lobby chat.</p>
+        </div>
+      </li>
+      <li>
+        <span class="step-number" aria-hidden="true">06</span>
+        <div class="howto-step-copy">
+          <h3>Reset whenever</h3>
+          <p>Use <strong>Copy reset</strong> and paste the commands into chat to clear your tweak slots.</p>
+        </div>
+      </li>
     </ol>
   </section>
 

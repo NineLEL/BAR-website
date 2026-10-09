@@ -68,8 +68,30 @@ main { max-width: 1240px; margin: 0 auto; padding: 28px 24px 48px; }
   border-radius: var(--radius); padding: 18px 20px; margin-bottom: 18px;
 }
 .howto h2, .panel h2 { margin-top: 0; }
-.howto ol { margin: 8px 0 0 20px; line-height: 1.6; }
-.howto { overflow: hidden; }
+.howto { overflow: hidden; padding: 22px; }
+.howto-heading { display: flex; justify-content: space-between; align-items: end; gap: 20px; margin-bottom: 17px; }
+.howto-kicker { color: var(--accent); font-size: .7rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.howto-heading h2 { margin: 3px 0 0; font-size: 1.3rem; letter-spacing: -.02em; }
+.howto-heading > p { max-width: 430px; margin: 0 0 2px; color: var(--fg-dim); font-size: .88rem; }
+.howto-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 0; padding: 0; list-style: none; }
+.howto-steps li {
+  display: flex; align-items: flex-start; gap: 12px; min-width: 0; padding: 14px;
+  background: linear-gradient(145deg, #1a1f26, #171b21);
+  border: 1px solid #ffffff10; border-radius: 10px;
+}
+.step-number {
+  display: grid; place-items: center; flex: 0 0 32px; width: 32px; height: 32px;
+  color: var(--accent); background: #e8a33d12; border: 1px solid #e8a33d38;
+  border-radius: 10px; font-family: var(--mono); font-size: .72rem; font-weight: 800;
+}
+.howto-step-copy { min-width: 0; }
+.howto-step-copy h3 { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin: 2px 0 5px; color: var(--fg); font-size: .91rem; line-height: 1.35; }
+.howto-step-copy p { margin: 0; color: var(--fg-dim); font-size: .8rem; line-height: 1.55; overflow-wrap: anywhere; }
+.step-optional { padding: 2px 6px; color: #e9bd76; background: #e8a33d12; border: 1px solid #e8a33d2c; border-radius: 999px; font-size: .62rem; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; }
+
+@media (max-width: 980px) {
+  .howto-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 
 /* Tabs */
 .tabs { display: flex; gap: 2px; margin-bottom: 0; overflow-x: auto; scrollbar-width: thin; }
@@ -183,8 +205,11 @@ footer { color: var(--fg-dim); font-size: 0.85rem; line-height: 1.6; }
   .limits .hint { display: block; max-width: none; padding-left: 0; border-left: 0; }
   .limits label:has(input[type=checkbox]) { max-width: none; }
   main { padding: 18px 12px 36px; }
-  .howto { padding: 14px 16px; }
-  .howto ol { padding-left: 12px; margin-left: 8px; }
+  .howto { padding: 16px; }
+  .howto-heading { display: block; margin-bottom: 12px; }
+  .howto-heading > p { margin-top: 5px; }
+  .howto-steps { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .howto-steps li { padding: 12px; }
   .panel { padding: 14px; border-radius: 0 0 var(--radius) var(--radius); }
   .toolbar button { flex: 1 1 auto; }
   .slot header { align-items: flex-start; }
