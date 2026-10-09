@@ -213,17 +213,17 @@ do
 			end,
 		},
 
-		-- 3. AEGIS STARSPIRE: Long-Range Multi-Lock Continuous Sky-Melter
+		-- 3. AEGIS STARSPIRE: Quad-Channel Long-Range Continuous Sky-Melter
 		{
 			"player_aegisstarspire",
-			{ "legflak", "corflak", "armflak", "armmercury" },
+			{ "corhllllt" },
 			{ 620e3, 1600e4, 1600e4, 780e3, 3, 38000, 1400, 3800 },
 			"Aegis Starspire",
-			"Multi-channel continuous laser spires. Locks 3 targets at 4400 range to disintegrate air raids.",
+			"Four-channel continuous laser spires. Locks 4 targets at 4400 range to disintegrate air raids.",
 			function(u, src)
-				local beamHues = { "0.0 0.95 1.0", "0.4 0.25 1.0", "0.0 0.75 1.0" }
-				for slot = 1, 3 do
-					installWeapon(u, src, 1, "AEGIS_STARBEAM_" .. slot, {
+				local beamHues = { "0.0 0.95 1.0", "0.4 0.25 1.0", "0.0 0.75 1.0", "0.25 0.55 1.0" }
+				for slot = 1, 4 do
+					installWeapon(u, src, slot, "AEGIS_STARBEAM_" .. slot, {
 						weapontype = "BeamLaser",
 						largebeamlaser = true,
 						range = 4400,

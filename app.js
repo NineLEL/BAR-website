@@ -685,6 +685,10 @@ function resetCommands(kind) {
   for (var idx = 0; idx < MAX_SLOTS; idx++) cmds.push(cmdPrefix(kind, idx) + "0");
   return cmds;
 }
+function resetAllCommands() {
+  // Apply unit table resets before runnable definitions, matching combined copy order.
+  return resetCommands("tweakunits").concat(resetCommands("tweakdefs"));
+}
 function collectCommands(g) {
   var srcs = slotSources(g);
   var cmds = [];
@@ -753,14 +757,13 @@ function copyCombined() {
   copyText(c.join("\n"));
 }
 $("defsCopyCombined").onclick = copyCombined;
-$("defsReset").onclick = function () { copyText(resetCommands("tweakdefs").join("\n")); };
+$("resetAll").onclick = function () { copyText(resetAllCommands().join("\n")); };
 $("unitsCopyAll").onclick = function () {
   var c = collectCommands(units);
   if (!c.length) return toast("No tweakunits to copy");
   copyText(c.join("\n"));
 };
 $("unitsCopyCombined").onclick = copyCombined;
-$("unitsReset").onclick = function () { copyText(resetCommands("tweakunits").join("\n")); };
 $("charLimit").oninput = function () { renderSlots(defs); renderSlots(units); };
 $("b64url").onchange = function () { renderAll(); };
 

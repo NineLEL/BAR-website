@@ -38,6 +38,7 @@ Do these against `node server.js` + `http://localhost:8080` before release:
 - [ ] **Limits**: default 16384; over-limit slot shows red OVER LIMIT; custom `#charLimit` < 1000 falls back to 16384.
 - [ ] **Auto-pack**: several snippets pack into fewer slots; Copy buttons write the full `!bset …` command (check length + paste into BAR).
 - [ ] **Copy-all / decode**: Copy-all joins slot commands with `\n`; Decode tab roundtrips a copied command back to the same Lua.
+- [ ] **Reset all**: the global button copies 20 commands covering tweakunits slots 0–9 and tweakdefs slots 0–9.
 - [ ] **Offline**: stop `server.js` → library shows the "Server library offline" hint; manual snippets keep working.
 - [ ] **Unicode**: paste CJK/emoji Lua → slot OK, decode roundtrips byte-identical.
 - [ ] Cross-browser spot-check (Chrome + Firefox): copy-to-clipboard works or falls back with a toast.

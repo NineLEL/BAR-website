@@ -13,30 +13,30 @@ end
 local LANGS = { "en", "de", "fr", "es", "it", "ru", "zh", "cs", "hr", "lt" }
 local B3 = { arm = { "armack", "armacv", "armaca" }, cor = { "corack", "coracv", "coraca" }, leg = { "legack", "legacv", "legaca" } }
 local BLASTS = {
-  convboom_t3 = { AreaOfEffect = 960, cameraShake = 480, impulsefactor = 0.123, soundhit = "xplonuk3", soundstart = "largegun", explosiongenerator = "custom:genericbuildingexplosion-huge", damage = { default = 8000 }, customparams = { unitexplosion = 1 } },
-  convboom_t3_selfd = { AreaOfEffect = 1536, cameraShake = 768, impulsefactor = 0.123, soundhit = "xplonuk3", soundstart = "largegun", explosiongenerator = "custom:genericbuildingexplosion-gigantic", damage = { default = 24000 }, customparams = { unitexplosion = 1 } },
-  convboom_t4 = { AreaOfEffect = 1200, cameraShake = 480, impulsefactor = 0.123, soundhit = "xplonuk3", soundstart = "largegun", explosiongenerator = "custom:genericbuildingexplosion-huge", damage = { default = 20000 }, customparams = { unitexplosion = 1 } },
-  convboom_t4_selfd = { AreaOfEffect = 1920, cameraShake = 768, impulsefactor = 0.123, soundhit = "xplonuk3", soundstart = "largegun", explosiongenerator = "custom:genericbuildingexplosion-gigantic", damage = { default = 60000 }, customparams = { unitexplosion = 1 } },
+  convboom_t3 = { AreaOfEffect = 1200, cameraShake = 600, impulsefactor = 0.123, soundhit = "xplonuk3", soundstart = "largegun", explosiongenerator = "custom:genericbuildingexplosion-huge", damage = { default = 18000 }, customparams = { unitexplosion = 1 } },
+  convboom_t3_selfd = { AreaOfEffect = 2000, cameraShake = 1000, impulsefactor = 0.123, soundhit = "xplonuk3", soundstart = "largegun", explosiongenerator = "custom:genericbuildingexplosion-gigantic", damage = { default = 65000 }, customparams = { unitexplosion = 1 } },
+  convboom_t4 = { AreaOfEffect = 2400, cameraShake = 1200, impulsefactor = 0.123, soundhit = "xplonuk3", soundstart = "largegun", explosiongenerator = "custom:genericbuildingexplosion-gigantic", damage = { default = 90000 }, customparams = { unitexplosion = 1 } },
+  convboom_t4_selfd = { AreaOfEffect = 3600, cameraShake = 1800, impulsefactor = 0.123, soundhit = "xplonuk3", soundstart = "largegun", explosiongenerator = "custom:genericbuildingexplosion-gigantic", damage = { default = 240000 }, customparams = { unitexplosion = 1 } },
 }
 local WIRE = { [3] = { "convboom_t3", "convboom_t3_selfd" }, [4] = { "convboom_t4", "convboom_t4_selfd" } }
 local SPECS = {
-  { dst = "armmmkr_t3", src = "armmmkr", tech = 3, cap = 2400, eff = 0.015,
-    nm = "Armada T3 Converter", tip = "Converts 2400 energy into ~36 metal. Explodes violently.",
+  { dst = "armmmkr_t3", src = "armmmkr", tech = 3, cap = 3000, eff = 0.06,
+    nm = "Armada T3 Legendary Energy Converter", tip = "Converts 3000 energy into 180 metal per sec. Explodes violently.",
     m = 2600, e = 90000, bt = 60000, hp = 2500 },
-  { dst = "cormmkr_t3", src = "cormmkr", tech = 3, cap = 2400, eff = 0.015,
-    nm = "Cortex T3 Converter", tip = "Converts 2400 energy into ~36 metal. Explodes violently.",
+  { dst = "cormmkr_t3", src = "cormmkr", tech = 3, cap = 3000, eff = 0.06,
+    nm = "Cortex T3 Legendary Energy Converter", tip = "Converts 3000 energy into 180 metal per sec. Explodes violently.",
     m = 2800, e = 95000, bt = 65000, hp = 2800 },
-  { dst = "legadveconv_t3", src = "legadveconv", tech = 3, cap = 2400, eff = 0.015,
-    nm = "Legion T3 Converter", tip = "Converts 2400 energy into ~36 metal. Explodes violently.",
+  { dst = "legadveconv_t3", src = "legadveconv", tech = 3, cap = 3000, eff = 0.06,
+    nm = "Legion T3 Legendary Energy Converter", tip = "Converts 3000 energy into 180 metal per sec. Explodes violently.",
     m = 2800, e = 95000, bt = 65000, hp = 2800 },
-  { dst = "armmmkr_t4", src = "armmmkr", tech = 4, cap = 6000, eff = 0.014,
-    nm = "Armada T4 Converter", tip = "Converts 6000 energy into ~84 metal. A small nuke when killed.",
+  { dst = "armmmkr_t4", src = "armmmkr", tech = 4, cap = 6000, eff = 0.06,
+    nm = "Armada T4 Ultra Energy Converter", tip = "Converts 6000 energy into 360 metal per sec. Catastrophic if destroyed.",
     m = 9000, e = 300000, bt = 180000, hp = 8000 },
-  { dst = "cormmkr_t4", src = "cormmkr", tech = 4, cap = 6000, eff = 0.014,
-    nm = "Cortex T4 Converter", tip = "Converts 6000 energy into ~84 metal. A small nuke when killed.",
+  { dst = "cormmkr_t4", src = "cormmkr", tech = 4, cap = 6000, eff = 0.06,
+    nm = "Cortex T4 Ultra Energy Converter", tip = "Converts 6000 energy into 360 metal per sec. Catastrophic if destroyed.",
     m = 10000, e = 330000, bt = 200000, hp = 9000 },
-  { dst = "legadveconv_t4", src = "legadveconv", tech = 4, cap = 6000, eff = 0.014,
-    nm = "Legion T4 Converter", tip = "Converts 6000 energy into ~84 metal. A small nuke when killed.",
+  { dst = "legadveconv_t4", src = "legadveconv", tech = 4, cap = 6000, eff = 0.06,
+    nm = "Legion T4 Ultra Energy Converter", tip = "Converts 6000 energy into 360 metal per sec. Catastrophic if destroyed.",
     m = 10000, e = 330000, bt = 200000, hp = 9000 },
 }
 for i = 1, #SPECS do

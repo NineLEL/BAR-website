@@ -75,7 +75,7 @@
         <span class="step-number" aria-hidden="true">06</span>
         <div class="howto-step-copy">
           <h3>Reset whenever</h3>
-          <p>Use <strong>Copy reset</strong> and paste the commands into chat to clear your tweak slots.</p>
+          <p>Use <strong>Copy reset all</strong> and paste the commands into chat to clear all tweakdefs and tweakunits slots.</p>
         </div>
       </li>
     </ol>
@@ -89,6 +89,10 @@
   <button class="tab" data-tab="utilities">utilities</button>
   </nav>
 
+  <div class="toolbar" role="toolbar" aria-label="Global actions">
+    <button id="resetAll" class="primary">Copy reset all (20 slots)</button>
+  </div>
+
   <section id="panel-defs" class="panel active">
     <div class="toolbar">
       <button id="defsAdd">+ Add snippet</button>
@@ -96,7 +100,6 @@
       <button id="defsClear">Clear all</button>
       <button id="defsCopyAll">Copy all commands</button>
       <button id="defsCopyCombined" class="primary">Copy all combined</button>
-      <button id="defsReset">Copy reset (set all 10 slots to 0)</button>
       <button id="defsLibReload">Reload server library</button>
     </div>
     <div id="defsInputs" class="inputs"></div>
@@ -111,7 +114,6 @@
       <button id="unitsClear">Clear all</button>
       <button id="unitsCopyAll">Copy all commands</button>
       <button id="unitsCopyCombined" class="primary">Copy all combined</button>
-      <button id="unitsReset">Copy reset (set all 10 slots to 0)</button>
       <button id="unitsLibReload">Reload server library</button>
     </div>
     <div id="unitsInputs" class="inputs"></div>

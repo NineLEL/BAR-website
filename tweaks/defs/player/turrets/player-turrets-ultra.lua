@@ -269,7 +269,7 @@ do
 		-- 4. PHALANX SKYBEAM
 		{
 			"player_phalanxlance",
-			{ "armmercury", "armflak" },
+			{ "armflak", "armmercury" },
 			{ 310e3, 660e4, 250e3, 3, 30000, 800, 1600 },
 			"Phalanx Skybeam",
 			"Rapid close-range anti-air point defense beam",
@@ -487,7 +487,7 @@ do
 		-- 11. HYPERION LANCE
 		{
 			"player_hyperionlance",
-			{ "cordoom", "armanni" },
+			{ "armannit3", "armanni" },
 			{ 1200e3, 2600e4, 1000e3, 2, 88000, 1450, 2900 },
 			"Hyperion Lance",
 			"Experimental super-heavy obliteration beam",

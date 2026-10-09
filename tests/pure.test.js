@@ -336,6 +336,14 @@ describe("resetCommands", () => {
     assert.equal(cmds[0], "!bset tweakunits 0");
     assert.equal(cmds[5], "!bset tweakunits5 0");
   });
+  it("resetAllCommands clears both command groups in combined-copy order", () => {
+    const cmds = Array.from(pure.resetAllCommands());
+    assert.equal(cmds.length, 20);
+    assert.equal(cmds[0], "!bset tweakunits 0");
+    assert.equal(cmds[9], "!bset tweakunits9 0");
+    assert.equal(cmds[10], "!bset tweakdefs 0");
+    assert.equal(cmds[19], "!bset tweakdefs9 0");
+  });
 });
 
 describe("collect/decode parser", () => {

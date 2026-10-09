@@ -15,23 +15,29 @@ local B3 = { arm = { "armack", "armacv", "armaca" }, cor = { "corack", "coracv",
 local SUB = { armack = "armacsub", corack = "coracsub", legack = "legacsub" }
 local SPECS = {
   { dst = "armmoho_t3", src = "armmoho", tech = 3, x = 0.008, mx = 8, up = 90, sto = 1200,
-    nm = "Armada T3 Metal Extractor", tip = "Produces 8 metal, upkeep 60E, storage 1200.",
+    nm = "Armada T3 Metal Extractor", tip = "Produces 8 metal, upkeep 60E, storage 1200. Explodes violently if destroyed.",
     m = 4500, e = 60000, bt = 52000, hp = 7500 },
   { dst = "cormoho_t3", src = "cormoho", tech = 3, x = 0.008, mx = 8, up = 90, sto = 1200,
-    nm = "Cortex T3 Metal Extractor", tip = "Produces 8 metal, upkeep 60E, storage 1200.",
+    nm = "Cortex T3 Metal Extractor", tip = "Produces 8 metal, upkeep 60E, storage 1200. Explodes violently if destroyed.",
     m = 5200, e = 78000, bt = 58000, hp = 9500 },
   { dst = "legmoho_t3", src = "legmoho", tech = 3, x = 0.008, mx = 8, up = 90, sto = 1200,
-    nm = "Legion T3 Metal Extractor", tip = "Produces 8 metal, upkeep 60E, storage 1200.",
+    nm = "Legion T3 Metal Extractor", tip = "Produces 8 metal, upkeep 60E, storage 1200. Explodes violently if destroyed.",
     m = 5200, e = 78000, bt = 58000, hp = 9500 },
   { dst = "armmoho_t4", src = "armmoho", tech = 4, x = 0.016, mx = 16, up = 240, sto = 2000,
-    nm = "Armada T4 Metal Extractor", tip = "Produces 16 metal, upkeep 150E, storage 2000. Non-explosive.",
+    nm = "Armada T4 Metal Extractor", tip = "Produces 16 metal, upkeep 150E, storage 2000. Explodes catastrophically if destroyed.",
     m = 16000, e = 270000, bt = 180000, hp = 17000 },
   { dst = "cormoho_t4", src = "cormoho", tech = 4, x = 0.016, mx = 16, up = 240, sto = 2000,
-    nm = "Cortex T4 Metal Extractor", tip = "Produces 16 metal, upkeep 150E, storage 2000. Non-explosive.",
+    nm = "Cortex T4 Metal Extractor", tip = "Produces 16 metal, upkeep 150E, storage 2000. Explodes catastrophically if destroyed.",
     m = 18500, e = 320000, bt = 200000, hp = 20000 },
   { dst = "legmoho_t4", src = "legmoho", tech = 4, x = 0.016, mx = 16, up = 240, sto = 2000,
-    nm = "Legion T4 Metal Extractor", tip = "Produces 16 metal, upkeep 150E, storage 2000. Non-explosive.",
+    nm = "Legion T4 Metal Extractor", tip = "Produces 16 metal, upkeep 150E, storage 2000. Explodes catastrophically if destroyed.",
     m = 18500, e = 320000, bt = 200000, hp = 20000 },
+}
+local BLASTS = {
+  mexboom_t3 = { AreaOfEffect = 600, cameraShake = 300, impulsefactor = 0.123, soundhit = "xplomed1", soundstart = "largegun", explosiongenerator = "custom:genericbuildingexplosion-large", damage = { default = 3000 }, customparams = { unitexplosion = 1 } },
+  mexboom_t3_selfd = { AreaOfEffect = 900, cameraShake = 450, impulsefactor = 0.123, soundhit = "xplolrg3", soundstart = "largegun", explosiongenerator = "custom:genericbuildingexplosion-huge", damage = { default = 9000 }, customparams = { unitexplosion = 1 } },
+  mexboom_t4 = { AreaOfEffect = 1200, cameraShake = 600, impulsefactor = 0.123, soundhit = "xplolrg3", soundstart = "largegun", explosiongenerator = "custom:genericbuildingexplosion-huge", damage = { default = 25000 }, customparams = { unitexplosion = 1 } },
+  mexboom_t4_selfd = { AreaOfEffect = 2000, cameraShake = 1000, impulsefactor = 0.123, soundhit = "xplonuk3", soundstart = "largegun", explosiongenerator = "custom:genericbuildingexplosion-gigantic", damage = { default = 90000 }, customparams = { unitexplosion = 1 } },
 }
 for i = 1, #SPECS do
   local sp = SPECS[i]
@@ -49,11 +55,14 @@ for i = 1, #SPECS do
     u.health = sp.hp
     u.activatewhenbuilt = true
     u.onoffable = true
-    u.explodeas = ""
-    u.selfdestructas = ""
     u.buildoptions = u.buildoptions or {}
     u.weapondefs = u.weapondefs or {}
     u.weapons = u.weapons or {}
+    local suffix = "_t" .. sp.tech
+    local normal, selfd = "mexboom" .. suffix, "mexboom" .. suffix .. "_selfd"
+    u.weapondefs[normal] = copy(BLASTS[normal])
+    u.weapondefs[selfd] = copy(BLASTS[selfd])
+    u.explodeas, u.selfdestructas = normal, selfd
     u.customparams = u.customparams or {}
     u.customparams.techlevel = sp.tech
     u.customparams.metal_extractor = sp.mx

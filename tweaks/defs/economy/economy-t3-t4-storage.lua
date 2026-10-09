@@ -14,14 +14,14 @@ local LANGS = { "en", "de", "fr", "es", "it", "ru", "zh", "cs", "hr", "lt" }
 local B3 = { arm = { "armack", "armacv", "armaca" }, cor = { "corack", "coracv", "coraca" }, leg = { "legack", "legacv", "legaca" } }
 local SUB = { arm = "armacsub", cor = "coracsub", leg = "legacsub" }
 local BLASTS = {
-  storagemetalboom_t3 = { AreaOfEffect = 390, cameraShake = 260, impulsefactor = 0.123, soundhit = "xplomed1", soundstart = "largegun", explosiongenerator = "custom:genericbuildingexplosion-medium", damage = { default = 440 }, customparams = { unitexplosion = 1 } },
-  storagemetalboom_t3_selfd = { AreaOfEffect = 540, cameraShake = 360, impulsefactor = 0.123, soundhit = "xplomed1", soundstart = "largegun", explosiongenerator = "custom:genericbuildingexplosion-large", damage = { default = 3120 }, customparams = { unitexplosion = 1 } },
-  storagemetalboom_t4 = { AreaOfEffect = 680, cameraShake = 340, impulsefactor = 0.123, soundhit = "xplolrg3", soundstart = "largegun", explosiongenerator = "custom:genericbuildingexplosion-large", damage = { default = 2680 }, customparams = { unitexplosion = 1 } },
-  storagemetalboom_t4_selfd = { AreaOfEffect = 960, cameraShake = 480, impulsefactor = 0.123, soundhit = "xplolrg3", soundstart = "largegun", explosiongenerator = "custom:genericbuildingexplosion-huge", damage = { default = 8000 }, customparams = { unitexplosion = 1 } },
-  storageenergyboom_t3 = { AreaOfEffect = 960, cameraShake = 480, impulsefactor = 0.123, soundhit = "xplonuk3", soundstart = "largegun", explosiongenerator = "custom:genericbuildingexplosion-huge", damage = { commanders = 4680, default = 7950 }, customparams = { unitexplosion = 1 } },
-  storageenergyboom_t3_selfd = { AreaOfEffect = 1536, cameraShake = 768, impulsefactor = 0.123, soundhit = "xplonuk3", soundstart = "largegun", explosiongenerator = "custom:genericbuildingexplosion-gigantic", damage = { commanders = 7350, default = 24900 }, customparams = { unitexplosion = 1 } },
-  storageenergyboom_t4 = { AreaOfEffect = 1200, cameraShake = 480, impulsefactor = 0.123, soundhit = "xplonuk3", soundstart = "largegun", explosiongenerator = "custom:genericbuildingexplosion-huge", damage = { commanders = 9360, default = 15900 }, customparams = { unitexplosion = 1 } },
-  storageenergyboom_t4_selfd = { AreaOfEffect = 1920, cameraShake = 768, impulsefactor = 0.123, soundhit = "xplonuk3", soundstart = "largegun", explosiongenerator = "custom:genericbuildingexplosion-gigantic", damage = { commanders = 14700, default = 49800 }, customparams = { unitexplosion = 1 } },
+  storagemetalboom_t3 = { AreaOfEffect = 720, cameraShake = 360, impulsefactor = 0.123, soundhit = "xplomed1", soundstart = "largegun", explosiongenerator = "custom:genericbuildingexplosion-large", damage = { default = 2200 }, customparams = { unitexplosion = 1 } },
+  storagemetalboom_t3_selfd = { AreaOfEffect = 1200, cameraShake = 600, impulsefactor = 0.123, soundhit = "xplolrg3", soundstart = "largegun", explosiongenerator = "custom:genericbuildingexplosion-huge", damage = { default = 10000 }, customparams = { unitexplosion = 1 } },
+  storagemetalboom_t4 = { AreaOfEffect = 1500, cameraShake = 750, impulsefactor = 0.123, soundhit = "xplolrg3", soundstart = "largegun", explosiongenerator = "custom:genericbuildingexplosion-huge", damage = { default = 30000 }, customparams = { unitexplosion = 1 } },
+  storagemetalboom_t4_selfd = { AreaOfEffect = 2300, cameraShake = 1150, impulsefactor = 0.123, soundhit = "xplonuk3", soundstart = "largegun", explosiongenerator = "custom:genericbuildingexplosion-gigantic", damage = { default = 90000 }, customparams = { unitexplosion = 1 } },
+  storageenergyboom_t3 = { AreaOfEffect = 1200, cameraShake = 600, impulsefactor = 0.123, soundhit = "xplonuk3", soundstart = "largegun", explosiongenerator = "custom:genericbuildingexplosion-huge", damage = { commanders = 9000, default = 20000 }, customparams = { unitexplosion = 1 } },
+  storageenergyboom_t3_selfd = { AreaOfEffect = 2000, cameraShake = 1000, impulsefactor = 0.123, soundhit = "xplonuk3", soundstart = "largegun", explosiongenerator = "custom:genericbuildingexplosion-gigantic", damage = { commanders = 22000, default = 75000 }, customparams = { unitexplosion = 1 } },
+  storageenergyboom_t4 = { AreaOfEffect = 2400, cameraShake = 1200, impulsefactor = 0.123, soundhit = "xplonuk3", soundstart = "largegun", explosiongenerator = "custom:genericbuildingexplosion-gigantic", damage = { commanders = 40000, default = 90000 }, customparams = { unitexplosion = 1 } },
+  storageenergyboom_t4_selfd = { AreaOfEffect = 3600, cameraShake = 1800, impulsefactor = 0.123, soundhit = "xplonuk3", soundstart = "largegun", explosiongenerator = "custom:genericbuildingexplosion-gigantic", damage = { commanders = 75000, default = 240000 }, customparams = { unitexplosion = 1 } },
 }
 local WIRE = {
   m3 = { "storagemetalboom_t3", "storagemetalboom_t3_selfd" },
@@ -32,55 +32,50 @@ local WIRE = {
 local SPECS = {
   -- T3 Metal Storage
   { dst = "armuwadvmst3", src = "armuwadvms", fac = "arm", res = "m", tech = 3, sto = 40000,
-    nm = "Armada T3 Metal Storage", tip = "Increases metal storage capacity by 40000.",
     m = 4800, e = 80000, bt = 120000, hp = 52000 },
   { dst = "coruwadvmst3", src = "coruwadvms", fac = "cor", res = "m", tech = 3, sto = 40000,
-    nm = "Cortex T3 Metal Storage", tip = "Increases metal storage capacity by 40000.",
     m = 5300, e = 90000, bt = 128000, hp = 56000 },
   { dst = "legamstort3", src = "legamstor", fac = "leg", res = "m", tech = 3, sto = 40000,
-    nm = "Legion T3 Metal Storage", tip = "Increases metal storage capacity by 40000.",
     m = 5300, e = 90000, bt = 128000, hp = 56000 },
 
   -- T4 Metal Storage
   { dst = "armuwadvmst4", src = "armuwadvms", fac = "arm", res = "m", tech = 4, sto = 160000,
-    nm = "Armada T4 Metal Storage", tip = "Increases metal storage capacity by 160000.",
     m = 19000, e = 340000, bt = 480000, hp = 195000 },
   { dst = "coruwadvmst4", src = "coruwadvms", fac = "cor", res = "m", tech = 4, sto = 160000,
-    nm = "Cortex T4 Metal Storage", tip = "Increases metal storage capacity by 160000.",
     m = 21500, e = 390000, bt = 520000, hp = 225000 },
   { dst = "legamstort4", src = "legamstor", fac = "leg", res = "m", tech = 4, sto = 160000,
-    nm = "Legion T4 Metal Storage", tip = "Increases metal storage capacity by 160000.",
     m = 21500, e = 390000, bt = 520000, hp = 225000 },
 
   -- T3 Energy Storage
   { dst = "armuwadvest3", src = "armuwadves", fac = "arm", res = "e", tech = 3, sto = 250000,
-    nm = "Armada T3 Energy Storage", tip = "Increases energy storage capacity by 250000. Dangerous if destroyed.",
     m = 5200, e = 95000, bt = 120000, hp = 52000 },
   { dst = "coruwadvest3", src = "coruwadves", fac = "cor", res = "e", tech = 3, sto = 250000,
-    nm = "Cortex T3 Energy Storage", tip = "Increases energy storage capacity by 250000. Dangerous if destroyed.",
     m = 5700, e = 105000, bt = 128000, hp = 56000 },
   { dst = "legadvestoret3", src = "legadvestore", fac = "leg", res = "e", tech = 3, sto = 250000,
-    nm = "Legion T3 Energy Storage", tip = "Increases energy storage capacity by 250000. Dangerous if destroyed.",
     m = 5700, e = 105000, bt = 128000, hp = 56000 },
 
   -- T4 Energy Storage
   { dst = "armuwadvest4", src = "armuwadves", fac = "arm", res = "e", tech = 4, sto = 1500000,
-    nm = "Armada T4 Energy Storage", tip = "Increases energy storage capacity by 1500000. Dangerous if destroyed.",
     m = 20500, e = 470000, bt = 480000, hp = 195000 },
   { dst = "coruwadvest4", src = "coruwadves", fac = "cor", res = "e", tech = 4, sto = 1500000,
-    nm = "Cortex T4 Energy Storage", tip = "Increases energy storage capacity by 1500000. Dangerous if destroyed.",
     m = 23000, e = 530000, bt = 520000, hp = 225000 },
   { dst = "legadvestoret4", src = "legadvestore", fac = "leg", res = "e", tech = 4, sto = 1500000,
-    nm = "Legion T4 Energy Storage", tip = "Increases energy storage capacity by 1500000. Dangerous if destroyed.",
     m = 23000, e = 530000, bt = 520000, hp = 225000 },
 }
 for i = 1, #SPECS do
   local sp = SPECS[i]
   local s = UnitDefs[sp.src]
   if s ~= nil then
+    local faction = sp.fac == "arm" and "Armada" or sp.fac == "cor" and "Cortex" or "Legion"
+    local resource = sp.res == "m" and "Metal" or "Energy"
+    local rank = sp.res == "m" and "Epic" or "Legendary"
+    local name = faction .. " T" .. sp.tech .. " " .. rank .. " " .. resource .. " Storage"
+    local tip = sp.res == "m"
+      and ("Epic metal storage adds %d capacity. Explodes violently if destroyed."):format(sp.sto)
+      or ("Legendary energy storage adds %d capacity. Explodes catastrophically if destroyed."):format(sp.sto)
     local u = copy(s)
     u.unitname = sp.dst
-    u.name = sp.nm
+    u.name = name
     if sp.res == "m" then
       u.metalstorage = sp.sto
       u.energystorage = 0
@@ -107,8 +102,8 @@ for i = 1, #SPECS do
     u.customparams.techlevel = sp.tech
     for j = 1, #LANGS do
       local L = LANGS[j]
-      u.customparams["i18n_" .. L .. "_humanname"] = sp.nm
-      u.customparams["i18n_" .. L .. "_tooltip"] = sp.tip
+      u.customparams["i18n_" .. L .. "_humanname"] = name
+      u.customparams["i18n_" .. L .. "_tooltip"] = tip
     end
     UnitDefs[sp.dst] = u
     if UnitDefNames ~= nil then UnitDefNames[sp.dst] = u end

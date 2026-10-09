@@ -30,6 +30,7 @@ const PURE_FNS = [
   "packChunks",
   "findDuplicateDst",
   "resetCommands",
+  "resetAllCommands",
   "getLimit",
 ];
 
@@ -90,7 +91,7 @@ function loadPure(appPath) {
   };
   sandbox.globalThis = sandbox;
   vm.createContext(sandbox);
-  vm.runInContext(code + "\nthis.__exports = { b64encode, b64decode, luaMinify, luaPrettify, slotKey, cmdPrefix, buildCommand, mergeTweakUnits, packChunks, findDuplicateDst, resetCommands, getLimit, MAX_SLOTS };", sandbox, { filename: "app-pure-slice.js" });
+  vm.runInContext(code + "\nthis.__exports = { b64encode, b64decode, luaMinify, luaPrettify, slotKey, cmdPrefix, buildCommand, mergeTweakUnits, packChunks, findDuplicateDst, resetCommands, resetAllCommands, getLimit, MAX_SLOTS };", sandbox, { filename: "app-pure-slice.js" });
 
   const api = sandbox.__exports;
   api.__charLimitValue = undefined; // placeholder replaced below
