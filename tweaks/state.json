@@ -52,11 +52,11 @@
   "defs/scavx/scavx-mega-enemy-variants.lua": false,
   "units/scavx/scavx-standard-overrides.lua": false,
   "units/scavx/scavx-nightmare-ground-roster.lua": false,
-  "units/raptorx/raptorx-assault-roster.lua": true,
-  "units/raptorx/raptorx-support-roster.lua": true,
-  "defs/raptorx/raptorx-custom-unit-core.lua": true,
-  "defs/raptorx/raptorx-siege-artillery.lua": true,
-  "defs/raptorx/raptorx-unit-hardening.lua": true,
+  "units/raptorx/raptorx-assault-roster.lua": false,
+  "units/raptorx/raptorx-support-roster.lua": false,
+  "defs/raptorx/raptorx-custom-unit-core.lua": false,
+  "defs/raptorx/raptorx-siege-artillery.lua": false,
+  "defs/raptorx/raptorx-unit-hardening.lua": false,
   "units/scavx/scavx-nightmare-support-roster.lua": false,
   "units/scavx/scavx-nightmare-hardmode-roster.lua": false
 }

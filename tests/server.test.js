@@ -125,6 +125,23 @@ describe("GET /api/tweaks contract", () => {
   });
 });
 
+describe("server library update logging", () => {
+  it("logs when a tweak file changes while the watcher is running", async () => {
+    const messages = [];
+    const originalLog = console.log;
+    console.log = (message) => messages.push(message);
+    const stopWatching = box.srv.watchLibraryUpdates(10);
+    try {
+      fs.appendFileSync(path.join(box.tweaks, "defs", "alpha.lua"), "-- changed\n");
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      assert.deepEqual(messages, ["Server library updated"]);
+    } finally {
+      stopWatching();
+      console.log = originalLog;
+    }
+  });
+});
+
 describe("POST /api/tweaks/toggle — 200 happy path", () => {
   it("disables then re-enables; persists to TEMP state.json only", async () => {
     let r = await postToggle(port, { kind: "defs", name: "alpha.lua", enabled: false });

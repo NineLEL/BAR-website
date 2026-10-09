@@ -76,19 +76,31 @@ function listTweaks() {
   return out;
 }
 function libraryVersion() {
-  let newest = 0;
   const files = [STATE_FILE];
   for (const kind of KINDS) {
     const dir = path.join(TWEAKS_DIR, kind);
     luaFiles(dir, "").forEach(function (name) { files.push(path.join(dir, ...name.split("/"))); });
   }
-  for (const file of files) {
+  files.sort();
+  return JSON.stringify(files.map(function (file) {
     try {
       const stat = fs.statSync(file);
-      newest = Math.max(newest, stat.mtimeMs, stat.size);
-    } catch (e) {}
-  }
-  return String(newest) + ":" + files.length;
+      return [path.relative(TWEAKS_DIR, file), stat.mtimeMs, stat.size];
+    } catch (e) {
+      return [path.relative(TWEAKS_DIR, file), null, null];
+    }
+  }));
+}
+function watchLibraryUpdates(intervalMs) {
+  let previousVersion = libraryVersion();
+  const interval = setInterval(function () {
+    const currentVersion = libraryVersion();
+    if (currentVersion !== previousVersion) {
+      previousVersion = currentVersion;
+      console.log("Server library updated");
+    }
+  }, intervalMs || 2000);
+  return function stopWatchingLibrary() { clearInterval(interval); };
 }
 
 const MIME = {
@@ -160,6 +172,7 @@ const server = http.createServer(function (req, res) {
 
 if (require.main === module) {
   ensureDirs();
+  watchLibraryUpdates();
   server.listen(PORT, function () {
     console.log("BAR Tweak Packer at http://localhost:" + PORT + "  (tweaks folder: ./tweaks)");
   });
@@ -170,6 +183,7 @@ module.exports = {
   safeName: safeName,
   listTweaks: listTweaks,
   libraryVersion: libraryVersion,
+  watchLibraryUpdates: watchLibraryUpdates,
   readState: readState,
   writeState: writeState,
   serveStatic: serveStatic,
