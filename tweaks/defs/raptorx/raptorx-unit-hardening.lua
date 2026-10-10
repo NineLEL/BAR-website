@@ -13,7 +13,8 @@ do
       local raptor = name:sub(1, 7) == "raptor_" or name:sub(1, 8) == "raptorx_"
       local mobile = type(u.speed) == "number" and u.speed > 0
       local armed = type(u.weapons) == "table" and next(u.weapons) ~= nil
-      if raptor and mobile and armed and not u.builder then
+      -- Specialist bosses own their health, regeneration, cooldowns and rarity.
+      if raptor and mobile and armed and not u.builder and not (u.customparams and u.customparams.raptorx_miniboss) then
         seen[u] = true
         u.customparams = u.customparams or {}
         local customUnit = name:sub(1, 8) == "raptorx_"

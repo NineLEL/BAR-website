@@ -8,8 +8,8 @@
     "node": ">=22"
   },
   "scripts": {
-    "test": "node --test tests/pure.test.js tests/server.test.js tests/tweak-srcs.test.js tests/scavx-release.test.js tests/scavx-hardening.test.js",
-    "check": "node --check app.js && node --check server.js && node --check tests/helpers/loadPure.js && node --check tests/pure.test.js && node --check tests/server.test.js && node --check tests/tweak-srcs.test.js",
+    "test": "node --test tests/pure.test.js tests/server.test.js tests/tweak-srcs.test.js tests/scavx-release.test.js tests/scavx-hardening.test.js tests/raptor-minibosses.test.js",
+    "check": "node --check app.js && node --check server.js && node --check tests/helpers/loadPure.js && node --check tests/pure.test.js && node --check tests/server.test.js && node --check tests/tweak-srcs.test.js && node --check tests/raptor-minibosses.test.js",
     "verify": "npm run check && npm test"
   }
 }
