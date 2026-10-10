@@ -15,7 +15,7 @@ var slotKey = Pure.slotKey;
 var cmdPrefix = Pure.cmdPrefix;
 var buildCommand = Pure.buildCommand;
 var mergeTweakUnits = Pure.mergeTweakUnits;
-var packChunks = Pure.packChunks;
+var planChunks = Pure.planChunks;
 var findDuplicateDst = Pure.findDuplicateDst;
 var resetAllCommands = Pure.resetAllCommands;
 
@@ -166,6 +166,8 @@ function syncLibToPacker() {
     .map(function (f) { return { name: "tweaks/units/" + f.name, text: f.content }; });
   defs.packed = null; defs.packedNames = null;
   units.packed = null; units.packedNames = null;
+  defs.packNotice = null;
+  units.packNotice = null;
   renderAll();
 }
 
@@ -212,7 +214,8 @@ function makeGroup(kind, inputsEl, slotsEl) {
     slotsEl: slotsEl,
     serverSnippets: [],
     // packed lua per slot after Auto-pack; null = 1:1 mapping snippet[i] -> slot[i]
-    packed: null
+    packed: null,
+    packNotice: null
   };
 }
 var defs = makeGroup("tweakdefs", $("defsInputs"), $("defsSlots"));
@@ -269,12 +272,13 @@ function renderInputs(g) {
       g.snippets.splice(i, 1);
       if (!g.snippets.length) g.snippets.push("");
       g.packed = null; g.packedNames = null;
+      g.packNotice = null;
       renderAll();
      };
      var ta = document.createElement("textarea");
     ta.value = text;
     ta.placeholder = exampleText(g.kind);
-     ta.oninput = function () { g.snippets[i] = ta.value; g.packed = null; g.packedNames = null; renderSlots(g); };
+     ta.oninput = function () { g.snippets[i] = ta.value; g.packed = null; g.packedNames = null; g.packNotice = null; renderSlots(g); };
      var hide = document.createElement("button");
      hide.textContent = "Hide script";
     hide.setAttribute("aria-expanded", "true"); hide.setAttribute("aria-controls", "manual-script-" + g.kind + "-" + i); ta.id = "manual-script-" + g.kind + "-" + i;
@@ -427,6 +431,13 @@ function renderSlots(g) {
     }
     g.slotsEl.appendChild(div);
   }
+  if (g.packNotice) {
+    var notice = document.createElement("div");
+    notice.className = "pack-notice";
+    notice.setAttribute("role", "status");
+    notice.textContent = g.packNotice;
+    g.slotsEl.appendChild(notice);
+  }
 }
 
 function renderAll() { renderInputs(defs); renderInputs(units); renderSlots(defs); renderSlots(units); }
@@ -447,21 +458,32 @@ function autoPack(g) {
   if (items.length > 60) { toast("Too many snippets"); return; }
 
   var minis = items.map(function (it) { return luaMinify(it.text); });
-  var idxChunks = packChunks(g.kind, minis, limit, useUrlSafe());
+  var plan = planChunks(g.kind, minis, limit, useUrlSafe());
+  var idxChunks = plan.chunks;
+
+  if (plan.oversized.length || plan.overflow.length) {
+    var failures = [];
+    if (plan.oversized.length) {
+      failures.push("over character limit: " + plan.oversized.map(function (i) { return items[i].name; }).join(", "));
+    }
+    if (plan.overflow.length) {
+      failures.push("beyond the " + MAX_SLOTS + "-slot limit: " + plan.overflow.map(function (i) { return items[i].name; }).join(", "));
+    }
+    g.packNotice = "Auto-pack incomplete — " + failures.join("; ") + ". " + (g.packed ? "Current packed output was retained" : "Existing slot mapping was left unchanged") + "; no partial pack was applied.";
+    toast("Auto-pack incomplete. See the packing status below the slots.");
+    renderSlots(g);
+    return;
+  }
 
   var msg = "Packed " + items.length + " item(s) into " + idxChunks.length + " slot(s)";
-  if (idxChunks.length > MAX_SLOTS) {
-    var omitted = [];
-    for (var oi = MAX_SLOTS; oi < idxChunks.length; oi++) idxChunks[oi].forEach(function (k) { omitted.push(items[k].name); });
-    msg += " — exceeds 10-slot limit; omitted: " + omitted.join(", ");
-  }
   if (g.kind === "tweakdefs") {
     var dups = findDuplicateDst(minis);
     if (dups.length) msg += " — WARNING duplicate dst (last wins): " + dups.join(", ");
   }
   toast(msg);
-  g.packed = idxChunks.slice(0, MAX_SLOTS).map(function (idxs) { return joinChunk(g, minis, idxs); });
-  g.packedNames = idxChunks.slice(0, MAX_SLOTS).map(function (idxs) {
+  g.packNotice = null;
+  g.packed = idxChunks.map(function (idxs) { return joinChunk(g, minis, idxs); });
+  g.packedNames = idxChunks.map(function (idxs) {
     return idxs.map(function (k) { return items[k].name; });
   });
   renderSlots(g);

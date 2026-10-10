@@ -242,10 +242,10 @@
     return "{ " + inners.filter(Boolean).join(", ") + " }";
   }
 
-  /* Pure core: order-preserving optimal packing. */
-  function packChunks(kind, minis, limit, urlSafe) {
+  /* Pure core: order-preserving optimal packing with explicit fit diagnostics. */
+  function planChunks(kind, minis, limit, urlSafe) {
     var n = minis.length;
-    if (!n) return [];
+    if (!n) return { chunks: [], sizes: [], oversized: [], overflow: [] };
     function pick(list) { return list.map(function (k) { return minis[k]; }); }
     function joined(list) {
       var items = pick(list);
@@ -280,7 +280,20 @@
       chunks.push(chunk);
       at = stop;
     }
-    return chunks;
+    var sizes = chunks.map(function (chunk) { return sizeOf(joined(chunk)); });
+    var oversized = [];
+    var overflow = [];
+    chunks.forEach(function (chunk, slot) {
+      chunk.forEach(function (index) {
+        if (sizes[slot] > limit) oversized.push(index);
+        if (slot >= MAX_SLOTS) overflow.push(index);
+      });
+    });
+    return { chunks: chunks, sizes: sizes, oversized: oversized, overflow: overflow };
+  }
+  /* Backward-compatible chunks-only API. */
+  function packChunks(kind, minis, limit, urlSafe) {
+    return planChunks(kind, minis, limit, urlSafe).chunks;
   }
 
   /* Duplicate UnitDefs destinations are warnings, not pack blockers. */
@@ -322,6 +335,7 @@
     buildCommand: buildCommand,
     parseDecodeInput: parseDecodeInput,
     mergeTweakUnits: mergeTweakUnits,
+    planChunks: planChunks,
     packChunks: packChunks,
     findDuplicateDst: findDuplicateDst,
     resetCommands: resetCommands,

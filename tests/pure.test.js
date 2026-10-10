@@ -36,10 +36,10 @@ describe("pure module API", () => {
     assert.deepEqual(Object.keys(pure), [
       "MAX_SLOTS", "getLimit", "b64encode", "b64decode", "luaMinify",
       "luaPrettify", "slotKey", "cmdPrefix", "buildCommand", "parseDecodeInput",
-      "mergeTweakUnits", "packChunks", "findDuplicateDst",
+      "mergeTweakUnits", "planChunks", "packChunks", "findDuplicateDst",
       "resetCommands", "resetAllCommands",
     ]);
-    for (const name of ["b64encode", "b64decode", "luaMinify", "luaPrettify", "slotKey", "cmdPrefix", "buildCommand", "parseDecodeInput", "mergeTweakUnits", "packChunks", "findDuplicateDst", "getLimit", "resetCommands", "resetAllCommands"]) {
+    for (const name of ["b64encode", "b64decode", "luaMinify", "luaPrettify", "slotKey", "cmdPrefix", "buildCommand", "parseDecodeInput", "mergeTweakUnits", "planChunks", "packChunks", "findDuplicateDst", "getLimit", "resetCommands", "resetAllCommands"]) {
       assert.equal(typeof pure[name], "function", name + " must be callable");
     }
     assert.equal(pure.MAX_SLOTS, 10);
@@ -218,6 +218,30 @@ describe("mergeTweakUnits", () => {
 });
 
 describe("autopack sizing contract (limit 16384)", () => {
+  it("reports individually oversized inputs without changing the chunks-only API", () => {
+    const plan = pure.planChunks("tweakdefs", ["x".repeat(LIMIT * 2)], LIMIT);
+    assert.equal(plan.chunks.length, 1);
+    assert.deepEqual(plan.oversized, [0]);
+    assert.deepEqual(plan.overflow, []);
+    assert.ok(plan.sizes[0] > LIMIT);
+    assert.deepEqual(pure.packChunks("tweakdefs", ["x".repeat(LIMIT * 2)], LIMIT), plan.chunks);
+  });
+  it("identifies every source beyond the ten-slot capacity", () => {
+    const minis = Array.from({ length: 11 }, (_, i) => "x".repeat(9000) + i);
+    const plan = pure.planChunks("tweakdefs", minis, LIMIT);
+    assert.equal(plan.chunks.length, 11);
+    assert.deepEqual(plan.overflow, [10]);
+    assert.deepEqual(plan.oversized, []);
+    assert.equal(plan.chunks.flat().length, minis.length);
+  });
+  it("reports exact final merged sizes for URL-safe tweakunits commands", () => {
+    const minis = ["{ a = 1, }", "{ b = 2, }"];
+    const plan = pure.planChunks("tweakunits", minis, LIMIT, true);
+    assert.deepEqual(plan.oversized, []);
+    assert.deepEqual(plan.overflow, []);
+    const merged = pure.mergeTweakUnits(minis);
+    assert.equal(plan.sizes[0], pure.buildCommand("tweakunits", 1, merged, true).cmd.length);
+  });
   it("single small snippet packs into exactly 1 slot under limit", () => {
     const minis = [pure.luaMinify("local a=1")];
     const chunks = greedyPack(pure, "tweakdefs", minis, LIMIT);

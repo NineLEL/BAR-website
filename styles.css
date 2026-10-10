@@ -196,6 +196,10 @@ button:disabled { cursor: not-allowed; opacity: .45; }
   margin: 10px 0; padding: 10px 12px; border: 1px solid var(--danger); border-radius: var(--radius);
   background: #221316; color: #f0b6b2; font-weight: 700; font-size: .82rem; line-height: 1.35;
 }
+.pack-notice {
+  margin: 10px 0; padding: 10px 12px; border: 1px solid var(--danger); border-radius: var(--radius);
+  background: #221316; color: #f0b6b2; font-size: .85rem; line-height: 1.45; overflow-wrap: anywhere;
+}
 
 /* Decode tab */
 .panel #decodeInput + .toolbar { margin-top: 0; }
