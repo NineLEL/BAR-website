@@ -202,6 +202,7 @@ do
       if source then t3 = copy(source) end
     end
     if t3 then
+      t3.disabled = false
       t3.metalcost, t3.energycost, t3.buildtime = 3700, 62000, 108000
       t3.footprintx, t3.footprintz, t3.collisionvolumescales = 8, 8, "82 150 82"
     end
@@ -225,6 +226,7 @@ do
       end
     end
     if t4 then
+      t4.disabled = false
       t4.health, t4.maxdamage, t4.workertime, t4.builddistance = 26400, 26400, 4000, 900
       local name = "Legendary Construction Turret"
       t4.unitname, t4.name, t4.description = t4Name, name, name
