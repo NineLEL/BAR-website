@@ -429,7 +429,7 @@ do
 		},
 		{
 			"player_solardecimator",
-			{ "corjugg", "corkrog", "armbanth" },
+			{ "corjugg", "armbanth" },
 			"player_solardecimator",
 			WEAPONS.sol,
 			"Sol Decimator",
@@ -438,7 +438,7 @@ do
 		},
 		{
 			"player_skyfurnace",
-			{ "corkarganetht4", "corkarg", "corkrog" },
+			{ "corkarganetht4", "corkarg" },
 			"player_skyfurnace",
 			WEAPONS.flak,
 			"Sky Furnace",
