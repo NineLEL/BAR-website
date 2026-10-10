@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+<a class="skip-link" href="#main-content">Skip to main content</a>
 <header class="topbar">
   <div class="brand">
     <span class="logo">BAR</span>
@@ -17,16 +18,16 @@
   </div>
   <div class="limits">
     <label>Max chars per <code>!bset</code> message
-      <input id="charLimit" type="number" value="16384" min="1000" max="65536" step="1">
+      <input id="charLimit" type="number" aria-describedby="charLimitHint" value="16384" min="1000" max="65536" step="1">
     </label>
-      <span class="hint">Teiserver caps messages at 16,384 chars incl. command.</span>
+      <span id="charLimitHint" class="hint">Teiserver caps messages at 16,384 chars incl. command.</span>
       <label title="URL-safe alphabet (-_ instead of +/, no padding). BAR decodes tweaks with its standard decoder, so URL-safe payloads may be rejected in-game.">Base64URL output [advanced &mdash; touch only if you know what you&rsquo;re doing]
         <input id="b64url" type="checkbox" checked>
       </label>
   </div>
 </header>
 
-<main>
+<main id="main-content" tabindex="-1">
   <section class="howto card">
     <div class="howto-heading">
       <div>
@@ -81,19 +82,19 @@
     </ol>
   </section>
 
-  <nav class="tabs">
-    <button class="tab active" data-tab="defs">tweakdefs (code)</button>
-    <button class="tab" data-tab="units">tweakunits (tables)</button>
-  <button class="tab" data-tab="library">server library</button>
-  <button class="tab" data-tab="decode">decode / inspect</button>
-  <button class="tab" data-tab="utilities">utilities</button>
+  <nav class="tabs" role="tablist" aria-label="Tweak tools">
+    <button id="tab-defs" class="tab active" role="tab" aria-selected="true" aria-controls="panel-defs" tabindex="0" data-tab="defs">tweakdefs (code)</button>
+    <button id="tab-units" class="tab" role="tab" aria-selected="false" aria-controls="panel-units" tabindex="-1" data-tab="units">tweakunits (tables)</button>
+    <button id="tab-library" class="tab" role="tab" aria-selected="false" aria-controls="panel-library" tabindex="-1" data-tab="library">server library</button>
+    <button id="tab-decode" class="tab" role="tab" aria-selected="false" aria-controls="panel-decode" tabindex="-1" data-tab="decode">decode / inspect</button>
+    <button id="tab-utilities" class="tab" role="tab" aria-selected="false" aria-controls="panel-utilities" tabindex="-1" data-tab="utilities">utilities</button>
   </nav>
 
   <div class="toolbar" role="toolbar" aria-label="Global actions">
     <button id="resetAll" class="primary">Copy reset all (20 slots)</button>
   </div>
 
-  <section id="panel-defs" class="panel active">
+  <section id="panel-defs" class="panel active" role="tabpanel" aria-labelledby="tab-defs" tabindex="0">
     <div class="toolbar">
       <button id="defsAdd">+ Add snippet</button>
       <button id="defsPack" class="primary">Auto-pack into fewest slots</button>
@@ -107,7 +108,7 @@
     <div id="defsSlots" class="slots"></div>
   </section>
 
-  <section id="panel-units" class="panel">
+  <section id="panel-units" class="panel" role="tabpanel" aria-labelledby="tab-units" tabindex="0" hidden>
     <div class="toolbar">
       <button id="unitsAdd">+ Add snippet</button>
       <button id="unitsPack" class="primary">Auto-pack into fewest slots</button>
@@ -121,8 +122,10 @@
     <div id="unitsSlots" class="slots"></div>
   </section>
 
-  <section id="panel-library" class="panel">
-    <div id="libStatus" class="card"><p>Loading server library&hellip;</p></div>
+  <section id="panel-library" class="panel" role="tabpanel" aria-labelledby="tab-library" tabindex="0" hidden>
+    <div id="libStatus" class="card" role="status" aria-live="polite" aria-atomic="true"><p>Loading server library&hellip;</p></div>
+    <label class="library-search-label" for="libSearch">Search library filenames</label>
+    <div class="library-search"><input id="libSearch" type="search" autocomplete="off" placeholder="Search filenames"><button id="libSearchClear" type="button" aria-label="Clear library search">Clear</button></div>
     <div class="toolbar">
       <button id="libReload">Reload from server</button>
       <button id="libEnableAll">Enable all</button>
@@ -134,7 +137,7 @@
     <div id="libUnits" class="slots"></div>
   </section>
 
-  <section id="panel-decode" class="panel">
+  <section id="panel-decode" class="panel" role="tabpanel" aria-labelledby="tab-decode" tabindex="0" hidden>
     <div class="card">
       <h2>Decode an existing command</h2>
       <p>Paste a <code>!bset tweakdefsN ...</code> / <code>!bset tweakunitsN ...</code> line to inspect the minified Lua inside.</p>
@@ -146,7 +149,7 @@
     </div>
   </section>
 
-  <section id="panel-utilities" class="panel">
+  <section id="panel-utilities" class="panel" role="tabpanel" aria-labelledby="tab-utilities" tabindex="0" hidden>
     <div class="card utility-card">
       <h2>Text utilities</h2>
       <p>Convert Base64 or format Lua locally in your browser. Choose an operation for the content in the input field.</p>
@@ -199,6 +202,7 @@
   </footer>
 </main>
 
+<div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true" hidden></div>
 <script src="app-pure.js"></script>
 <script src="app-library.js"></script>
 <script src="app.js"></script>

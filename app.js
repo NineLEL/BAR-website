@@ -24,12 +24,13 @@ function $(id) { return document.getElementById(id); }
 /* ---------- server library presentation ---------- */
 function libFetch() {
   var st = $("libStatus");
+  st.textContent = "Loading server library…";
   LibraryApi.fetchLibrary().then(function (data) {
     renderLib(data);
   }).catch(function () {
-    st.innerHTML = "<p><strong>Server library offline.</strong> Run <code>node server.js</code> and open <code>http://localhost:8080</code> to use <code>.lua</code> files from <code>tweaks/defs</code> and <code>tweaks/units</code>. Manual snippets keep working.</p>";
-    $("libDefs").innerHTML = "";
-    $("libUnits").innerHTML = "";
+    st.textContent = "Server library offline. Run node server.js and open http://localhost:8080 to use .lua files from tweaks/defs and tweaks/units. Manual snippets keep working.";
+    $("libDefs").textContent = "";
+    $("libUnits").textContent = "";
   });
 }
 
@@ -37,7 +38,7 @@ function renderLib(data) {
   var nD = data.defs.length, nU = data.units.length;
   var eD = data.defs.filter(function (f) { return f.enabled; }).length;
   var eU = data.units.filter(function (f) { return f.enabled; }).length;
-  $("libStatus").innerHTML = "<p>Serving <strong>" + nD + " defs</strong> (" + eD + " enabled) + <strong>" + nU + " units</strong> (" + eU + " enabled) from <code>tweaks/</code>. Library changes reload automatically while <code>server.js</code> is running. Untick to disable without deleting — enabled files flow into the packer automatically.</p>";
+  $("libStatus").textContent = "Serving " + nD + " defs (" + eD + " enabled) + " + nU + " units (" + eU + " enabled) from tweaks/. Changes reload automatically while server.js is running. Enabled files flow into the packer automatically.";
   window._lib = data;
   renderLibGroup($("libDefs"), "defs", data.defs);
   renderLibGroup($("libUnits"), "units", data.units);
@@ -53,7 +54,33 @@ function renderLibGroup(el, kind, files) {
     el.appendChild(none);
     return;
   }
-  files.forEach(function (f) {
+  var query = ($("libSearch") ? $("libSearch").value : "").toLowerCase();
+  var filtered = files.filter(function (f) { return f.name.toLowerCase().indexOf(query) !== -1; });
+  if (!filtered.length) {
+    var none = document.createElement("div"); none.className = "slot empty";
+    none.textContent = files.length ? "No filenames match your search." : "No .lua files yet.";
+    el.appendChild(none); return;
+  }
+  var groups = {};
+  filtered.forEach(function (f) {
+    var parts = f.name.split("/"); var folder = parts.length > 1 ? parts.slice(0, -1).join("/") : "";
+    if (!groups[folder]) groups[folder] = [];
+    groups[folder].push(f);
+  });
+  var names = Object.keys(groups).sort(function (a, b) { if (!a) return -1; if (!b) return 1; return a.toLowerCase().localeCompare(b.toLowerCase()); });
+  names.forEach(function (folder, groupIndex) {
+    var groupFiles = groups[folder].sort(function (a, b) { return a.name.toLowerCase().localeCompare(b.name.toLowerCase()); });
+    var enabled = groupFiles.filter(function (f) { return f.enabled; }).length;
+    var details = document.createElement("details"); details.className = "library-group"; details.open = true;
+    var summary = document.createElement("summary"); summary.textContent = (folder || "Root") + " — " + enabled + "/" + groupFiles.length + " enabled";
+    var actions = document.createElement("span"); actions.className = "library-group-actions";
+    [true, false].forEach(function (enable) {
+      var action = document.createElement("button"); action.type = "button"; action.textContent = enable ? "Enable group" : "Disable group";
+      action.onclick = function (event) { event.preventDefault(); event.stopPropagation(); LibraryApi.toggleAll(groupFiles.map(function (f) { return { kind: kind, name: f.name }; }), enable).then(libFetch, function () { toast("Group toggle failed — is the server running?"); libFetch(); }); };
+      actions.appendChild(action);
+    });
+    summary.appendChild(actions); details.appendChild(summary);
+    groupFiles.forEach(function (f) {
     var div = document.createElement("div");
     div.className = "slot" + (f.enabled ? "" : " empty");
     var head = document.createElement("header");
@@ -61,12 +88,18 @@ function renderLibGroup(el, kind, files) {
     var cb = document.createElement("input");
     cb.type = "checkbox";
     cb.checked = !!f.enabled;
-    cb.title = "enable/disable (stored server-side, file is kept)";
+    cb.title = "Enable or disable " + f.name + " (file is kept)";
+    cb.setAttribute("aria-label", "Enable " + f.name);
     cb.onchange = function () {
       LibraryApi.toggle(kind, f.name, cb.checked).then(function (r) {
         if (!r.ok) throw new Error("HTTP " + r.status);
         libFetch();
       }, function () { toast("Toggle failed — is the server running?"); });
+    };
+    head.onclick = function (event) {
+      if (event.target === cb || event.target.tagName === "BUTTON" || event.target.tagName === "INPUT") return;
+      cb.checked = !cb.checked;
+      if (typeof Event === "function") cb.dispatchEvent(new Event("change", { bubbles: true }));
     };
     var nm = document.createElement("span");
     nm.className = "name";
@@ -82,28 +115,45 @@ function renderLibGroup(el, kind, files) {
     var row = document.createElement("div");
     row.className = "row";
     var pv = document.createElement("button");
-    pv.textContent = "Preview";
+     pv.textContent = "Preview";
+     pv.setAttribute("aria-expanded", "false");
      var pre = document.createElement("pre");
      pre.className = "mono output";
+      pre.id = "lib-preview-" + kind + "-" + files.indexOf(f);
+      pv.setAttribute("aria-controls", pre.id);
      pre.style.display = "none";
      // Keep large library scripts out of the DOM until the user asks to see
      // them. This avoids creating hundreds of thousands of text nodes on load.
      pv.onclick = function () {
        var opening = pre.style.display === "none";
        if (opening) {
-         pre.textContent = f.content;
+          pre.textContent = f.content;
+          pre.hidden = false;
          pre.style.display = "block";
-         pv.textContent = "Hide script";
+        pv.textContent = "Hide script";
+        pv.setAttribute("aria-expanded", "true");
        } else {
-         pre.textContent = "";
+          pre.textContent = "";
+          pre.hidden = true;
          pre.style.display = "none";
-         pv.textContent = "Preview";
+        pv.textContent = "Preview";
+        pv.setAttribute("aria-expanded", "false");
        }
      };
-    row.appendChild(pv);
+     row.appendChild(pv);
+     var cp = document.createElement("button"); cp.type = "button"; cp.textContent = "Copy raw Lua"; cp.onclick = function () { copyText(f.content); }; row.appendChild(cp);
     div.appendChild(row);
     div.appendChild(pre);
-    el.appendChild(div);
+    details.appendChild(div);
+    });
+    var bulk = document.createElement("div"); bulk.className = "library-group-bulk";
+    [true, false].forEach(function (enable) {
+      var button = document.createElement("button"); button.type = "button"; button.textContent = (enable ? "Enable all " : "Disable all ") + kind;
+      button.onclick = function () { setAllLib(enable, kind); };
+      bulk.appendChild(button);
+    });
+    details.appendChild(bulk);
+    el.appendChild(details);
   });
 }
 
@@ -119,12 +169,12 @@ function syncLibToPacker() {
   renderAll();
 }
 
-function setAllLib(enabled) {
+function setAllLib(enabled, onlyKind) {
   var data = window._lib;
   if (!data) { toast("Library not loaded yet."); return; }
   var files = [];
-  data.defs.forEach(function (f) { files.push({ kind: "defs", name: f.name }); });
-  data.units.forEach(function (f) { files.push({ kind: "units", name: f.name }); });
+  if (!onlyKind || onlyKind === "defs") data.defs.forEach(function (f) { files.push({ kind: "defs", name: f.name }); });
+  if (!onlyKind || onlyKind === "units") data.units.forEach(function (f) { files.push({ kind: "units", name: f.name }); });
   if (!files.length) { toast("No library files."); return; }
   LibraryApi.toggleAll(files, enabled).then(function () { libFetch(); }, function () { toast("Bulk toggle failed \u2014 is the server running?"); libFetch(); });
 }
@@ -133,6 +183,10 @@ $("defsLibReload").onclick = libFetch;
 $("unitsLibReload").onclick = libFetch;
 $("libEnableAll").onclick = function () { setAllLib(true); };
 $("libDisableAll").onclick = function () { setAllLib(false); };
+$("libDefs").setAttribute("data-kind", "defs"); $("libUnits").setAttribute("data-kind", "units");
+$("libSearch").oninput = function () { if (window._lib) { renderLibGroup($("libDefs"), "defs", window._lib.defs); renderLibGroup($("libUnits"), "units", window._lib.units); } };
+$("libSearchClear").onclick = function () { $("libSearch").value = ""; $("libSearch").focus(); $("libSearch").oninput(); };
+$("libDefs").setAttribute("data-kind", "defs"); $("libUnits").setAttribute("data-kind", "units");
 libFetch();
 var libVersion = null;
 function watchLibrary() {
@@ -186,9 +240,14 @@ function renderInputs(g) {
     lt.title = "Managed server-side in " + f.name;
      var lhbtn = document.createElement("button");
      lhbtn.textContent = "Hide script";
+     lhbtn.setAttribute("aria-expanded", "true");
+     lhbtn.setAttribute("aria-controls", "server-script-" + g.kind + "-" + g.inputsEl.children.length);
+     lt.id = "server-script-" + g.kind + "-" + g.inputsEl.children.length;
      lhbtn.onclick = function () {
        var hidden = lt.style.display === "none";
-       lt.style.display = hidden ? "block" : "none";
+        lt.style.display = hidden ? "block" : "none";
+        lt.hidden = !hidden;
+        lhbtn.setAttribute("aria-expanded", hidden ? "true" : "false");
        lhbtn.textContent = hidden ? "Hide script" : "Show script";
      };
      lh.appendChild(lhbtn);
@@ -215,9 +274,12 @@ function renderInputs(g) {
      ta.oninput = function () { g.snippets[i] = ta.value; g.packed = null; g.packedNames = null; renderSlots(g); };
      var hide = document.createElement("button");
      hide.textContent = "Hide script";
+     hide.setAttribute("aria-expanded", "true"); hide.setAttribute("aria-controls", "manual-script-" + g.kind + "-" + i); ta.id = "manual-script-" + g.kind + "-" + i;
      hide.onclick = function () {
        var hidden = ta.style.display === "none";
-       ta.style.display = hidden ? "block" : "none";
+        ta.style.display = hidden ? "block" : "none";
+        ta.hidden = !hidden;
+        hide.setAttribute("aria-expanded", hidden ? "true" : "false");
        hide.textContent = hidden ? "Hide script" : "Show script";
      };
      head.appendChild(lab); head.appendChild(hide); head.appendChild(del);
@@ -309,37 +371,48 @@ function renderSlots(g) {
         })(cmd);
         var showCmd = document.createElement("button");
         showCmd.textContent = "Show command";
+        showCmd.setAttribute("aria-expanded", "false"); showCmd.setAttribute("aria-controls", "command-" + g.kind + "-" + idx); pre.id = "command-" + g.kind + "-" + idx;
          showCmd.onclick = (function (command, output, button) {
            return function () {
              var opening = output.style.display === "none";
              if (opening) {
-               output.textContent = command;
+        output.textContent = command;
+        output.hidden = false;
                output.style.display = "block";
-               button.textContent = "Hide command";
+                button.textContent = "Hide command";
+                button.setAttribute("aria-expanded", "true");
              } else {
-               output.textContent = "";
+        output.textContent = "";
+        output.hidden = true;
                output.style.display = "none";
-               button.textContent = "Show command";
+                button.textContent = "Show command";
+                button.setAttribute("aria-expanded", "false");
              }
            };
          })(cmd, pre, showCmd);
         row.appendChild(showCmd);
         var pv = document.createElement("button");
         pv.textContent = "Show minified";
+        pv.setAttribute("aria-expanded", "false"); pv.setAttribute("aria-controls", "minified-" + g.kind + "-" + idx);
         var prev2 = document.createElement("pre");
         prev2.className = "mono output";
+        prev2.id = "minified-" + g.kind + "-" + idx;
         prev2.style.display = "none";
          pv.onclick = (function (source, output, button) {
            return function () {
              var opening = output.style.display === "none";
              if (opening) {
-               output.textContent = source;
+                output.textContent = source;
+                output.hidden = false;
                output.style.display = "block";
-               button.textContent = "Hide minified";
+                button.textContent = "Hide minified";
+                button.setAttribute("aria-expanded", "true");
              } else {
-               output.textContent = "";
+                output.textContent = "";
+                output.hidden = true;
                output.style.display = "none";
-               button.textContent = "Show minified";
+                button.textContent = "Show minified";
+                button.setAttribute("aria-expanded", "false");
              }
            };
          })(min, prev2, pv);
@@ -421,23 +494,30 @@ function copyText(t) {
 var toastTimer = null;
 function toast(msg) {
   var el = $("toast");
-  if (!el) {
-    el = document.createElement("div");
-    el.id = "toast"; el.className = "toast";
-    document.body.appendChild(el);
-  }
-  el.textContent = msg; el.style.display = "block";
+  if (!el) { el = document.createElement("div"); el.id = "toast"; el.className = "toast"; el.setAttribute("role", "status"); el.setAttribute("aria-live", "polite"); document.body.appendChild(el); }
+  el.textContent = msg; el.hidden = false; el.style.display = "block";
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(function () { el.style.display = "none"; }, 2200);
+  toastTimer = setTimeout(function () { el.style.display = "none"; el.hidden = true; }, 2200);
 }
 
 /* ---------- wiring ---------- */
+function activateTab(btn, moveFocus) {
+  document.querySelectorAll(".tab").forEach(function (b) { b.classList.remove("active"); b.setAttribute("aria-selected", "false"); b.setAttribute("tabindex", "-1"); });
+  document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); p.hidden = true; });
+  btn.classList.add("active"); btn.setAttribute("aria-selected", "true"); btn.setAttribute("tabindex", "0");
+  var panel = $("panel-" + btn.dataset.tab); panel.classList.add("active"); panel.hidden = false;
+  if (moveFocus) btn.focus();
+}
 document.querySelectorAll(".tab").forEach(function (btn) {
-  btn.onclick = function () {
-    document.querySelectorAll(".tab").forEach(function (b) { b.classList.remove("active"); });
-    document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
-    btn.classList.add("active");
-    $("panel-" + btn.dataset.tab).classList.add("active");
+  btn.onclick = function () { activateTab(btn, false); };
+  btn.onkeydown = function (event) {
+    var tabs = Array.prototype.slice.call(document.querySelectorAll(".tab")), i = tabs.indexOf(btn), next = i;
+    if (event.key === "ArrowRight") next = (i + 1) % tabs.length;
+    else if (event.key === "ArrowLeft") next = (i + tabs.length - 1) % tabs.length;
+    else if (event.key === "Home") next = 0;
+    else if (event.key === "End") next = tabs.length - 1;
+    else return;
+    event.preventDefault(); activateTab(tabs[next], true);
   };
 });
 
