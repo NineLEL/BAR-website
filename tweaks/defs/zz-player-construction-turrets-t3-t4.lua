@@ -77,22 +77,21 @@ do
 			turret.metalcost = 3700
 			turret.energycost = 62000
 			turret.buildtime = 108000
-			turret.health = 8800
-			turret.maxdamage = 8800
-			turret.workertime = 1900
-			turret.builddistance = 650
 			turret.footprintx, turret.footprintz = 8, 8
 			turret.collisionvolumescales = "82 150 82"
 		elseif isNew then
 			turret.metalcost = math.ceil((tonumber(source.metalcost) or 3700) * 3)
 			turret.energycost = math.ceil((tonumber(source.energycost) or 62000) * 3)
 			turret.buildtime = math.ceil((tonumber(source.buildtime) or 108000) * 3)
-			turret.health = math.ceil((tonumber(source.health) or 8800) * 2.5)
-			turret.maxdamage = turret.health
-			turret.workertime = 3200
-			turret.builddistance = 500
 			turret.footprintx, turret.footprintz = 10, 10
 			turret.collisionvolumescales = "104 180 104"
+		end
+		if tier == 3 then
+			turret.health, turret.maxdamage = 10560, 10560
+			turret.workertime, turret.builddistance = 2400, 750
+		else
+			turret.health, turret.maxdamage = 26400, 26400
+			turret.workertime, turret.builddistance = 4000, 900
 		end
 		turret.weapondefs = turret.weapondefs or {}
 		for _, blast in ipairs(turretBlasts[tier]) do

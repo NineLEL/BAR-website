@@ -194,12 +194,12 @@ do
       if source then
         t3 = copy(source)
         t3.metalcost, t3.energycost, t3.buildtime = 3700, 62000, 108000
-        t3.health, t3.maxdamage, t3.workertime, t3.builddistance = 8800, 8800, 1900, 650
         t3.footprintx, t3.footprintz, t3.collisionvolumescales = 8, 8, "82 150 82"
       end
     end
     if t3 then
       local name = display .. " T3 Epic Construction Turret"
+      t3.health, t3.maxdamage, t3.workertime, t3.builddistance = 10560, 10560, 2400, 750
       t3.unitname, t3.name, t3.description = t3Name, name, "Tier 3 Epic construction turret."
       localized(t3, name, t3.description)
       publish(t3Name, t3)
@@ -210,12 +210,11 @@ do
       t4.metalcost = math.ceil((tonumber(t3.metalcost) or 3700) * 3)
       t4.energycost = math.ceil((tonumber(t3.energycost) or 62000) * 3)
       t4.buildtime = math.ceil((tonumber(t3.buildtime) or 108000) * 3)
-      t4.health = math.ceil((tonumber(t3.health) or 8800) * 2.5)
-      t4.maxdamage, t4.workertime, t4.builddistance = t4.health, 3200, 500
       t4.footprintx, t4.footprintz, t4.collisionvolumescales = 10, 10, "104 180 104"
     end
     if t4 then
       local name = display .. " T4 Legendary Construction Turret"
+      t4.health, t4.maxdamage, t4.workertime, t4.builddistance = 26400, 26400, 4000, 900
       t4.unitname, t4.name, t4.description = t4Name, name, "Tier 4 Legendary construction turret."
       localized(t4, name, t4.description)
       publish(t4Name, t4)
