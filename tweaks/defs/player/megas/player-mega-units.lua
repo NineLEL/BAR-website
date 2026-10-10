@@ -275,23 +275,6 @@ do
 			camerashake = 45,
 			onlytargetcategory = T_S,
 		}),
-		beam = W("Annihilation Lance", "BeamLaser", 2600, 3.5, 0, 0, 65e3, 36e3, 68e3, 9e3, nil, {
-			largebeamlaser = true,
-			beamtime = 1.1,
-			beamttl = 120,
-			thickness = 9,
-			corethickness = 0.8,
-			laserflaresize = 5,
-			pulsespeed = 8,
-			scrollspeed = 8,
-			rgbcolor = "0.75 0.05 1",
-			rgbcolor2 = "0.45 0 0.85",
-			firestarter = 100,
-			explosiongenerator = E_FN2,
-			soundstart = "weapons/beam_heavy.wav",
-			soundhitdry = "weapons/burn02.wav",
-			onlytargetcategory = T_S,
-		}),
 		emp = W("Atmospheric EMP", "Cannon", 2600, 5.5, 1600, 750, 60e3, 24e3, 52e3, 8e3, nil, {
 			paralyzer = true,
 			paralyzetime = 10,
@@ -481,15 +464,6 @@ do
 			{ 130e3, 27e5, 28e4, 50, 4, 2000, 0, 200 },
 		},
 		{
-			"player_worldbeam",
-			{ "corkarg", "corkrog" },
-			"player_worldbeam",
-			WEAPONS.beam,
-			"World Beam",
-			"Annihilation lance titan.",
-			{ 140e3, 31e5, 30e4, 52, 3, 2500, 0, 220 },
-		},
-		{
 			"player_singularity",
 			{ "corcrwt4", "corcrw" },
 			"player_singularityemp",
@@ -579,6 +553,24 @@ do
 			u.customparams.techlevel, u.customparams.unitgroup = 4, "weapon"
 			u.customparams.i18n_en_humanname = p[5]
 			u.customparams.i18n_en_tooltip = p[6]
+			if p[1] == "player_singularity" then
+				u.explodeas, u.selfdestructas = "singularity_death_blast", "singularity_selfd_blast"
+				u.weapondefs = u.weapondefs or {}
+				u.weapondefs.singularity_death_blast = {
+					weapontype = "Cannon",
+					areaofeffect = 2400,
+					edgeeffectiveness = 0.8,
+					damage = { default = 500000, commanders = 250000 },
+					explosiongenerator = "custom:genericbuildingexplosion-gigantic",
+				}
+				u.weapondefs.singularity_selfd_blast = {
+					weapontype = "Cannon",
+					areaofeffect = 4200,
+					edgeeffectiveness = 0.9,
+					damage = { default = 1500000, commanders = 750000 },
+					explosiongenerator = "custom:genericbuildingexplosion-gigantic",
+				}
+			end
 
 			install(u, p[3], p[4], st[11])
 			U[p[1]] = u

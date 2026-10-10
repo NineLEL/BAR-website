@@ -537,7 +537,9 @@ test("Mega Units have role-specific weapon mechanics and pack cleanly", () => {
   assert.match(text, /camerashake = 180/, "Supernova presentation should remain forceful without extreme screen shake");
   assert.match(text, /camerashake = 45/, "Pyroclast repeated impacts should avoid excessive screen shake");
   assert.match(text, /size = 44,[\s\S]*?stages = 48/, "Supernova should have a larger, richer impact effect");
-  assert.match(text, /thickness = 9,[\s\S]*?corethickness = 0\.8/, "World Beam should read clearly at range");
+  assert.doesNotMatch(text, /player_worldbeam|Annihilation Lance/, "World Beam should not be part of the Mega Unit Pack");
+  assert.match(text, /singularity_death_blast[\s\S]*?areaofeffect = 2400/);
+  assert.match(text, /singularity_selfd_blast[\s\S]*?areaofeffect = 4200/);
   assert.match(text, /size = 26,[\s\S]*?stages = 36/, "EMP impacts should be visually distinct");
   assert.match(text, /"EMP dreadnought\."/);
   assert.match(text, /"Close-range shotgun titan\."/);
