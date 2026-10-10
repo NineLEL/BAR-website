@@ -132,6 +132,11 @@ do
 		-- Custom shield units, when the corresponding player pack is enabled.
 		"player_aegisdome", "player_citadelumbrella",
 	}
+	local factionDefenseOptions = {
+		arm = { "armamb", "armpb", "armanni", "armflak", "armmercury", "armemp", "armamd", "armsilo", "armbrtha", "armvulc", "armdf" },
+		cor = { "cortoast", "corvipe", "cordoom", "corflak", "corscreamer", "cortron", "corfmd", "corsilo", "corint", "corbuzz" },
+		leg = { "legacluster", "legapopupdef", "legbastion", "legflak", "leglraa", "legperdition", "legabm", "legsilo", "leglrpc", "legstarfall" },
+	}
 
 	local t2Constructors = {
 		"armack", "armacv", "armaca",
@@ -141,15 +146,15 @@ do
 
 	for _, faction in ipairs(factions) do
 		local prefix = faction.prefix
-		createTurret(
-			prefix .. "nanotct2",
-			prefix .. "nanotct3",
+			createTurret(
+				prefix .. "nanotct2",
+				prefix .. "nanotct3",
 				"Epic Construction Turret",
 			3
 		)
-		createTurret(
-			prefix .. "nanotct3",
-			prefix .. "nanotct4",
+			createTurret(
+				prefix .. "nanotct3",
+				prefix .. "nanotct4",
 				"Legendary Construction Turret",
 			4
 		)
@@ -163,9 +168,15 @@ do
 
 	for _, faction in ipairs(factions) do
 		local turretName = faction.prefix .. "nanotct3"
+		local legendaryName = faction.prefix .. "nanotct4"
 		if U[turretName] then
+			ensureOption(turretName, turretName)
 			for _, optionName in ipairs(sharedBuildOptions) do
 				ensureOption(turretName, optionName)
+			end
+			for _, optionName in ipairs(factionDefenseOptions[faction.prefix]) do
+				ensureOption(turretName, optionName)
+				ensureOption(legendaryName, optionName)
 			end
 			ensureOption(turretName, faction.prefix .. "nanotct4")
 		end

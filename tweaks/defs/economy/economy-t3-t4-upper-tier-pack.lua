@@ -183,6 +183,11 @@ do
     "armgate", "corgate", "legdeflector", "armgatet3", "corgatet3", "leggatet3", "armfgate", "corfgate",
     "player_aegisdome", "player_citadelumbrella",
   }
+  local factionDefenseOptions = {
+    arm = { "armamb", "armpb", "armanni", "armflak", "armmercury", "armemp", "armamd", "armsilo", "armbrtha", "armvulc", "armdf" },
+    cor = { "cortoast", "corvipe", "cordoom", "corflak", "corscreamer", "cortron", "corfmd", "corsilo", "corint", "corbuzz" },
+    leg = { "legacluster", "legapopupdef", "legbastion", "legflak", "leglraa", "legperdition", "legabm", "legsilo", "leglrpc", "legstarfall" },
+  }
   for _, faction in ipairs(factions) do
     local prefix = faction[1]
     local t3Name, t4Name = prefix .. "nanotct3", prefix .. "nanotct4"
@@ -222,7 +227,14 @@ do
       removeOption(builderName, t4Name)
     end
     if t3 then
-      for _, optionName in ipairs(turretOptions) do ensureOption(t3Name, optionName) end
+      ensureOption(t3Name, t3Name)
+      for _, optionName in ipairs(turretOptions) do
+        ensureOption(t3Name, optionName)
+      end
+      for _, optionName in ipairs(factionDefenseOptions[prefix]) do
+        ensureOption(t3Name, optionName)
+        ensureOption(t4Name, optionName)
+      end
       ensureOption(t3Name, t4Name)
     end
   end
