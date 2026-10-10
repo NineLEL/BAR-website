@@ -10,6 +10,9 @@ do
     cor = { "corack", "coracv", "coraca" },
     leg = { "legack", "legacv", "legaca" },
   }
+  local constructionTurretBases = {
+    arm = "armrespawn", cor = "correspawn", leg = "legnanotcbase",
+  }
   local subs = { arm = "armacsub", cor = "coracsub", leg = "legacsub" }
 
   local function copy(value)
@@ -43,12 +46,12 @@ do
     return value and math.ceil(value * factor) or nil
   end
   local converterSpecs = {
-    { "armmmkr_t3", "armmmkr", "arm", 3, 3000, .06, 2600, 90000, 60000, 2500 },
-    { "cormmkr_t3", "cormmkr", "cor", 3, 3000, .06, 2800, 95000, 65000, 2800 },
-    { "legadveconv_t3", "legadveconv", "leg", 3, 3000, .06, 2800, 95000, 65000, 2800 },
-    { "armmmkr_t4", "armmmkr", "arm", 4, 6000, .06, 9000, 300000, 180000, 8000 },
-    { "cormmkr_t4", "cormmkr", "cor", 4, 6000, .06, 10000, 330000, 200000, 9000 },
-    { "legadveconv_t4", "legadveconv", "leg", 4, 6000, .06, 10000, 330000, 200000, 9000 },
+    { "armmmkr_t3", "armmmkr", "arm", 3, 8000, .025, 2600, 90000, 60000, 2500 },
+    { "cormmkr_t3", "cormmkr", "cor", 3, 8000, .025, 2800, 95000, 65000, 2800 },
+    { "legadveconv_t3", "legadveconv", "leg", 3, 8000, .025, 2800, 95000, 65000, 2800 },
+    { "armmmkr_t4", "armmmkr", "arm", 4, 12000, 0.0291666667, 9000, 300000, 180000, 8000 },
+    { "cormmkr_t4", "cormmkr", "cor", 4, 12000, 0.0291666667, 10000, 330000, 200000, 9000 },
+    { "legadveconv_t4", "legadveconv", "leg", 4, 12000, 0.0291666667, 10000, 330000, 200000, 9000 },
   }
   for _, sp in ipairs(converterSpecs) do
     local source = U[sp[2]]
@@ -150,7 +153,7 @@ do
       for _, builderName in ipairs(builders[prefix]) do add(builderName, sourceName) end
       local unit = copy(source)
       local energyMake = scaled(source.energymake, 2) or 0
-      local name = "T4 Legendary Fusion Reactor"
+      local name = "Legendary Fusion Reactor"
       unit.unitname, unit.name, unit.description = targetName, name, name
       unit.buildtime, unit.metalcost, unit.energycost = scaled(source.buildtime, 2.2), scaled(source.metalcost, 2.2), scaled(source.energycost, 2.2)
       unit.energymake, unit.energystorage = energyMake, scaled(source.energystorage, 5)
@@ -192,36 +195,41 @@ do
     local prefix = faction[1]
     local t3Name, t4Name = prefix .. "nanotct3", prefix .. "nanotct4"
     local t3, t4 = U[t3Name], U[t4Name]
-    if not t3 then
+    local base = U[constructionTurretBases[prefix]]
+    if base then
+      t3, t4 = copy(base), copy(base)
+    elseif not t3 then
       local source = U[prefix .. "nanotct2"]
-      if source then
-        t3 = copy(source)
-        t3.metalcost, t3.energycost, t3.buildtime = 3700, 62000, 108000
-        t3.footprintx, t3.footprintz, t3.collisionvolumescales = 8, 8, "82 150 82"
-      end
+      if source then t3 = copy(source) end
     end
     if t3 then
-      local name = "Epic Construction Turret"
+      t3.metalcost, t3.energycost, t3.buildtime = 3700, 62000, 108000
+      t3.footprintx, t3.footprintz, t3.collisionvolumescales = 8, 8, "82 150 82"
+    end
+    if t3 then
       t3.health, t3.maxdamage, t3.workertime, t3.builddistance = 10560, 10560, 2400, 750
-      local displayName = faction[2] .. " T3 Epic Construction Turret"
-      t3.unitname, t3.name, t3.description = t3Name, displayName, displayName
-      localized(t3, displayName, t3.description)
+      local name = "Epic Construction Turret"
+      t3.unitname, t3.name, t3.description = t3Name, name, name
+      localized(t3, name, t3.description)
       publish(t3Name, t3)
     end
     if not t4 and t3 then
       t4 = copy(t3)
-      t4.unitname = t4Name
-      t4.metalcost = math.ceil((tonumber(t3.metalcost) or 3700) * 3)
-      t4.energycost = math.ceil((tonumber(t3.energycost) or 62000) * 3)
-      t4.buildtime = math.ceil((tonumber(t3.buildtime) or 108000) * 3)
-      t4.footprintx, t4.footprintz, t4.collisionvolumescales = 10, 10, "104 180 104"
     end
     if t4 then
-      local name = "Legendary Construction Turret"
+      t4.unitname = t4Name
+      if t3 then
+        t4.metalcost = math.ceil((tonumber(t3.metalcost) or 3700) * 3)
+        t4.energycost = math.ceil((tonumber(t3.energycost) or 62000) * 3)
+        t4.buildtime = math.ceil((tonumber(t3.buildtime) or 108000) * 3)
+        t4.footprintx, t4.footprintz, t4.collisionvolumescales = 10, 10, "104 180 104"
+      end
+    end
+    if t4 then
       t4.health, t4.maxdamage, t4.workertime, t4.builddistance = 26400, 26400, 4000, 900
-      local displayName = faction[2] .. " T4 Legendary Construction Turret"
-      t4.unitname, t4.name, t4.description = t4Name, displayName, displayName
-      localized(t4, displayName, t4.description)
+      local name = "Legendary Construction Turret"
+      t4.unitname, t4.name, t4.description = t4Name, name, name
+      localized(t4, name, t4.description)
       publish(t4Name, t4)
     end
     for _, builderName in ipairs(builders[prefix]) do
