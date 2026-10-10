@@ -91,8 +91,8 @@ test("enemy Mega definitions have existing sources, isolated weapons and no play
   const player = fs.readFileSync(path.join(root, "tweaks/defs/player/megas/player-mega-units.lua"), "utf8");
   const defined = new Set([...player.matchAll(/^\s*"(player_\w+)",/gm)].map(m => m[1]));
   const specs = [...lua.matchAll(/\{ "(scavx_(?:mega|boss)_\w+)", "(player_\w+)"/g)];
-  assert.equal(specs.length, 17);
-  assert.equal(new Set(specs.map(m => m[1])).size, 17);
+  assert.equal(specs.length, 16);
+  assert.equal(new Set(specs.map(m => m[1])).size, 16);
   for (const [, , source] of specs) assert.ok(defined.has(source), `missing source ${source}`);
   assert.match(lua, /local u = copy\(source\)/);
   assert.match(lua, /u\.maxthisunit, u\.buildoptions, u\.builder = nil, nil, false/);

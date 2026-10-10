@@ -60,7 +60,7 @@ do
       unit.description = name
       unit.metalcost, unit.energycost, unit.buildtime, unit.health = sp[7], sp[8], sp[9], sp[10]
       unit.activatewhenbuilt, unit.onoffable = true, true
-      unit.buildoptions, unit.weapondefs, unit.weapons = unit.buildoptions or {}, unit.weapondefs or {}, unit.weapons or {}
+      unit.weapondefs = unit.weapondefs or {}
       unit.customparams = unit.customparams or {}
       unit.customparams.techlevel = sp[4]
       unit.customparams.energyconv_capacity = sp[5]
@@ -91,7 +91,7 @@ do
       unit.metalstorage, unit.metalcost, unit.energycost = sp[8], sp[9], sp[10]
       unit.buildtime, unit.health = sp[11], sp[12]
       unit.activatewhenbuilt, unit.onoffable = true, true
-      unit.buildoptions, unit.weapondefs, unit.weapons = unit.buildoptions or {}, unit.weapondefs or {}, unit.weapons or {}
+      unit.weapondefs = unit.weapondefs or {}
       unit.customparams = unit.customparams or {}
       unit.customparams.techlevel, unit.customparams.metal_extractor = sp[4], sp[6]
       unit.customparams.standardextractor = true
@@ -127,7 +127,7 @@ do
       else unit.energystorage, unit.metalstorage = sp[6], 0 end
       unit.metalcost, unit.energycost, unit.buildtime, unit.health = sp[7], sp[8], sp[9], sp[10]
       unit.techlevel = sp[5]
-      unit.buildoptions, unit.weapondefs, unit.weapons = unit.buildoptions or {}, unit.weapondefs or {}, unit.weapons or {}
+      unit.weapondefs = unit.weapondefs or {}
       unit.customparams = unit.customparams or {}
       unit.customparams.techlevel = sp[5]
       localized(unit, name, sp[4] == "m"
@@ -150,7 +150,7 @@ do
       for _, builderName in ipairs(builders[prefix]) do add(builderName, sourceName) end
       local unit = copy(source)
       local energyMake = scaled(source.energymake, 2) or 0
-      local name = "Legendary Fusion Reactor"
+      local name = "T4 Legendary Fusion Reactor"
       unit.unitname, unit.name, unit.description = targetName, name, name
       unit.buildtime, unit.metalcost, unit.energycost = scaled(source.buildtime, 2.2), scaled(source.metalcost, 2.2), scaled(source.energycost, 2.2)
       unit.energymake, unit.energystorage = energyMake, scaled(source.energystorage, 5)
@@ -202,9 +202,10 @@ do
     end
     if t3 then
       local name = "Epic Construction Turret"
-      t3.health, t3.maxdamage, t3.workertime, t3.builddistance = 10560, 10560, 2400, 700
-      t3.unitname, t3.name, t3.description = t3Name, name, name
-      localized(t3, name, t3.description)
+      t3.health, t3.maxdamage, t3.workertime, t3.builddistance = 10560, 10560, 2400, 750
+      local displayName = faction[2] .. " T3 Epic Construction Turret"
+      t3.unitname, t3.name, t3.description = t3Name, displayName, displayName
+      localized(t3, displayName, t3.description)
       publish(t3Name, t3)
     end
     if not t4 and t3 then
@@ -217,9 +218,10 @@ do
     end
     if t4 then
       local name = "Legendary Construction Turret"
-      t4.health, t4.maxdamage, t4.workertime, t4.builddistance = 26400, 26400, 4000, 775
-      t4.unitname, t4.name, t4.description = t4Name, name, name
-      localized(t4, name, t4.description)
+      t4.health, t4.maxdamage, t4.workertime, t4.builddistance = 26400, 26400, 4000, 900
+      local displayName = faction[2] .. " T4 Legendary Construction Turret"
+      t4.unitname, t4.name, t4.description = t4Name, displayName, displayName
+      localized(t4, displayName, t4.description)
       publish(t4Name, t4)
     end
     for _, builderName in ipairs(builders[prefix]) do

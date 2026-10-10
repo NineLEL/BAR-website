@@ -172,7 +172,7 @@ test("Scav-only Mega variants replace player Mega Units in ScavX squads", () => 
   const megaIds = [
     "player_riftcolossus", "player_riftjump", "player_vortexdominator", "player_vortexwell",
     "player_aegisbreaker", "player_solardecimator", "player_skyfurnace", "player_stormsovereign",
-    "player_pyroclast", "player_worldbeam", "player_singularity", "player_aethersiege",
+    "player_pyroclast", "player_singularity", "player_aethersiege",
     "player_phantomleviathan", "player_archangel",
   ];
   assert.ok(megaIds.length >= 14, "expected the player mega pack roster");

@@ -19,7 +19,6 @@ do
     { "scavx_mega_skyfurnace", "player_skyfurnace", "Scav Sky Furnace" },
     { "scavx_mega_stormsovereign", "player_stormsovereign", "Scav Storm Sovereign" },
     { "scavx_mega_pyroclast", "player_pyroclast", "Scav Pyroclast" },
-    { "scavx_mega_worldbeam", "player_worldbeam", "Scav World Beam" },
     { "scavx_mega_singularity", "player_singularity", "Scav Singularity" },
     { "scavx_mega_aethersiege", "player_aethersiege", "Scav Aether Siege" },
     { "scavx_mega_phantomleviathan", "player_phantomleviathan", "Scav Phantom Leviathan" },

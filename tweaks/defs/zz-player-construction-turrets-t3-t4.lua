@@ -88,10 +88,10 @@ do
 		end
 		if tier == 3 then
 			turret.health, turret.maxdamage = 10560, 10560
-			turret.workertime, turret.builddistance = 2400, 700
+			turret.workertime, turret.builddistance = 2400, 750
 		else
 			turret.health, turret.maxdamage = 26400, 26400
-			turret.workertime, turret.builddistance = 4000, 775
+			turret.workertime, turret.builddistance = 4000, 900
 		end
 		turret.weapondefs = turret.weapondefs or {}
 		for _, blast in ipairs(turretBlasts[tier]) do
@@ -149,13 +149,13 @@ do
 			createTurret(
 				prefix .. "nanotct2",
 				prefix .. "nanotct3",
-				"Epic Construction Turret",
+				faction.name .. " T3 Epic Construction Turret",
 			3
 		)
 			createTurret(
 				prefix .. "nanotct3",
 				prefix .. "nanotct4",
-				"Legendary Construction Turret",
+				faction.name .. " T4 Legendary Construction Turret",
 			4
 		)
 	end

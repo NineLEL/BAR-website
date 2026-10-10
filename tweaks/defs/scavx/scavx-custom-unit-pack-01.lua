@@ -247,7 +247,7 @@ do
 			local megaUnits = {
 				"player_riftcolossus", "player_riftjump", "player_vortexdominator", "player_vortexwell",
 				"player_aegisbreaker", "player_solardecimator", "player_skyfurnace", "player_stormsovereign",
-				"player_pyroclast", "player_worldbeam", "player_singularity", "player_aethersiege",
+				"player_pyroclast", "player_singularity", "player_aethersiege",
 				"player_phantomleviathan", "player_archangel",
 			}
 			for _, megaName in ipairs(megaUnits) do
