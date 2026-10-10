@@ -54,8 +54,7 @@ do
     local source = U[sp[2]]
     if source then
       local rank = sp[4] == 3 and "Legendary" or "Ultra"
-      local name = (sp[3] == "arm" and "Armada" or sp[3] == "cor" and "Cortex" or "Legion")
-        .. " T" .. sp[4] .. " " .. rank .. " Energy Converter"
+      local name = rank .. " Energy Converter"
       local unit = copy(source)
       unit.unitname, unit.name = sp[1], name
       unit.description = name
@@ -84,8 +83,8 @@ do
   for _, sp in ipairs(mexSpecs) do
     local source = U[sp[2]]
     if source then
-      local faction = sp[3] == "arm" and "Armada" or sp[3] == "cor" and "Cortex" or "Legion"
-      local name = faction .. " T" .. sp[4] .. " Metal Extractor"
+      local rank = sp[4] == 3 and "Epic" or "Legendary"
+      local name = rank .. " Metal Extractor"
       local unit = copy(source)
       unit.unitname, unit.name, unit.description = sp[1], name, name
       unit.extractsmetal, unit.makesmetal, unit.energyupkeep = sp[5], sp[6], sp[7]
@@ -119,10 +118,9 @@ do
   for _, sp in ipairs(storageSpecs) do
     local source = U[sp[2]]
     if source then
-      local faction = sp[3] == "arm" and "Armada" or sp[3] == "cor" and "Cortex" or "Legion"
       local resource = sp[4] == "m" and "Metal" or "Energy"
       local rank = sp[4] == "m" and "Epic" or "Legendary"
-      local name = faction .. " T" .. sp[5] .. " " .. rank .. " " .. resource .. " Storage"
+      local name = rank .. " " .. resource .. " Storage"
       local unit = copy(source)
       unit.unitname, unit.name, unit.description = sp[1], name, name
       if sp[4] == "m" then unit.metalstorage, unit.energystorage = sp[6], 0
@@ -152,7 +150,7 @@ do
       for _, builderName in ipairs(builders[prefix]) do add(builderName, sourceName) end
       local unit = copy(source)
       local energyMake = scaled(source.energymake, 2) or 0
-      local name = "T4 Legendary Fusion Reactor"
+      local name = "Legendary Fusion Reactor"
       unit.unitname, unit.name, unit.description = targetName, name, name
       unit.buildtime, unit.metalcost, unit.energycost = scaled(source.buildtime, 2.2), scaled(source.metalcost, 2.2), scaled(source.energycost, 2.2)
       unit.energymake, unit.energystorage = energyMake, scaled(source.energystorage, 5)
@@ -186,7 +184,7 @@ do
     "player_aegisdome", "player_citadelumbrella",
   }
   for _, faction in ipairs(factions) do
-    local prefix, display = faction[1], faction[2]
+    local prefix = faction[1]
     local t3Name, t4Name = prefix .. "nanotct3", prefix .. "nanotct4"
     local t3, t4 = U[t3Name], U[t4Name]
     if not t3 then
@@ -198,9 +196,9 @@ do
       end
     end
     if t3 then
-      local name = display .. " T3 Epic Construction Turret"
-      t3.health, t3.maxdamage, t3.workertime, t3.builddistance = 10560, 10560, 2400, 750
-      t3.unitname, t3.name, t3.description = t3Name, name, "Tier 3 Epic construction turret."
+      local name = "Epic Construction Turret"
+      t3.health, t3.maxdamage, t3.workertime, t3.builddistance = 10560, 10560, 2400, 700
+      t3.unitname, t3.name, t3.description = t3Name, name, name
       localized(t3, name, t3.description)
       publish(t3Name, t3)
     end
@@ -213,9 +211,9 @@ do
       t4.footprintx, t4.footprintz, t4.collisionvolumescales = 10, 10, "104 180 104"
     end
     if t4 then
-      local name = display .. " T4 Legendary Construction Turret"
-      t4.health, t4.maxdamage, t4.workertime, t4.builddistance = 26400, 26400, 4000, 900
-      t4.unitname, t4.name, t4.description = t4Name, name, "Tier 4 Legendary construction turret."
+      local name = "Legendary Construction Turret"
+      t4.health, t4.maxdamage, t4.workertime, t4.builddistance = 26400, 26400, 4000, 775
+      t4.unitname, t4.name, t4.description = t4Name, name, name
       localized(t4, name, t4.description)
       publish(t4Name, t4)
     end

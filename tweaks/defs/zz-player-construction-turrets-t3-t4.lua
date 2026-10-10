@@ -69,7 +69,7 @@ do
 		local rank = tier == 3 and "Epic" or "Legendary"
 		turret.unitname = unitName
 		turret.name = displayName
-		turret.description = "Tier " .. tier .. " " .. rank .. " construction turret."
+		turret.description = rank .. " Construction Turret."
 		turret.customparams = turret.customparams or {}
 		turret.customparams.i18n_en_humanname = displayName
 		turret.customparams.i18n_en_tooltip = turret.description
@@ -88,10 +88,10 @@ do
 		end
 		if tier == 3 then
 			turret.health, turret.maxdamage = 10560, 10560
-			turret.workertime, turret.builddistance = 2400, 750
+			turret.workertime, turret.builddistance = 2400, 700
 		else
 			turret.health, turret.maxdamage = 26400, 26400
-			turret.workertime, turret.builddistance = 4000, 900
+			turret.workertime, turret.builddistance = 4000, 775
 		end
 		turret.weapondefs = turret.weapondefs or {}
 		for _, blast in ipairs(turretBlasts[tier]) do
@@ -144,13 +144,13 @@ do
 		createTurret(
 			prefix .. "nanotct2",
 			prefix .. "nanotct3",
-			faction.name .. " T3 Epic Construction Turret",
+				"Epic Construction Turret",
 			3
 		)
 		createTurret(
 			prefix .. "nanotct3",
 			prefix .. "nanotct4",
-			faction.name .. " T4 Legendary Construction Turret",
+				"Legendary Construction Turret",
 			4
 		)
 	end
