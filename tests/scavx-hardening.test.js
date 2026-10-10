@@ -3,7 +3,8 @@ const { test } = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
-const { loadPure } = require("./helpers/loadPure");
+const pure = require("../app-pure");
+const { assertDefaultEnabled } = require("./helpers/enabledTweaks");
 const root = path.join(__dirname, "..");
 const relative = "defs/scavx/scavx-unit-hardening.lua";
 const source = fs.readFileSync(path.join(root, "tweaks", relative), "utf8");
@@ -20,14 +21,12 @@ test("hardening covers all ScavX combat clones but not economy or builders", () 
 });
 
 test("hardening is enabled after imported packs and fits a command slot", () => {
-  const state = JSON.parse(fs.readFileSync(path.join(root, "tweaks", "state.json"), "utf8"));
-  assert.equal(state[relative], true);
+  assertDefaultEnabled(relative);
   for (let i = 0; i < 7; i++) {
     const imported = `defs/scavx/scavx-custom-unit-pack-${String(i).padStart(2, "0")}.lua`;
-    assert.equal(state[imported], true);
+    assertDefaultEnabled(imported);
     assert.ok(imported < relative);
   }
-  const pure = loadPure();
   assert.ok(pure.buildCommand("tweakdefs", 9, pure.luaMinify(source), false).cmd.length <= 16384);
 });
 
@@ -45,8 +44,7 @@ test("hardening preserves mechanics and guards against repeated multiplication",
 test("extreme final boss covers current and legacy difficulty variants safely", () => {
   const relative = "defs/scavx/scavx-final-boss-extreme.lua";
   const lua = fs.readFileSync(path.join(root, "tweaks", relative), "utf8");
-  const state = JSON.parse(fs.readFileSync(path.join(root, "tweaks", "state.json"), "utf8"));
-  assert.equal(state[relative], true);
+  assertDefaultEnabled(relative);
   assert.match(lua, /"scavengerbossv4_", "armscavengerbossv2_"/);
   for (const difficulty of ["veryeasy", "easy", "normal", "hard", "veryhard", "epic"]) {
     assert.ok(lua.includes(`"${difficulty}"`));
@@ -63,7 +61,6 @@ test("extreme final boss covers current and legacy difficulty variants safely", 
   assert.match(lua, /volley \+ 0\.05/);
   assert.match(lua, /w\.range < 10000/);
   assert.doesNotMatch(lua, /u\.weapons\s*=|u\.script\s*=|u\.objectname\s*=|scavsquad\w+\s*=/);
-  const pure = loadPure();
   assert.ok(pure.buildCommand("tweakdefs", 9, pure.luaMinify(lua), false).cmd.length <= 16384);
 });
 
@@ -85,7 +82,6 @@ test("all Scav-only Mega squads spawn three units starting at 20 percent anger",
     assert.match(body, /scavsquadrarity = "basic"/);
     assert.match(body, /scavsquadminanger = 20, scavsquadmaxanger = 150/);
   }
-  const pure = loadPure();
   assert.ok(pure.buildCommand("tweakunits", 9, pure.luaMinify(lua), false).cmd.length <= 16384);
 });
 
@@ -104,11 +100,9 @@ test("enemy Mega definitions have existing sources, isolated weapons and no play
   assert.match(lua, /hp, damage, reload, speed, shield = 10, 4, 0\.55, 1\.5, 5/);
   assert.match(lua, /volley \+ 0\.05/);
   assert.doesNotMatch(lua, /source\.\w+\s*=|teach\(|u\.script\s*=|u\.objectname\s*=|u\.weapons\s*=/);
-  const state = JSON.parse(fs.readFileSync(path.join(root, "tweaks/state.json"), "utf8"));
-  assert.equal(state[relative], true);
-  assert.equal(state["defs/player/megas/player-mega-units.lua"], true);
+  assertDefaultEnabled(relative);
+  assertDefaultEnabled("defs/player/megas/player-mega-units.lua");
   assert.ok("defs/player/megas/player-mega-units.lua" < relative);
-  const pure = loadPure();
   assert.ok(pure.buildCommand("tweakdefs", 9, pure.luaMinify(lua), false).cmd.length <= 16384);
 });
 

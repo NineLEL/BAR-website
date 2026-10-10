@@ -1,0 +1,21 @@
+{
+  "defs/economy/economy-t3-t4-upper-tier-pack.lua": true,
+  "defs/player/megas/player-mega-units.lua": true,
+  "defs/raptorx/raptorx-custom-unit-core.lua": true,
+  "defs/raptorx/raptorx-miniboss-specialists.lua": true,
+  "defs/scavx/scavx-custom-unit-pack-00.lua": true,
+  "defs/scavx/scavx-custom-unit-pack-01.lua": true,
+  "defs/scavx/scavx-custom-unit-pack-02.lua": true,
+  "defs/scavx/scavx-custom-unit-pack-03.lua": true,
+  "defs/scavx/scavx-custom-unit-pack-04.lua": true,
+  "defs/scavx/scavx-custom-unit-pack-05.lua": true,
+  "defs/scavx/scavx-custom-unit-pack-06.lua": true,
+  "defs/scavx/scavx-mega-enemy-variants.lua": true,
+  "defs/scavx/scavx-final-boss-extreme.lua": true,
+  "defs/scavx/scavx-unit-hardening.lua": true,
+  "defs/zz-player-construction-turrets-t3-t4.lua": true,
+  "units/raptorx/raptorx-assault-roster.lua": true,
+  "units/raptorx/raptorx-support-roster.lua": true,
+  "units/scav/scav-tactical-ai.lua": true,
+  "units/scavx/scavx-nightmare-hardmode-roster.lua": true
+}

@@ -4,9 +4,8 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
-const { loadPure } = require("./helpers/loadPure");
+const pure = require("../app-pure");
 const root = path.join(__dirname, "..");
-const pure = loadPure();
 const release = fs.readFileSync(path.join(root, "ScavX_Commands_SunlessK (1).txt"), "utf8");
 const commands = [...release.matchAll(/^!bset (tweak(?:defs|units)\d*) ([A-Za-z0-9+/_=-]+)/gm)];
 

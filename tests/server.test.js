@@ -1,8 +1,9 @@
 "use strict";
-/* Server contract suite — isolated temp ROOT, ephemeral port, zero live I/O.
- * NEVER touches the real ./tweaks or ./state.json and never POSTs to a real
- * server. Each server is explicitly configured with createServer() and only
- * binds when asked, so requiring server.js is side-effect free.
+/* Server contract suite — isolated temp ROOT, ephemeral port, zero live writes.
+ * It snapshots the real state.json bytes only as a no-write guard, never reads
+ * its values, and never POSTs to a real server. Each server is explicitly
+ * configured with createServer() and only binds when asked, so requiring
+ * server.js is side-effect free.
  * Run: npm test  (or: node --test tests/server.test.js)
  */
 const { describe, it, before, after } = require("node:test");
@@ -150,13 +151,24 @@ describe("server library update logging", () => {
   it("logs when a tweak file changes while the watcher is running", async () => {
     const messages = [];
     const originalLog = console.log;
-    console.log = (message) => messages.push(message);
-    const stopWatching = box.srv.watchLibraryUpdates(10);
+    let stopWatching;
+    let timeout;
+    let resolveLog;
+    let rejectTimeout;
+    const logged = new Promise((resolve) => { resolveLog = resolve; });
+    const deadline = new Promise((_, reject) => { rejectTimeout = reject; });
+    console.log = (message) => {
+      messages.push(message);
+      if (message === "Server library updated") resolveLog();
+    };
+    stopWatching = box.srv.watchLibraryUpdates(10);
     try {
+      timeout = setTimeout(() => rejectTimeout(new Error("watcher did not report the file change within 1 second")), 1000);
       fs.appendFileSync(path.join(box.tweaks, "defs", "alpha.lua"), "-- changed\n");
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await Promise.race([logged, deadline]);
       assert.deepEqual(messages, ["Server library updated"]);
     } finally {
+      clearTimeout(timeout);
       stopWatching();
       console.log = originalLog;
     }

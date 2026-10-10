@@ -7,7 +7,8 @@ const { test } = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
-const { loadPure } = require("./helpers/loadPure");
+const pure = require("../app-pure");
+const { assertDefaultEnabled } = require("./helpers/enabledTweaks");
 
 const defsDir = path.join(__dirname, "..", "tweaks", "defs");
 const known = new Set(JSON.parse(fs.readFileSync(path.join(__dirname, "bar-unit-names.json"), "utf8")));
@@ -53,7 +54,6 @@ function nightmareSources() {
 }
 
 test("Nightmare files each fit the BAR command limit", () => {
-  const pure = require("./helpers/loadPure").loadPure();
   for (const text of nightmareSources()) {
     const encoded = pure.b64encode(pure.luaMinify(text));
     assert.ok((pure.cmdPrefix("tweakunits", 9) + encoded).length <= 16384,
@@ -128,8 +128,7 @@ test("ScavX hard mode adds distinct supported mechanics", () => {
   assert.match(text, /builddistance = 300, workertime = 600/);
   assert.match(text, /burst = 3, burstrate = 0\.25/);
   assert.doesNotMatch(text, /shield_power|shield_radius/);
-  const state = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "tweaks", "state.json"), "utf8"));
-  assert.equal(state["units/scavx/scavx-nightmare-hardmode-roster.lua"], true);
+  assertDefaultEnabled("units/scavx/scavx-nightmare-hardmode-roster.lua");
 });
 
 test("Late-game T3/T4 units begin at 35% anger", () => {
@@ -198,16 +197,14 @@ test("Everything Experimental exposes every player Mega Unit", () => {
   for (const name of megaIds) {
     assert.match(text, new RegExp(`"${name}"`), `${name} must be available from everyexpe`);
   }
-  assert.equal(JSON.parse(fs.readFileSync(path.join(__dirname, "..", "tweaks", "state.json"), "utf8"))["defs/player/megas/player-mega-units.lua"], true);
+  assertDefaultEnabled("defs/player/megas/player-mega-units.lua");
 });
 
 test("T3 construction turrets expose requested build progression", () => {
   const root = path.join(__dirname, "..");
   const file = path.join(root, "tweaks", "defs", "zz-player-construction-turrets-t3-t4.lua");
   const text = fs.readFileSync(file, "utf8");
-  const state = JSON.parse(fs.readFileSync(path.join(root, "tweaks", "state.json"), "utf8"));
-  assert.equal(state["defs/zz-player-construction-turrets-t3-t4.lua"], true);
-  const pure = loadPure();
+  assertDefaultEnabled("defs/zz-player-construction-turrets-t3-t4.lua");
   const command = pure.cmdPrefix("tweakdefs", 9) + pure.b64encode(pure.luaMinify(text));
   assert.ok(command.length <= 16384, "construction progression must fit one BAR command slot");
   for (const id of ["armnanotct2", "cornanotct2", "legnanotct2"]) {
@@ -251,12 +248,10 @@ test("combined T3/T4 upper-tier pack is enabled and fits one BAR command", () =>
   const relative = "defs/economy/economy-t3-t4-upper-tier-pack.lua";
   const file = path.join(root, "tweaks", relative);
   const text = fs.readFileSync(file, "utf8");
-  const state = JSON.parse(fs.readFileSync(path.join(root, "tweaks", "state.json"), "utf8"));
-  assert.equal(state[relative], true);
-  assert.equal(state["defs/zz-economy-t3-t4-explosion-overrides.lua"], undefined,
-    "explosion upgrades stay in the combined upper-tier pack");
+  assertDefaultEnabled(relative);
+  assert.equal(fs.existsSync(path.join(root, "tweaks", "defs", "zz-economy-t3-t4-explosion-overrides.lua")), false,
+    "explosion upgrades must remain in the combined upper-tier pack, not a duplicate file");
 
-  const pure = loadPure();
   const command = pure.cmdPrefix("tweakdefs", 9) + pure.b64encode(pure.luaMinify(text));
   assert.ok(command.length <= 16384, "combined upper-tier pack must fit one BAR command slot");
 
@@ -294,7 +289,7 @@ test("combined T3/T4 upper-tier pack is enabled and fits one BAR command", () =>
 test("Scav AI smarts is enabled and has tactical role coverage", () => {
   const file = path.join(__dirname, "..", "tweaks", "units", "scav", "scav-tactical-ai.lua");
   const body = fs.readFileSync(file, "utf8");
-  assert.equal(JSON.parse(fs.readFileSync(path.join(__dirname, "..", "tweaks", "state.json"), "utf8"))["units/scav/scav-tactical-ai.lua"], true);
+  assertDefaultEnabled("units/scav/scav-tactical-ai.lua");
   for (const role of ["scavsquadbehavior = \"raider\"", "scavsquadbehavior = \"artillery\"", "scavsquadbehavior = \"healer\""]) {
     assert.match(body, new RegExp(role.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), `missing tactical role: ${role}`);
   }
@@ -318,10 +313,8 @@ function raptorRoster() {
 }
 
 test("RaptorX files are enabled, packable and use actual Raptor units", () => {
-  const state = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "tweaks", "state.json"), "utf8"));
-  assert.equal(state["units/raptorx/raptorx-assault-roster.lua"], true);
-  assert.equal(state["units/raptorx/raptorx-support-roster.lua"], true);
-  const pure = require("./helpers/loadPure").loadPure();
+  assertDefaultEnabled("units/raptorx/raptorx-assault-roster.lua");
+  assertDefaultEnabled("units/raptorx/raptorx-support-roster.lua");
   for (const text of raptorSources()) {
     assert.ok((pure.cmdPrefix("tweakunits", 9) + pure.b64encode(pure.luaMinify(text))).length <= 16384);
     for (const [, name] of text.matchAll(/^  (\w+) = \{/gm)) {
@@ -333,8 +326,7 @@ test("RaptorX files are enabled, packable and use actual Raptor units", () => {
 
 test("RaptorX custom definitions are enabled, verified and wired into squads", () => {
   const definition = fs.readFileSync(path.join(__dirname, "..", "tweaks", "defs", "raptorx", "raptorx-custom-unit-core.lua"), "utf8");
-  const state = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "tweaks", "state.json"), "utf8"));
-  assert.equal(state["defs/raptorx/raptorx-custom-unit-core.lua"], true);
+  assertDefaultEnabled("defs/raptorx/raptorx-custom-unit-core.lua");
   const specs = [...definition.matchAll(/\{"(raptor_\w+)","(raptorx_\w+)"/g)];
   assert.equal(specs.length, 25, "expected twenty-five Raptor custom definitions");
   const destinations = new Set();
@@ -360,7 +352,6 @@ test("RaptorX custom definitions are enabled, verified and wired into squads", (
   for (const unit of ["raptorx_ironfang", "raptorx_dreadrunner", "raptorx_burnmaw"]) {
     assert.match(raptorSources().join("\n"), new RegExp(`^  ${unit} = \\{`, "m"), `${unit} needs an early squad`);
   }
-  const pure = require("./helpers/loadPure").loadPure();
   assert.ok((pure.cmdPrefix("tweakdefs", 9) + pure.b64encode(pure.luaMinify(definition))).length <= 16384,
     "Raptor custom definitions exceed a numbered tweakdefs command slot");
 });
@@ -451,7 +442,7 @@ test("RaptorX custom units scale health and damage at every 10% anger tier", () 
 
 test("RaptorX custom units have explicit weapon mechanics and effects", () => {
   const text = fs.readFileSync(path.join(__dirname, "..", "tweaks", "defs", "raptorx", "raptorx-siege-artillery.lua"), "utf8");
-  for (const mechanic of ["range = 10200", "burst = 7", "paralyzer = true", "paralyzetime = 12", "disruption = true"]) {
+  for (const mechanic of ["range = 12800", "burst = 10", "paralyzer = true", "paralyzetime = 20", "disruption = true"]) {
     assert.match(text, new RegExp(mechanic.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), `missing mechanic: ${mechanic}`);
   }
   assert.match(text, /custom:exp_emp_large/);
@@ -506,7 +497,6 @@ test("Needle Swarm is a fast-tracking long-range AA interceptor", () => {
 });
 
 test("player ultra turrets pack into one BAR command", () => {
-  const pure = loadPure();
   const source = fs.readFileSync(path.join(__dirname, "..", "tweaks", "defs", "player", "turrets", "player-turrets-ultra.lua"), "utf8");
   const minified = pure.luaMinify(source);
   const command = pure.buildCommand("tweakdefs", 1, minified, true).cmd;

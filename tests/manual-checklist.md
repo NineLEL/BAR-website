@@ -6,27 +6,31 @@ Automated coverage is `node:test` only (zero dependencies, Node ≥ 22).
 
 ```sh
 node --version        # need v22+
-npm test              # node --test tests/      — full suite, must be < 5s
-npm run check         # node --check on app.js, server.js, all test files
+npm test              # node --test — full suite
+npm run check         # syntax-check all production and test JavaScript files
 npm run verify        # check + test (the gate before any change ships)
-node --test tests/pure.test.js    # fast logic slice only
-node --test tests/server.test.js  # isolated API/static slice only
-PERF_STRICT=1 npm test            # also FAIL on perf-budget overruns
-                                  # (default: budgets only warn)
+npm run test:pure     # direct app-pure.js logic tests
+npm run test:client   # app-library.js with a stubbed fetch boundary
+npm run test:server   # isolated API/static integration tests
+npm run test:tweaks   # data/source contract tests
+# Set PERF_STRICT=1 before a command to fail on performance-budget overruns.
+# PowerShell example: $env:PERF_STRICT="1"; npm test
 ```
 
 ## What the robots cover
 
 | File | Covers |
 |---|---|
-| `tests/helpers/loadPure.js` | Extracts the 7 pure fns + `MAX_SLOTS` from `app.js` via `fs`+`vm` (balanced-brace slice — the whole file is NEVER eval'd because the DOM section runs on load) |
-| `tests/pure.test.js` | b64 roundtrip (UTF-8/emoji/CJK, URL-safe, whitespace, padding, throws); `luaMinify` comments-vs-strings; slot addressing; `buildCommand`; `mergeTweakUnits`; autopack 16384 boundary (exact-fit / one-over); collect/decode parser; `getLimit` 16384 fallback; minifier-vs-`tests/fixtures/*.lua` (copies of live tweaks — never the live files); perf W1/W2/W4 |
-| `tests/server.test.js` | Temp-`BAR_ROOT` + ephemeral port, never the live `./tweaks`/`state.json`: `GET /api/tweaks` (shape, query ignored), toggle 200/400-matrix/405, `safeName`/traversal matrix, static 403/404, corrupt-`state.json` → all-enabled, 1 MB abort resilience, XSS/envelope guards, GAP-1/2/3 pins, perf W3 list-200 |
+| `app-pure.js`, `tests/pure.test.js` | The production pure module is imported directly: Base64, Lua minify/prettify, decode command parsing, slot/packing boundaries, reset commands, fixtures, and perf W1/W2/W4. |
+| `app-library.js`, `tests/library-client.test.js` | Fetch/toggle API behavior with a restored, stubbed `fetch`; no live network. |
+| `tests/server.test.js` | Temporary tweak root + ephemeral port: API, toggle validation/persistence, path safety, static files, corrupt temporary state, update notifications, and perf W3. It snapshots live `state.json` bytes solely to guard against writes, never reads its values. |
+| `tests/default-enabled.test.js`, `tests/fixtures/default-enabled-tweaks.json` | Validates the test-owned expected default-enable profile. This avoids making feature/source tests depend on user toggle preferences in live `state.json`. |
+| `tests/tweak-srcs.test.js`, `tests/scavx-release.test.js`, `tests/scavx-hardening.test.js`, `tests/raptor-minibosses.test.js` | Lua source contracts, clone/unit references, packability, release comparisons, and optional executable Lua checks. |
 
-`server.js` carries one minimal testability refactor (env overrides
-`BAR_ROOT`/`BAR_TWEAKS_DIR`, binds only under `require.main === module`,
-exports its handlers). Behaviour without the env vars is unchanged.
-`app.js`, `index.html`, `styles.css`, live `tweaks/` are untouched.
+The server tests create configured instances with `createServer({ root,
+tweaksDir })`; they bind only to an ephemeral loopback port. Pure logic is
+tested through the same `app-pure.js` module used by the browser. The test suite
+does not alter live tweak files or user state.
 
 ## Manual DOM checklist (cannot be automated without jsdom — forbidden dep)
 

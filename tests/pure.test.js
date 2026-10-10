@@ -31,21 +31,15 @@ function greedyPack(pure, kind, minis, limit) {
   });
 }
 
-// Decode-input parser mirrored from the decodeBtn handler in app.js.
-function parseDecodeInput(raw) {
-  const m = raw.trim().match(/!bset\s+(tweak\w+)\s+([\s\S]+)/i);
-  return m ? { key: m[1], b64: m[2].trim() } : { key: "(unknown key)", b64: raw.trim().split(/\s+/).pop() };
-}
-
 describe("pure module API", () => {
   it("exports the browser-and-Node logic surface", () => {
     assert.deepEqual(Object.keys(pure), [
       "MAX_SLOTS", "getLimit", "b64encode", "b64decode", "luaMinify",
-      "luaPrettify", "slotKey", "cmdPrefix", "buildCommand",
+      "luaPrettify", "slotKey", "cmdPrefix", "buildCommand", "parseDecodeInput",
       "mergeTweakUnits", "packChunks", "findDuplicateDst",
       "resetCommands", "resetAllCommands",
     ]);
-    for (const name of ["b64encode", "b64decode", "luaMinify", "luaPrettify", "slotKey", "cmdPrefix", "buildCommand", "mergeTweakUnits", "packChunks", "findDuplicateDst", "getLimit", "resetCommands", "resetAllCommands"]) {
+    for (const name of ["b64encode", "b64decode", "luaMinify", "luaPrettify", "slotKey", "cmdPrefix", "buildCommand", "parseDecodeInput", "mergeTweakUnits", "packChunks", "findDuplicateDst", "getLimit", "resetCommands", "resetAllCommands"]) {
       assert.equal(typeof pure[name], "function", name + " must be callable");
     }
     assert.equal(pure.MAX_SLOTS, 10);
@@ -299,8 +293,8 @@ describe("packChunks index contract + findDuplicateDst", () => {
     const minis = [];
     for (let i = 0; i < 15; i++) minis.push(pure.luaMinify("local w" + i + " = " + i));
     const idxChunks = pure.packChunks("tweakdefs", minis, LIMIT);
-    // NB: JSON compare — index arrays come from the loadPure vm realm, whose
-    // Array prototype trips assert.deepStrictEqual.
+    // Normalize to the host realm in case the implementation returns an
+    // array-like value with a different prototype in a future browser build.
     const flat = JSON.parse(JSON.stringify(idxChunks)).flat();
     assert.deepEqual(flat, minis.map((_, i) => i));
   });
@@ -362,19 +356,29 @@ describe("collect/decode parser", () => {
   it("parses '!bset tweakdefsN <b64>' into key + payload", () => {
     const min = pure.luaMinify("local a = 1");
     const { cmd } = pure.buildCommand("tweakdefs", 4, min);
-    const p = parseDecodeInput(cmd);
+    const p = pure.parseDecodeInput(cmd);
     assert.equal(p.key, "tweakdefs4");
     assert.equal(pure.b64decode(p.b64), min);
   });
   it("is case-insensitive on !bset and tolerates extra spaces", () => {
-    const p = parseDecodeInput("!BSET   tweakunits2    QUJD");
+    const p = pure.parseDecodeInput("!BSET   tweakunits2    QUJD");
     assert.equal(p.key, "tweakunits2");
     assert.equal(p.b64, "QUJD");
   });
   it("falls back to last token + unknown key for bare b64", () => {
-    const p = parseDecodeInput("QUJD");
+    const p = pure.parseDecodeInput("QUJD");
     assert.equal(p.key, "(unknown key)");
     assert.equal(p.b64, "QUJD");
+  });
+  it("uses the final non-command token for an unrecognized input", () => {
+    assert.deepEqual(pure.parseDecodeInput("not-a-bset-command\nQUJD"), {
+      key: "(unknown key)", b64: "QUJD",
+    }, "unrecognized input should retain the existing bare-payload fallback");
+  });
+  it("returns an empty payload for blank input", () => {
+    assert.deepEqual(pure.parseDecodeInput(" \n\t "), {
+      key: "(unknown key)", b64: "",
+    });
   });
 });
 

@@ -5,7 +5,8 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
-const { loadPure } = require("./helpers/loadPure");
+const pure = require("../app-pure");
+const { assertDefaultEnabled, defaultEnabled } = require("./helpers/enabledTweaks");
 const root = path.join(__dirname, "..");
 const relative = "defs/raptorx/raptorx-miniboss-specialists.lua";
 const source = fs.readFileSync(path.join(root, "tweaks", relative), "utf8");
@@ -29,12 +30,25 @@ test("five unique native mini-bosses have solo special squads and staged unlocks
 });
 
 test("mini-boss pack is discoverable, enabled and fits either Base64 alphabet", () => {
-  const { listTweaks } = require("../server");
-  const entry = listTweaks().defs.find(item => item.name === relative.slice(5));
-  assert.ok(entry);
-  assert.equal(entry.enabled, true);
-  assert.equal(entry.content, source);
-  const pure = loadPure();
+  assertDefaultEnabled(relative);
+  const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), "bar-miniboss-library-"));
+  const tweaksDir = path.join(temporaryRoot, "tweaks");
+  const server = require("../server").createServer({ root: temporaryRoot, tweaksDir });
+  const libraryName = relative.slice("defs/".length);
+  const stagedFile = path.join(tweaksDir, "defs", ...libraryName.split("/"));
+  try {
+    fs.mkdirSync(path.dirname(stagedFile), { recursive: true });
+    fs.writeFileSync(stagedFile, source);
+    fs.writeFileSync(path.join(tweaksDir, "state.json"),
+      JSON.stringify({ [`defs/${libraryName}`]: defaultEnabled[relative] }));
+    server.ensureDirs();
+    const entry = server.listTweaks().defs.find(item => item.name === libraryName);
+    assert.ok(entry, "server library should discover the packaged mini-boss definition");
+    assert.equal(entry.enabled, true, "manifest-enabled mini-boss definition should be enabled in the isolated library");
+    assert.equal(entry.content, source, "server library should expose the staged mini-boss source unchanged");
+  } finally {
+    fs.rmSync(temporaryRoot, { recursive: true, force: true });
+  }
   const minified = pure.luaMinify(source);
   for (const urlSafe of [false, true]) {
     const command = pure.buildCommand("tweakdefs", 9, minified, urlSafe).cmd;
@@ -71,7 +85,7 @@ test("Lua execution: clone isolation, mechanics, hardening and edge cases (raw +
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "bar-miniboss-test-"));
   try {
     const minifiedPath = path.join(dir, "minibosses.lua");
-    fs.writeFileSync(minifiedPath, loadPure().luaMinify(source));
+     fs.writeFileSync(minifiedPath, pure.luaMinify(source));
     for (const input of [path.join(root, "tweaks", relative), minifiedPath]) {
       const result = spawnSync(lua, ["tests/raptor-minibosses.lua", input], { cwd: root, encoding: "utf8" });
       assert.ifError(result.error);

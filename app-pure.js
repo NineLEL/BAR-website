@@ -219,6 +219,15 @@
     return { b64: b64, cmd: cmdPrefix(kind, idx) + b64 };
   }
 
+  /* Parse the command-or-payload input used by the browser's decode tool. */
+  function parseDecodeInput(raw) {
+    var input = raw.trim();
+    var match = input.match(/!bset\s+(tweak\w+)\s+([\s\S]+)/i);
+    return match
+      ? { key: match[1], b64: match[2].trim() }
+      : { key: "(unknown key)", b64: input.split(/\s+/).pop() };
+  }
+
   /* Merge several tweakunits table sources into one table source. */
   function mergeTweakUnits(sources) {
     var inners = [];
@@ -311,6 +320,7 @@
     slotKey: slotKey,
     cmdPrefix: cmdPrefix,
     buildCommand: buildCommand,
+    parseDecodeInput: parseDecodeInput,
     mergeTweakUnits: mergeTweakUnits,
     packChunks: packChunks,
     findDuplicateDst: findDuplicateDst,

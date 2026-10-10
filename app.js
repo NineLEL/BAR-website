@@ -469,10 +469,9 @@ $("charLimit").oninput = function () { renderSlots(defs); renderSlots(units); };
 $("b64url").onchange = function () { renderAll(); };
 
 $("decodeBtn").onclick = function () {
-  var raw = $("decodeInput").value.trim();
-  var m = raw.match(/!bset\s+(tweak\w+)\s+([\s\S]+)/i);
-  var b64 = m ? m[2].trim() : raw.split(/\s+/).pop();
-  var key = m ? m[1] : "(unknown key)";
+  var parsed = Pure.parseDecodeInput($("decodeInput").value);
+  var b64 = parsed.b64;
+  var key = parsed.key;
   try {
     var lua = b64decode(b64);
     $("decodeOutput").textContent = "-- " + key + " — " + b64.length + " b64 chars → " + lua.length + " lua chars\n\n" + lua;
