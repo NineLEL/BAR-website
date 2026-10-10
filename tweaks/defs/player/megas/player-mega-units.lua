@@ -1,5 +1,5 @@
 do
-	local U, lower = UnitDefs, string.lower
+	local U, L = UnitDefs, string.lower
 	local function C(t)
 		if type(t) ~= "table" then
 			return t
@@ -10,56 +10,51 @@ do
 		end
 		return r
 	end
-
 	local function teach(bld, dst)
 		for b in bld:gmatch("%S+") do
 			local u = U[b] or (UnitDefNames and UnitDefNames[b])
 			if u then
 				u.buildoptions = u.buildoptions or {}
-				local has = false
+				local h = false
 				for _, x in ipairs(u.buildoptions) do
 					if x == dst then
-						has = true
+						h = true
 						break
 					end
 				end
-				if not has then
+				if not h then
 					u.buildoptions[#u.buildoptions + 1] = dst
 				end
 			end
 		end
 	end
-
-	local function install(u, key, wep, cat)
-		key = key:lower()
+	local function install(u, k, w, cat)
+		k = k:lower()
 		u.weapondefs, u.weapons = u.weapondefs or {}, u.weapons or {}
-		local oldW, suite = u.weapons, wep.is_suite and wep.slots or { [1] = wep }
+		local ow, st = u.weapons, w.is_suite and w.slots or { [1] = w }
 		u.weapons = {}
-
-		for idx, w in pairs(suite) do
-			local k = wep.is_suite and (key .. "_" .. idx) or key
-			w.noselfdamage, w.turret = true, true
-			u.weapondefs[k] = C(w)
-			local m = { def = k, onlytargetcategory = w.onlytargetcategory or cat }
-			if oldW[idx] then
-				for pk, pv in pairs(oldW[idx]) do
+		for i, v in pairs(st) do
+			local sk = w.is_suite and (k .. "_" .. i) or k
+			v.noselfdamage, v.turret = true, true
+			u.weapondefs[sk] = C(v)
+			local m = { def = sk, onlytargetcategory = v.onlytargetcategory or cat }
+			if ow[i] then
+				for pk, pv in pairs(ow[i]) do
 					if
 						pk ~= "def"
 						and m[pk] == nil
 						and pk ~= "onlytargetcategory"
-						and (wep.is_suite or (pk ~= "maindir" and pk ~= "maxangledif"))
+						and (w.is_suite or (pk ~= "maindir" and pk ~= "maxangledif"))
 					then
 						m[pk] = C(pv)
 					end
 				end
 			end
-			u.weapons[idx] = m
+			u.weapons[i] = m
 		end
-
-		if #oldW > #u.weapons then
-			local dKey = key .. "_dummy"
-			u.weapondefs[dKey] = {
-				name = "Dummy",
+		if #ow > #u.weapons then
+			local dk = k .. "_d"
+			u.weapondefs[dk] = {
 				weapontype = "Cannon",
 				range = 1,
 				reloadtime = 9999,
@@ -68,59 +63,52 @@ do
 				turret = true,
 				explosiongenerator = "custom:genericshellexplosion-tiny",
 			}
-			for sIdx = #u.weapons + 1, #oldW do
-				local sSlot = oldW[sIdx]
-				local dSlot = { def = dKey, onlytargetcategory = "NONE", badtargetcategory = "ALL" }
-				if sSlot then
-					dSlot.maindir, dSlot.maxangledif = sSlot.maindir, sSlot.maxangledif
+			for s = #u.weapons + 1, #ow do
+				local sl = ow[s]
+				local d = { def = dk, onlytargetcategory = "NONE", badtargetcategory = "ALL" }
+				if sl then
+					d.maindir, d.maxangledif = sl.maindir, sl.maxangledif
 				end
-				u.weapons[sIdx] = dSlot
+				u.weapons[s] = d
 			end
 		end
 	end
-
 	local function findSrc(c)
 		for i = 1, #c do
-			local s = U[c[i]] or U[lower(c[i])] or (UnitDefNames and (UnitDefNames[c[i]] or UnitDefNames[lower(c[i])]))
+			local s = U[c[i]] or U[L(c[i])] or (UnitDefNames and (UnitDefNames[c[i]] or UnitDefNames[L(c[i])]))
 			if s then
 				return s, c[i]
 			end
 		end
 	end
 
-	local LAND_GANTRIES = "armshltx corgant leggant everyexpe"
-	local EXP_AIR = "armapt3 corapt3 legapt3 everyexpe"
-	local FB_AIR = "armaap coraap legaap"
+	local LG = "armshltx corgant leggant everyexpe"
+	local EA = "armapt3 corapt3 legapt3 everyexpe"
 	local function getAir()
-		for b in EXP_AIR:gmatch("%S+") do
+		for b in EA:gmatch("%S+") do
 			if U[b] or (UnitDefNames and UnitDefNames[b]) then
-				return EXP_AIR
+				return EA
 			end
 		end
-		return FB_AIR
+		return "armaap coraap legaap"
 	end
 
-	local S_CNH, S_NU4, S_M1, S_M2, S_FLK_F, S_FLK_H, S_RCK, S_C1 =
+	local S_C, S_N, S_M, S_F, S_R =
 		"weapons/cannon_heavy.wav",
 		"weapons/xplonuk4.wav",
 		"weapons/xplomed1.wav",
-		"weapons/xplomed2.wav",
 		"weapons/flak_fire.wav",
-		"weapons/flak_hit.wav",
-		"weapons/rockhvy1.wav",
-		"weapons/cannhvy1.wav"
-
-	local C_TAC, C_FLK, C_BRN, E_FN4, E_FN2, E_EMP, E_SHL =
+		"weapons/rockhvy1.wav"
+	local C_T, C_F, C_B, E_F, E_E, E_S =
 		"cruisemissiletrail-tacnuke",
 		"flakshard",
 		"burnflame",
-		"custom:FLASHNUKE480",
 		"custom:FLASHNUKE280",
 		"custom:exp_emp_large",
 		"custom:genericshellexplosion-huge"
+	local TS, TV, TSV = "SURFACE", "VTOL", "SURFACE VTOL"
 
-	local T_S, T_V, T_SV = "SURFACE", "VTOL", "SURFACE VTOL"
-	local function W(n, t, r, rel, v, aoe, e, d, s, c, vt, extra)
+	local function W(n, t, r, rel, v, aoe, e, d, s, c, vt, ex)
 		local o = {
 			name = n,
 			weapontype = t,
@@ -140,223 +128,377 @@ do
 		if vt then
 			o.damage.vtol = vt
 		end
-		if extra then
-			for k, val in pairs(extra) do
+		if ex then
+			for k, val in pairs(ex) do
 				o[k] = val
 			end
 		end
 		return o
 	end
 
-	local WEAPONS = {
-		jump = W("Rift Singularity Cannon", "Cannon", 3200, 4.2, 1800, 650, 48e3, 28e3, 42e3, 8e3, nil, {
-			accuracy = 180,
-			size = 22,
-			stages = 36,
-			alpha = 0.9,
-			intensity = 2,
-			rgbcolor = "0 0.95 1",
-			cegtag = C_TAC,
-			explosiongenerator = E_FN2,
-			soundstart = S_CNH,
-			soundhitdry = S_M1,
-			craterboost = 5,
-			cratermult = 3.5,
-			impulsefactor = 12,
-			impulseboost = 8,
-			camerashake = 110,
-			onlytargetcategory = T_S,
-		}),
-		vortex = W("Singularity Inversion Well", "Cannon", 3000, 4.5, 1400, 700, 42e3, 16e3, 45e3, 4500, nil, {
-			accuracy = 160,
-			size = 23,
-			stages = 32,
-			rgbcolor = "0.35 0.05 0.55",
-			cegtag = "heatcloud-rot-purple",
-			explosiongenerator = E_EMP,
-			soundstart = S_CNH,
-			soundhitdry = S_NU4,
-			impulsefactor = -14,
-			impulseboost = -9,
-			craterboost = 0,
-			cratermult = 0,
-			camerashake = 120,
-			onlytargetcategory = T_S,
-		}),
-		crack = W("Tungsten Sabot Shotgun", "Cannon", 2400, 3.2, 2400, 240, 28e3, 9600, 38e3, 3500, nil, {
-			projectilespershot = 8,
-			burst = 2,
-			burstrate = 0.08,
-			sprayangle = 850,
-			accuracy = 320,
-			separation = 0.8,
-			size = 10,
-			stages = 24,
-			rgbcolor = "1 0.5 0.1",
-			cegtag = "volcano_rock_trail",
-			explosiongenerator = "custom:genericshellexplosion-medium",
-			soundstart = S_CNH,
-			soundhitdry = S_M1,
-			craterboost = 3,
-			cratermult = 2,
-			edgeeffectiveness = 0.85,
-			customparams = { shotgun = true, pellets = 16 },
-			onlytargetcategory = T_S,
-		}),
-		sol = W("Supernova Cataclysm", "Cannon", 3400, 5.5, 520, 850, 95e3, 48e3, 11e4, 14e3, nil, {
-			accuracy = 100,
-			edgeeffectiveness = 0.85,
-			burnblow = true,
-			firestarter = 100,
-			size = 44,
-			stages = 48,
-			intensity = 3.5,
-			alpha = 0.95,
-			rgbcolor = "1 0.45 0.02",
-			cegtag = C_BRN,
-			explosiongenerator = E_FN4,
-			soundstart = S_CNH,
-			soundhitdry = S_NU4,
-			craterboost = 7,
-			cratermult = 5,
-			impulsefactor = 14,
-			impulseboost = 9,
-			camerashake = 180,
-			onlytargetcategory = T_S,
-		}),
-		flak = W("Thermite Flak Storm", "Cannon", 2400, 1.8, 3200, 320, 800, 600, 3200, nil, 9800, {
-			canattackground = false,
-			burnblow = true,
-			burst = 6,
-			burstrate = 0.12,
-			projectilespershot = 4,
-			sprayangle = 1800,
-			edgeeffectiveness = 0.9,
-			size = 8,
-			rgbcolor = "1 0.45 0.1",
-			cegtag = C_FLK,
-			explosiongenerator = "custom:flakshard",
-			soundstart = S_FLK_F,
-			soundhitdry = S_FLK_H,
-			onlytargetcategory = T_V,
-		}),
-		tesla = W("Tesla Chain Battery", "LightningCannon", 1800, 1.2, 4200, 140, 650, 1600, 1800, 550, 4200, {
-			projectilespershot = 4,
-			burst = 10,
-			burstrate = 0.08,
-			sprayangle = 2000,
-			thickness = 12,
-			rgbcolor = "0.2 0.85 1",
-			explosiongenerator = "custom:genericshellexplosion-small-lightning",
-			soundstart = "weapons/tecl_fire.wav",
-			soundhitdry = "weapons/lashit.wav",
-			edgeeffectiveness = 0.85,
-			onlytargetcategory = T_SV,
-		}),
-		pyro = W("Carpet Fire Mortar", "Cannon", 2400, 3.6, 1100, 260, 750, 5200, 16e3, 1200, nil, {
-			burst = 20,
-			burstrate = 0.05,
-			sprayangle = 1600,
-			accuracy = 400,
-			groundbounce = true,
-			bouncerebound = 0.65,
-			bounceminspeed = 200,
-			numsubcatches = 3,
-			firestarter = 100,
-			size = 8.5,
-			stages = 22,
-			rgbcolor = "1 0.35 0.05",
-			cegtag = C_BRN,
-			explosiongenerator = "custom:napalm_fire",
-			soundstart = S_CNH,
-			soundhitdry = S_M2,
-			edgeeffectiveness = 0.85,
-			cratermult = 0.2,
-			camerashake = 45,
-			onlytargetcategory = T_S,
-		}),
-		emp = W("Atmospheric EMP", "Cannon", 2600, 5.5, 1600, 750, 60e3, 24e3, 52e3, 8e3, nil, {
-			paralyzer = true,
-			paralyzetime = 10,
-			accuracy = 200,
-			size = 26,
-			stages = 36,
-			intensity = 2.2,
-			rgbcolor = "0.6 0.1 0.95",
-			cegtag = "heatcloud-rot-purple",
-			explosiongenerator = E_EMP,
-			soundstart = S_CNH,
-			soundhitdry = S_M2,
-			onlytargetcategory = T_SV,
-		}),
-		aether_main = W("Aether Siege Mortar", "Cannon", 3100, 3.8, 2000, 580, 40e3, 24e3, 55e3, 6500, nil, {
-			accuracy = 220,
-			sprayangle = 500,
-			size = 18,
-			stages = 28,
-			rgbcolor = "0.9 0.8 0.2",
-			cegtag = "arty-large",
-			explosiongenerator = E_SHL,
-			soundstart = S_CNH,
-			soundhitdry = S_M1,
-			craterboost = 5,
-			cratermult = 3.5,
-			impulsefactor = 14,
-			impulseboost = 9,
-			camerashake = 120,
-			firestarter = 100,
-			onlytargetcategory = T_S,
-		}),
-		aether_sec = W("Aether Deck Cannon", "Cannon", 2000, 0.6, 2600, 180, 600, 1800, 4200, 400, nil, {
-			canattackground = true,
-			accuracy = 250,
-			sprayangle = 550,
-			burst = 6,
-			burstrate = 0.06,
-			size = 6,
-			rgbcolor = "1 0.85 0.3",
-			explosiongenerator = "custom:genericshellexplosion-medium",
-			soundstart = S_C1,
-			soundhitdry = S_M2,
-			onlytargetcategory = T_S,
-		}),
-		aether_aa = W("Aether SAM", "MissileLauncher", 2200, 1.4, 3600, 90, 1400, 800, 2200, nil, 6800, {
-			burst = 10,
-			burstrate = 0.05,
-			sprayangle = 450,
-			startvelocity = 1400,
-			weaponacceleration = 1800,
-			flighttime = 6,
-			tracks = true,
-			turnrate = 95e3,
-			dance = 4,
-			wobble = 80,
-			cegtag = "missiletrailaa",
-			explosiongenerator = "custom:genericshellexplosion-medium-aa",
-			soundstart = S_RCK,
-			soundhitdry = S_M2,
-			onlytargetcategory = T_V,
-		}),
-		torpedo = W("Voidstrike Torpedoes", "MissileLauncher", 2600, 4.2, 1100, 0, 32e3, 22e3, 58e3, 5200, nil, {
-			burst = 4,
-			burstrate = 0.25,
-			weaponacceleration = 500,
-			flighttime = 10,
-			tracks = true,
-			turnrate = 60e3,
-			dance = 15,
-			wobble = 600,
-			size = 14,
-			rgbcolor = "0 1 0.55",
-			cegtag = C_TAC,
-			explosiongenerator = E_SHL,
-			soundstart = S_RCK,
-			soundhitdry = S_M1,
-			firestarter = 100,
-			onlytargetcategory = T_S,
-		}),
-		pshield = {
-			name = "Abyssal Phase Shield",
+	local WP = {
+		jump = W(
+			"Rift Cannon",
+			"Cannon",
+			3200,
+			4.2,
+			1800,
+			650,
+			48e3,
+			28e3,
+			42e3,
+			8e3,
+			nil,
+			{
+				accuracy = 180,
+				size = 22,
+				stages = 36,
+				alpha = 0.9,
+				intensity = 2,
+				rgbcolor = "0 0.95 1",
+				cegtag = C_T,
+				explosiongenerator = E_F,
+				soundstart = S_C,
+				soundhitdry = S_M,
+				craterboost = 5,
+				cratermult = 3.5,
+				impulsefactor = 12,
+				impulseboost = 8,
+				camerashake = 110,
+				onlytargetcategory = TS,
+			}
+		),
+		vortex = W(
+			"Vortex Well",
+			"Cannon",
+			3000,
+			4.5,
+			1400,
+			700,
+			42e3,
+			16e3,
+			45e3,
+			4500,
+			nil,
+			{
+				accuracy = 160,
+				size = 23,
+				stages = 32,
+				rgbcolor = "0.35 0.05 0.55",
+				cegtag = "heatcloud-rot-purple",
+				explosiongenerator = E_E,
+				soundstart = S_C,
+				soundhitdry = S_N,
+				impulsefactor = -14,
+				impulseboost = -9,
+				craterboost = 0,
+				cratermult = 0,
+				camerashake = 120,
+				onlytargetcategory = TS,
+			}
+		),
+		crack = W(
+			"Sabot Shotgun",
+			"Cannon",
+			2400,
+			3.2,
+			2400,
+			240,
+			28e3,
+			9600,
+			38e3,
+			3500,
+			nil,
+			{
+				projectilespershot = 8,
+				burst = 2,
+				burstrate = 0.08,
+				sprayangle = 850,
+				accuracy = 320,
+				separation = 0.8,
+				size = 10,
+				stages = 24,
+				rgbcolor = "1 0.5 0.1",
+				cegtag = "volcano_rock_trail",
+				explosiongenerator = "custom:genericshellexplosion-medium",
+				soundstart = S_C,
+				soundhitdry = S_M,
+				craterboost = 3,
+				cratermult = 2,
+				edgeeffectiveness = 0.85,
+				onlytargetcategory = TS,
+			}
+		),
+		sol = W(
+			"Cataclysm",
+			"Cannon",
+			3400,
+			5.5,
+			520,
+			850,
+			95e3,
+			48e3,
+			11e4,
+			14e3,
+			nil,
+			{
+				accuracy = 100,
+				edgeeffectiveness = 0.85,
+				burnblow = true,
+				firestarter = 100,
+				size = 44,
+				stages = 48,
+				intensity = 3.5,
+				alpha = 0.95,
+				rgbcolor = "1 0.45 0.02",
+				cegtag = C_B,
+				explosiongenerator = "custom:FLASHNUKE480",
+				soundstart = S_C,
+				soundhitdry = S_N,
+				craterboost = 7,
+				cratermult = 5,
+				impulsefactor = 14,
+				impulseboost = 9,
+				camerashake = 180,
+				onlytargetcategory = TS,
+			}
+		),
+		flak = W(
+			"Flak Storm",
+			"Cannon",
+			2400,
+			1.8,
+			3200,
+			320,
+			800,
+			600,
+			3200,
+			nil,
+			9800,
+			{
+				canattackground = false,
+				burnblow = true,
+				burst = 6,
+				burstrate = 0.12,
+				projectilespershot = 4,
+				sprayangle = 1800,
+				edgeeffectiveness = 0.9,
+				size = 8,
+				rgbcolor = "1 0.45 0.1",
+				cegtag = C_F,
+				explosiongenerator = "custom:flakshard",
+				soundstart = S_F,
+				soundhitdry = S_F,
+				onlytargetcategory = TV,
+			}
+		),
+		tesla = W(
+			"Tesla Battery",
+			"LightningCannon",
+			1800,
+			1.2,
+			4200,
+			140,
+			650,
+			1600,
+			1800,
+			550,
+			4200,
+			{
+				projectilespershot = 4,
+				burst = 10,
+				burstrate = 0.08,
+				sprayangle = 2000,
+				thickness = 12,
+				rgbcolor = "0.2 0.85 1",
+				explosiongenerator = "custom:genericshellexplosion-small-lightning",
+				soundstart = "weapons/tecl_fire.wav",
+				soundhitdry = "weapons/lashit.wav",
+				edgeeffectiveness = 0.85,
+				onlytargetcategory = TSV,
+			}
+		),
+		pyro = W(
+			"Carpet Mortar",
+			"Cannon",
+			2400,
+			3.6,
+			1100,
+			260,
+			750,
+			5200,
+			16e3,
+			1200,
+			nil,
+			{
+				burst = 20,
+				burstrate = 0.05,
+				sprayangle = 1600,
+				accuracy = 400,
+				groundbounce = true,
+				bouncerebound = 0.65,
+				bounceminspeed = 200,
+				numsubcatches = 3,
+				firestarter = 100,
+				size = 8.5,
+				stages = 22,
+				rgbcolor = "1 0.35 0.05",
+				cegtag = C_B,
+				explosiongenerator = "custom:napalm_fire",
+				soundstart = S_C,
+				soundhitdry = "weapons/xplomed2.wav",
+				edgeeffectiveness = 0.85,
+				cratermult = 0.2,
+				camerashake = 45,
+				onlytargetcategory = TS,
+			}
+		),
+		emp = W(
+			"Atmospheric EMP",
+			"Cannon",
+			2600,
+			5.5,
+			1600,
+			750,
+			60e3,
+			24e3,
+			52e3,
+			8e3,
+			nil,
+			{
+				paralyzer = true,
+				paralyzetime = 10,
+				accuracy = 200,
+				size = 26,
+				stages = 36,
+				intensity = 2.2,
+				rgbcolor = "0.6 0.1 0.95",
+				cegtag = "heatcloud-rot-purple",
+				explosiongenerator = E_E,
+				soundstart = S_C,
+				soundhitdry = "weapons/xplomed2.wav",
+				onlytargetcategory = TSV,
+			}
+		),
+		a_m = W(
+			"Siege Mortar",
+			"Cannon",
+			3100,
+			3.8,
+			2000,
+			580,
+			40e3,
+			24e3,
+			55e3,
+			6500,
+			nil,
+			{
+				accuracy = 220,
+				sprayangle = 500,
+				size = 18,
+				stages = 28,
+				rgbcolor = "0.9 0.8 0.2",
+				cegtag = "arty-large",
+				explosiongenerator = E_S,
+				soundstart = S_C,
+				soundhitdry = S_M,
+				craterboost = 5,
+				cratermult = 3.5,
+				impulsefactor = 14,
+				impulseboost = 9,
+				camerashake = 120,
+				firestarter = 100,
+				onlytargetcategory = TS,
+			}
+		),
+		a_s = W(
+			"Deck Cannon",
+			"Cannon",
+			2000,
+			0.6,
+			2600,
+			180,
+			600,
+			1800,
+			4200,
+			400,
+			nil,
+			{
+				canattackground = true,
+				accuracy = 250,
+				sprayangle = 550,
+				burst = 6,
+				burstrate = 0.06,
+				size = 6,
+				rgbcolor = "1 0.85 0.3",
+				explosiongenerator = "custom:genericshellexplosion-medium",
+				soundstart = "weapons/cannhvy1.wav",
+				soundhitdry = "weapons/xplomed2.wav",
+				onlytargetcategory = TS,
+			}
+		),
+		a_a = W(
+			"SAM Array",
+			"MissileLauncher",
+			2200,
+			1.4,
+			3600,
+			90,
+			1400,
+			800,
+			2200,
+			nil,
+			6800,
+			{
+				burst = 10,
+				burstrate = 0.05,
+				sprayangle = 450,
+				startvelocity = 1400,
+				weaponacceleration = 1800,
+				flighttime = 6,
+				tracks = true,
+				turnrate = 95e3,
+				dance = 4,
+				wobble = 80,
+				cegtag = "missiletrailaa",
+				explosiongenerator = "custom:genericshellexplosion-medium-aa",
+				soundstart = S_R,
+				soundhitdry = "weapons/xplomed2.wav",
+				onlytargetcategory = TV,
+			}
+		),
+		torp = W(
+			"Torpedo Launcher",
+			"MissileLauncher",
+			2600,
+			4.2,
+			1100,
+			0,
+			32e3,
+			22e3,
+			58e3,
+			5200,
+			nil,
+			{
+				burst = 4,
+				burstrate = 0.25,
+				weaponacceleration = 500,
+				flighttime = 10,
+				tracks = true,
+				turnrate = 60e3,
+				dance = 15,
+				wobble = 600,
+				size = 14,
+				rgbcolor = "0 1 0.55",
+				cegtag = C_T,
+				explosiongenerator = E_S,
+				soundstart = S_R,
+				soundhitdry = S_M,
+				firestarter = 100,
+				onlytargetcategory = TS,
+			}
+		),
+		psh = {
 			weapontype = "Shield",
 			shieldradius = 520,
 			shieldpower = 125e3,
@@ -367,217 +509,265 @@ do
 			shieldalpha = 0.32,
 			rgbcolor = "0.15 0.8 1",
 			visibleshield = true,
-			visibleShield = true,
 		},
-		pbarrage = W("Leviathan Rift Barrage", "Cannon", 2300, 1.6, 4200, 180, 6800, 4200, 9500, nil, nil, {
-			canattackground = true,
-			burst = 5,
-			burstrate = 0.1,
-			sprayangle = 520,
-			size = 8,
-			rgbcolor = "0.35 0.95 1",
-			cegtag = C_TAC,
-			explosiongenerator = "custom:genericshellexplosion-large",
-			soundstart = S_C1,
-			soundhitdry = S_M2,
-			onlytargetcategory = T_S,
-		}),
-		vulcan = W("Rotary Vulcan Array", "Cannon", 1800, 2.4, 3800, 0, 220, 1200, 1600, 350, 3600, {
-			burst = 60,
-			burstrate = 0.02,
-			sprayangle = 900,
-			accuracy = 320,
-			size = 6,
-			stages = 18,
-			rgbcolor = "1 0.7 0.15",
-			cegtag = C_FLK,
-			explosiongenerator = "custom:genericshellexplosion-small",
-			soundstart = S_FLK_F,
-			soundhitdry = "weapons/xplosml2.wav",
-			edgeeffectiveness = 0.85,
-			onlytargetcategory = T_SV,
-		}),
+		pbr = W(
+			"Rift Barrage",
+			"Cannon",
+			2300,
+			1.6,
+			4200,
+			180,
+			6800,
+			4200,
+			9500,
+			nil,
+			nil,
+			{
+				canattackground = true,
+				burst = 5,
+				burstrate = 0.1,
+				sprayangle = 520,
+				size = 8,
+				rgbcolor = "0.35 0.95 1",
+				cegtag = C_T,
+				explosiongenerator = "custom:genericshellexplosion-large",
+				soundstart = "weapons/cannhvy1.wav",
+				soundhitdry = "weapons/xplomed2.wav",
+				onlytargetcategory = TS,
+			}
+		),
+		vulc = W(
+			"Rotary Vulcan",
+			"Cannon",
+			1800,
+			2.4,
+			3800,
+			0,
+			220,
+			1200,
+			1600,
+			350,
+			3600,
+			{
+				burst = 60,
+				burstrate = 0.02,
+				sprayangle = 900,
+				accuracy = 320,
+				size = 6,
+				stages = 18,
+				rgbcolor = "1 0.7 0.15",
+				cegtag = C_F,
+				explosiongenerator = "custom:genericshellexplosion-small",
+				soundstart = S_F,
+				soundhitdry = "weapons/xplosml2.wav",
+				edgeeffectiveness = 0.85,
+				onlytargetcategory = TSV,
+			}
+		),
+		apol = W(
+			"Apollyon Matrix",
+			"Cannon",
+			2200,
+			1.6,
+			3600,
+			160,
+			480,
+			1600,
+			3800,
+			420,
+			6200,
+			{
+				burst = 100,
+				burstrate = 0.018,
+				projectilespershot = 4,
+				sprayangle = 1200,
+				accuracy = 340,
+				size = 6.5,
+				stages = 20,
+				rgbcolor = "1 0.82 0.2",
+				cegtag = C_F,
+				explosiongenerator = "custom:genericshellexplosion-small-lightning",
+				soundstart = S_F,
+				soundhitdry = "weapons/xplosml2.wav",
+				edgeeffectiveness = 0.85,
+				onlytargetcategory = TSV,
+			}
+		),
 	}
 
-	local SPECS = {
+	local SP = {
 		{
 			"player_riftcolossus",
 			{ "armbanth" },
-			"player_riftjump",
-			WEAPONS.jump,
+			"jump",
+			WP.jump,
 			"Rift Colossus",
-			"Kinetic titan. Shockwaves.",
+			"Kinetic titan",
 			{ 145e3, 32e5, 34e4, 56, 3, 2200, 0, 240 },
 		},
 		{
 			"player_vortexdominator",
 			{ "corjugg" },
-			"player_vortexwell",
-			WEAPONS.vortex,
+			"vortex",
+			WP.vortex,
 			"Vortex Dominator",
-			"Gravitational titan.",
+			"Gravitational titan",
 			{ 140e3, 30e5, 32e4, 48, 3, 2400, 0, 220 },
 		},
 		{
 			"player_aegisbreaker",
 			{ "armrattet4", "corjugg", "armbanth" },
-			"player_aegisbreaker",
-			WEAPONS.crack,
+			"crack",
+			WP.crack,
 			"Aegis Breaker",
-			"Close-range shotgun titan.",
+			"Shotgun titan",
 			{ 135e3, 28e5, 29e4, 52, 3, 2000, 0, 200 },
 		},
 		{
 			"player_solardecimator",
 			{ "corjugg", "armbanth" },
-			"player_solardecimator",
-			WEAPONS.sol,
+			"sol",
+			WP.sol,
 			"Sol Decimator",
-			"Solar titan. Incendiary.",
+			"Solar titan",
 			{ 185e3, 44e5, 42e4, 38, 2, 2800, 6800, 360 },
 		},
 		{
 			"player_skyfurnace",
 			{ "corkarganetht4", "corkarg" },
-			"player_skyfurnace",
-			WEAPONS.flak,
+			"flak",
+			WP.flak,
 			"Sky Furnace",
-			"AA fortress.",
-			{ 120e3, 24e5, 26e4, 54, 4, 1800, 0, 180, 0, false, T_V },
+			"AA fortress",
+			{ 120e3, 24e5, 26e4, 54, 4, 1800, 0, 180, 0, false, TV },
 		},
 		{
 			"player_stormsovereign",
 			{ "armraz", "armbanth" },
-			"player_stormtesla",
-			WEAPONS.tesla,
+			"tesla",
+			WP.tesla,
 			"Storm Sovereign",
-			"Tesla volley walker.",
+			"Tesla walker",
 			{ 125e3, 26e5, 27e4, 62, 4, 1900, 0, 200 },
 		},
 		{
 			"player_pyroclast",
 			{ "armmar", "armbanth" },
-			"player_pyrocarpet",
-			WEAPONS.pyro,
+			"pyro",
+			WP.pyro,
 			"Pyroclast Dreadnought",
-			"Fire titan.",
+			"Fire titan",
 			{ 130e3, 27e5, 28e4, 50, 4, 2000, 0, 200 },
 		},
 		{
 			"player_singularity",
 			{ "corcrwt4", "corcrw" },
-			"player_singularityemp",
-			WEAPONS.emp,
+			"emp",
+			WP.emp,
 			"Singularity",
-			"EMP dreadnought.",
+			"EMP dreadnought",
 			{ 150e3, 36e5, 28e4, 58, 2, 3200, 0, 220, 0, true },
 		},
 		{
 			"player_aethersiege",
-			{ "armfepocht4", "armepocht4", "armepoch_vtol", "armt4air", "armcybr", "legfortt4" },
-			"player_aether",
-			{
-				is_suite = true,
-				slots = { [1] = WEAPONS.aether_aa, [2] = WEAPONS.aether_main, [3] = WEAPONS.aether_sec },
-			},
+			{ "armfepocht4", "armepocht4", "legfortt4" },
+			"aether",
+			{ is_suite = true, slots = { [1] = WP.a_a, [2] = WP.a_m, [3] = WP.a_s } },
 			"Aether Siege Fortress",
-			"Aerial siege flagship.",
+			"Aerial flagship",
 			{ 155e3, 35e5, 29e4, 52, 3, 2800, 0, 240, 0, true },
 		},
 		{
 			"player_phantomleviathan",
 			{ "corcrwh", "corcrwt4" },
-			"player_phantomtorpedo",
-			{ is_suite = true, slots = { [1] = WEAPONS.torpedo, [2] = WEAPONS.pshield, [3] = WEAPONS.pbarrage } },
+			"phantom",
+			{ is_suite = true, slots = { [1] = WP.torp, [2] = WP.psh, [3] = WP.pbr } },
 			"Phantom Leviathan",
-			"Cloaked dreadnought.",
+			"Cloaked dreadnought",
 			{ 220e3, 48e5, 42e4, 72, 4, 3200, 0, 420, 0, true },
 		},
 		{
 			"player_archangel",
 			{ "legfortt4", "corcrwt4", "corcrw" },
-			"player_archangelvulcan",
-			WEAPONS.vulcan,
+			"vulcan",
+			WP.vulc,
 			"Archangel Gunship",
-			"Rotary Vulcan dreadnought.",
+			"CAS dreadnought",
 			{ 140e3, 31e5, 27e4, 66, 3, 2200, 0, 200, 0, true },
+		},
+		{
+			"player_apollyonfortress",
+			{ "legapollyon", "corpun", "corint" },
+			"apollyon",
+			WP.apol,
+			"Apollyon Fortress",
+			"Flak platform",
+			{ 135e3, 29e5, 30e4, 46, 3, 2100, 0, 220 },
 		},
 	}
 
-	local airBld = getAir()
+	local AB = getAir()
 
-	for i = 1, #SPECS do
-		local p = SPECS[i]
+	for i = 1, #SP do
+		local p = SP[i]
 		local s = findSrc(p[2])
 		if s and not U[p[1]] then
 			local u = C(s)
 			local st = p[7]
-			local isAir = st[10]
-
+			local air = st[10]
 			u.unitname, u.name, u.description = p[1], p[5], p[6]
 			u.metalcost, u.energycost, u.buildtime = st[1], st[2], st[2]
 			u.health, u.maxdamage = st[3], st[3]
 			u.speed, u.maxthisunit, u.energyupkeep = st[4], st[5], st[6]
-
-			u.energymake = st[7] or 0
-			u.autoheal = st[8] or 120
-			u.sightdistance = math.max(u.sightdistance or 0, 1100)
-			u.radardistance = math.max(u.radardistance or 0, 2600)
-			u.activatewhenbuilt = true
-
-			u.builder, u.buildoptions, u.cantbetransported = false, nil, true
-			u.transportcapacity, u.transportsize = nil, nil
+			u.energymake, u.autoheal = st[7] or 0, st[8] or 120
+			u.sightdistance, u.radardistance =
+				math.max(u.sightdistance or 0, 1100), math.max(u.radardistance or 0, 2600)
+			u.activatewhenbuilt, u.builder, u.cantbetransported = true, false, true
 			u.cancloak, u.cloakable, u.initcloaked = false, false, false
 			u.radardistancejam = (st[9] and st[9] > 0) and st[9] or 0
 			if p[1] == "player_phantomleviathan" then
-				u.cancloak, u.cloakable, u.initcloaked = true, true, true
-				u.stealth = true
-				u.cloakcost, u.cloakcostmoving = 18, 42
-				u.mincloakdistance, u.decloakdistance = 220, 140
+				u.cancloak, u.cloakable, u.initcloaked, u.stealth = true, true, true, true
+				u.cloakcost, u.cloakcostmoving, u.mincloakdistance, u.decloakdistance = 18, 42, 220, 140
 				u.decloakonfire, u.decloaksonfire = false, false
 				u.customparams = u.customparams or {}
-				u.customparams.stealthhealth = 0.35
-				u.customparams.stealthregen = 240
+				u.customparams.stealthhealth, u.customparams.stealthregen = 0.35, 240
 			end
-
-			if isAir then
-				u.canfly, u.hoverattack, u.airhoverfactor = true, true, 0.15
-				u.cruisealt, u.turnrate, u.collide = 310, 480, true
+			if air then
+				u.canfly, u.hoverattack, u.airhoverfactor, u.cruisealt, u.turnrate, u.collide =
+					true, true, 0.15, 310, 480, true
 				u.maxacc, u.maxdec = 0.08, 0.08
 			else
 				u.canfly, u.canhover, u.floater = false, false, false
-				u.minwaterdepth, u.maxwaterdepth, u.upright = nil, 48, true
+				u.maxwaterdepth, u.upright = 48, true
 			end
-
 			u.customparams = u.customparams or {}
 			u.customparams.techlevel, u.customparams.unitgroup = 4, "weapon"
-			u.customparams.i18n_en_humanname = p[5]
-			u.customparams.i18n_en_tooltip = p[6]
+			u.customparams.i18n_en_humanname, u.customparams.i18n_en_tooltip = p[5], p[6]
 			if p[1] == "player_singularity" then
-				u.explodeas, u.selfdestructas = "singularity_death_blast", "singularity_selfd_blast"
+				local EG = "custom:genericbuildingexplosion-gigantic"
+				u.explodeas, u.selfdestructas = "sing_d", "sing_s"
 				u.weapondefs = u.weapondefs or {}
-				u.weapondefs.singularity_death_blast = {
+				u.weapondefs.sing_d = {
 					weapontype = "Cannon",
 					areaofeffect = 2400,
 					edgeeffectiveness = 0.8,
-					damage = { default = 500000, commanders = 250000 },
-					explosiongenerator = "custom:genericbuildingexplosion-gigantic",
+					damage = { default = 5e5, commanders = 25e4 },
+					explosiongenerator = EG,
 				}
-				u.weapondefs.singularity_selfd_blast = {
+				u.weapondefs.sing_s = {
 					weapontype = "Cannon",
 					areaofeffect = 4200,
 					edgeeffectiveness = 0.9,
-					damage = { default = 1500000, commanders = 750000 },
-					explosiongenerator = "custom:genericbuildingexplosion-gigantic",
+					damage = { default = 15e5, commanders = 75e4 },
+					explosiongenerator = EG,
 				}
 			end
-
 			install(u, p[3], p[4], st[11])
 			U[p[1]] = u
 			if UnitDefNames then
 				UnitDefNames[p[1]] = u
 			end
-			teach(isAir and airBld or LAND_GANTRIES, p[1])
+			teach(air and AB or LG, p[1])
 		end
 	end
 end
