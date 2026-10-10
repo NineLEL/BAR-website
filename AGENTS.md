@@ -1,3 +1,29 @@
+## Mandatory Tool Selection and Precedence
+
+Use the following rules for every task. The goal is to use the most specialized available tool, minimize context usage, and avoid unnecessary subprocesses.
+
+1. **CodeGraph first:** If `.codegraph/` exists at the repository root, use `codegraph_explore` when available, or `codegraph explore` through `bash` otherwise, before using grep, glob, or broad file reads to understand or locate code.
+2. **Structure before content:** Use `aft_outline` to locate symbols and understand file structure, then `aft_zoom` to inspect specific implementations. Use `read` for content that symbol inspection cannot provide.
+3. **Choose the correct search tool:**
+   - `aft_search`: semantic or conceptual code discovery.
+   - `aft_grep`: use only if this exact tool is registered; otherwise use AFT-backed `grep` for indexed textual searches.
+   - `grep`: exact text and regex searches, plus OMP device searches such as `xd://` resources when applicable.
+   - `glob`: indexed file and path discovery.
+   - `ast_grep_search`: structural searches using AST patterns.
+4. **Choose the correct editing tool:**
+   - `edit`: targeted modifications to existing files and supported symbol-level edits.
+   - `apply_patch`: coordinated multi-file patches with atomic rollback.
+   - `ast_grep_replace`: syntax-aware pattern replacements.
+   - `aft_refactor`: supported cross-file symbol moves, function extraction, and inlining.
+   - `aft_import`: language-aware import management.
+   - `write`: creating files or intentionally replacing complete contents.
+5. **Use dedicated safety tools:** `aft_safety` for checkpoints and recovery, `aft_conflicts` for Git conflict inspection, `aft_delete` for backed-up deletion, and `aft_move` for backed-up moves. Check that optional tools are enabled before using them.
+6. **Diagnostics and debugging:** Prefer `lsp_diagnostics` and `aft_inspect` for supported static diagnostics. Use `debug` when a live DAP session is available and runtime state needs inspection. Use `security_scan` when security analysis is relevant and the tool is registered.
+7. **Execution:** Use `bash` for builds, tests, package managers, scripts, and operations without a dedicated tool. Prefer in-process utilities when the harness provides them. Do not use shell commands to duplicate dedicated file, search, editing, or recovery tools.
+8. **External repositories:** Use `github` for supported GitHub operations. Use `ghq get` through `bash` only when a repository must be cloned locally for inspection or execution. Do not repeatedly query remote APIs when a local checkout or supported GitHub tool can provide the required information.
+9. **Tool availability:** Names in this document describe intended capabilities, not guaranteed availability. Inspect the current tool registry and schemas. Never substitute a similarly named tool without confirming that it exists.
+10. **No unnecessary workarounds:** If a dedicated tool can perform the operation, do not implement the same operation using shell commands, custom scripts, or manual text processing. Exceptions are allowed when the dedicated tool cannot handle the resource, operation, or required validation.
+
 <unified_tool_matrix>
 
 To maximize execution speed, maintain workspace integrity, and optimize context token usage, you must select the correct tool for every task. You are strictly prohibited from using raw shell commands or custom scripting when a dedicated tool exists.
