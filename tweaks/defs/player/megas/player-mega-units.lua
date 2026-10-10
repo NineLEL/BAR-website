@@ -214,6 +214,7 @@ do
 				burst = 2,
 				burstrate = 0.08,
 				sprayangle = 850,
+				customparams = { shotgun = true },
 				accuracy = 320,
 				separation = 0.8,
 				size = 10,
@@ -498,7 +499,7 @@ do
 				onlytargetcategory = TS,
 			}
 		),
-		psh = {
+		pshield = {
 			weapontype = "Shield",
 			shieldradius = 520,
 			shieldpower = 125e3,
@@ -681,7 +682,7 @@ do
 			"player_phantomleviathan",
 			{ "corcrwh", "corcrwt4" },
 			"phantom",
-			{ is_suite = true, slots = { [1] = WP.torp, [2] = WP.psh, [3] = WP.pbr } },
+			{ is_suite = true, slots = { [1] = WP.torp, [2] = WP.pshield, [3] = WP.pbr } },
 			"Phantom Leviathan",
 			"Cloaked dreadnought",
 			{ 220e3, 48e5, 42e4, 72, 4, 3200, 0, 420, 0, true },

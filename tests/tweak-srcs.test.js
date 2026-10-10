@@ -479,9 +479,9 @@ test("Phantom Leviathan uses its three corcrwh slots for combat and shielding", 
   const text = fs.readFileSync(path.join(__dirname, "..", "tweaks", "defs", "player", "megas", "player-mega-units.lua"), "utf8");
   assert.match(text, /pshield\s*=\s*\{/);
   assert.match(text, /weapontype\s*=\s*"Shield"/);
-  assert.match(text, /slots\s*=\s*\{\s*\[1\]\s*=\s*WEAPONS\.torpedo,\s*\[2\]\s*=\s*WEAPONS\.pshield,\s*\[3\]\s*=\s*WEAPONS\.pbarrage/);
-  assert.match(text, /u\.cancloak, u\.cloakable, u\.initcloaked = true, true, true/);
-  assert.match(text, /u\.customparams\.stealthhealth = 0\.35/);
+  assert.match(text, /slots\s*=\s*\{\s*\[1\]\s*=\s*WP\.torp,\s*\[2\]\s*=\s*WP\.pshield,\s*\[3\]\s*=\s*WP\.pbr/);
+  assert.match(text, /u\.cancloak, u\.cloakable, u\.initcloaked, u\.stealth = true, true, true, true/);
+  assert.match(text, /u\.customparams\.stealthhealth, u\.customparams\.stealthregen = 0\.35, 240/);
   assert.match(text, /{ 220e3, 48e5, 42e4, 72, 4, 3200, 0, 420, 0, true }/);
 });
 
@@ -533,7 +533,7 @@ test("slot preview buttons capture their own command and minified text", () => {
 
 test("Aegis Breaker has explicit shotgun projectile behavior", () => {
   const text = fs.readFileSync(path.join(__dirname, "..", "tweaks", "defs", "player", "megas", "player-mega-units.lua"), "utf8");
-  const body = text.match(/crack = W\([\s\S]*?\n\s*\}\),\n\s*sol =/u)?.[0] || "";
+  const body = text.match(/crack = W\([\s\S]*?\n\s*\}\s*\),\n\s*sol =/u)?.[0] || "";
   assert.match(body, /projectilespershot = 8/);
   assert.match(body, /burst = 2/);
   assert.match(body, /burstrate = 0\.08/);
@@ -548,17 +548,19 @@ test("Mega Units have role-specific weapon mechanics and pack cleanly", () => {
 
   assert.match(text, /burst = 6,[\s\S]*?projectilespershot = 4/, "Sky Furnace should retain 24 flak rounds in paced salvos");
   assert.match(text, /paralyzer = true,[\s\S]*?paralyzetime = 10/, "Singularity EMP must use the actual paralysis weapon mechanic");
-  assert.match(text, /canattackground = true,[\s\S]*?aether_sec/, "Aether deck guns should engage ground targets");
-  assert.match(text, /canattackground = true,[\s\S]*?pbarrage/, "Phantom rift barrage should engage ground targets");
+  const deckGun = text.match(/a_s = W\([\s\S]*?\n\s*\}\s*\),/u)?.[0] || "";
+  assert.match(deckGun, /canattackground = true/, "Aether deck guns should engage ground targets");
+  assert.match(text, /"player_aethersiege"[\s\S]*?\[3\] = WP\.a_s/, "Aether Siege should mount the ground-capable deck gun");
+  assert.match(text, /pbr = W\([\s\S]*?canattackground = true/, "Phantom rift barrage should engage ground targets");
   assert.match(text, /camerashake = 180/, "Supernova presentation should remain forceful without extreme screen shake");
   assert.match(text, /camerashake = 45/, "Pyroclast repeated impacts should avoid excessive screen shake");
   assert.match(text, /size = 44,[\s\S]*?stages = 48/, "Supernova should have a larger, richer impact effect");
   assert.doesNotMatch(text, /player_worldbeam|Annihilation Lance/, "World Beam should not be part of the Mega Unit Pack");
-  assert.match(text, /singularity_death_blast[\s\S]*?areaofeffect = 2400/);
-  assert.match(text, /singularity_selfd_blast[\s\S]*?areaofeffect = 4200/);
+  assert.match(text, /weapondefs\.sing_d\s*=\s*\{[\s\S]*?areaofeffect = 2400/);
+  assert.match(text, /weapondefs\.sing_s\s*=\s*\{[\s\S]*?areaofeffect = 4200/);
   assert.match(text, /size = 26,[\s\S]*?stages = 36/, "EMP impacts should be visually distinct");
-  assert.match(text, /"EMP dreadnought\."/);
-  assert.match(text, /"Close-range shotgun titan\."/);
+  assert.match(text, /"EMP dreadnought"/);
+  assert.match(text, /"Shotgun titan"/);
   assert.match(text, /"player_riftcolossus"[\s\S]*?"player_archangel"/, "the complete Mega roster should remain defined");
 });
 
