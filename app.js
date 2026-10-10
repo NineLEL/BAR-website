@@ -233,6 +233,7 @@ function renderInputs(g) {
     var lh = document.createElement("header");
     var ll = document.createElement("span");
     ll.textContent = f.name + " (server, " + f.text.length + " chars)";
+    ll.id = "server-script-label-" + g.kind + "-" + g.inputsEl.children.length;
     lh.appendChild(ll);
      var lt = document.createElement("textarea");
     lt.value = f.text;
@@ -242,7 +243,8 @@ function renderInputs(g) {
      lhbtn.textContent = "Hide script";
      lhbtn.setAttribute("aria-expanded", "true");
      lhbtn.setAttribute("aria-controls", "server-script-" + g.kind + "-" + g.inputsEl.children.length);
-     lt.id = "server-script-" + g.kind + "-" + g.inputsEl.children.length;
+    lt.id = "server-script-" + g.kind + "-" + g.inputsEl.children.length;
+    lt.setAttribute("aria-labelledby", ll.id);
      lhbtn.onclick = function () {
        var hidden = lt.style.display === "none";
         lt.style.display = hidden ? "block" : "none";
@@ -260,6 +262,7 @@ function renderInputs(g) {
     var head = document.createElement("header");
     var lab = document.createElement("span");
     lab.textContent = "Snippet " + (i + 1);
+    lab.id = "manual-script-label-" + g.kind + "-" + i;
      var del = document.createElement("button");
     del.textContent = "Remove";
     del.onclick = function () {
@@ -274,7 +277,8 @@ function renderInputs(g) {
      ta.oninput = function () { g.snippets[i] = ta.value; g.packed = null; g.packedNames = null; renderSlots(g); };
      var hide = document.createElement("button");
      hide.textContent = "Hide script";
-     hide.setAttribute("aria-expanded", "true"); hide.setAttribute("aria-controls", "manual-script-" + g.kind + "-" + i); ta.id = "manual-script-" + g.kind + "-" + i;
+    hide.setAttribute("aria-expanded", "true"); hide.setAttribute("aria-controls", "manual-script-" + g.kind + "-" + i); ta.id = "manual-script-" + g.kind + "-" + i;
+    ta.setAttribute("aria-labelledby", lab.id);
      hide.onclick = function () {
        var hidden = ta.style.display === "none";
         ta.style.display = hidden ? "block" : "none";

@@ -21,7 +21,7 @@
       <input id="charLimit" type="number" aria-describedby="charLimitHint" value="16384" min="1000" max="65536" step="1">
     </label>
       <span id="charLimitHint" class="hint">Teiserver caps messages at 16,384 chars incl. command.</span>
-      <label title="URL-safe alphabet (-_ instead of +/, no padding). BAR decodes tweaks with its standard decoder, so URL-safe payloads may be rejected in-game.">Base64URL output [advanced &mdash; touch only if you know what you&rsquo;re doing]
+      <label for="b64url" title="URL-safe alphabet (-_ instead of +/, no padding). BAR decodes tweaks with its standard decoder, so URL-safe payloads may be rejected in-game.">Base64URL output [advanced]
         <input id="b64url" type="checkbox" checked>
       </label>
   </div>
@@ -29,13 +29,14 @@
 
 <main id="main-content" tabindex="-1">
   <section class="howto card">
-    <div class="howto-heading">
+    <details class="howto-details">
+    <summary class="howto-heading">
       <div>
         <span class="howto-kicker">Quick start</span>
-        <h2>How to use</h2>
+        <h2>Build and send your tweaks</h2>
       </div>
-      <p>Turn your Lua tweaks into ready-to-paste BAR commands in a few easy steps.</p>
-    </div>
+      <span class="howto-summary-copy">Add Lua, review slots, then copy commands to BAR chat <span aria-hidden="true">· Expand guide</span></span>
+    </summary>
     <ol class="howto-steps">
       <li>
         <span class="step-number" aria-hidden="true">01</span>
@@ -61,7 +62,7 @@
       <li>
         <span class="step-number" aria-hidden="true">04</span>
         <div class="howto-step-copy">
-          <h3>Pack if you like</h3>
+          <h3>Pack when ready</h3>
           <p><strong>Auto-pack</strong> combines snippets into as few slots as possible without exceeding the limit.</p>
         </div>
       </li>
@@ -80,6 +81,7 @@
         </div>
       </li>
     </ol>
+    </details>
   </section>
 
   <nav class="tabs" role="tablist" aria-label="Tweak tools">
@@ -91,7 +93,7 @@
   </nav>
 
   <div class="toolbar" role="toolbar" aria-label="Global actions">
-    <button id="resetAll" class="primary">Copy reset all (20 slots)</button>
+      <button id="resetAll">Copy reset commands (20 slots)</button>
   </div>
 
   <section id="panel-defs" class="panel active" role="tabpanel" aria-labelledby="tab-defs" tabindex="0">
@@ -102,7 +104,7 @@
       </div>
       <div class="action-group" role="group" aria-labelledby="defs-pack-label">
         <h2 id="defs-pack-label" class="action-label">Pack</h2>
-        <button id="defsPack" class="primary">Auto-pack into fewest slots</button>
+        <button id="defsPack" class="primary">Auto-pack snippets</button>
       </div>
       <div class="action-group action-group-copy" role="group" aria-labelledby="defs-copy-label">
         <h2 id="defs-copy-label" class="action-label">Copy</h2>
@@ -128,7 +130,7 @@
       </div>
       <div class="action-group" role="group" aria-labelledby="units-pack-label">
         <h2 id="units-pack-label" class="action-label">Pack</h2>
-        <button id="unitsPack" class="primary">Auto-pack into fewest slots</button>
+        <button id="unitsPack" class="primary">Auto-pack snippets</button>
       </div>
       <div class="action-group action-group-copy" role="group" aria-labelledby="units-copy-label">
         <h2 id="units-copy-label" class="action-label">Copy</h2>
@@ -147,11 +149,12 @@
   </section>
 
   <section id="panel-library" class="panel" role="tabpanel" aria-labelledby="tab-library" tabindex="0" hidden>
+    <h2>Server library</h2>
     <div id="libStatus" class="card" role="status" aria-live="polite" aria-atomic="true"><p>Loading server library&hellip;</p></div>
     <label class="library-search-label" for="libSearch">Search library filenames</label>
     <div class="library-search"><input id="libSearch" type="search" autocomplete="off" placeholder="Search filenames"><button id="libSearchClear" type="button" aria-label="Clear library search">Clear</button></div>
     <div class="toolbar">
-      <button id="libReload">Reload from server</button>
+      <button id="libReload">Reload library</button>
       <button id="libEnableAll">Enable all</button>
       <button id="libDisableAll">Disable all</button>
     </div>
@@ -164,7 +167,8 @@
   <section id="panel-decode" class="panel" role="tabpanel" aria-labelledby="tab-decode" tabindex="0" hidden>
     <div class="card">
       <h2>Decode an existing command</h2>
-      <p>Paste a <code>!bset tweakdefsN ...</code> / <code>!bset tweakunitsN ...</code> line to inspect the minified Lua inside.</p>
+      <p>Paste a <code>!bset tweakdefsN ...</code> or <code>!bset tweakunitsN ...</code> command to inspect its Lua payload.</p>
+      <label class="utility-label" for="decodeInput">Command to decode</label>
       <textarea id="decodeInput" rows="4" placeholder="!bset tweakdefs  Zm9yIG5hbWUsIHVkIGluIHBhaXJzKFVuaXREZWZzKSBkb..."></textarea>
       <div class="toolbar">
         <button id="decodeBtn" class="primary">Decode</button>
@@ -176,7 +180,7 @@
   <section id="panel-utilities" class="panel" role="tabpanel" aria-labelledby="tab-utilities" tabindex="0" hidden>
     <div class="card utility-card">
       <h2>Text utilities</h2>
-      <p>Convert Base64 or format Lua locally in your browser. Choose an operation for the content in the input field.</p>
+      <p>Encode or decode Base64, or format Lua. All operations run in your browser.</p>
       <label class="utility-label" for="utilityInput">Input text (Lua or Base64)</label>
       <textarea id="utilityInput" class="utility-input" rows="12" placeholder="Paste Lua source to format or Base64 text to decode..."></textarea>
 
@@ -204,7 +208,7 @@
         <div class="utility-toolbar">
           <button id="utilityMinify">Minify</button>
           <button id="utilityPrettify">Prettify</button>
-          <button id="utilityClear">Clear input and output</button>
+        <button id="utilityClear">Clear</button>
         </div>
       </section>
 
