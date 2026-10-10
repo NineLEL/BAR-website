@@ -1,9 +1,8 @@
 "use strict";
 /* Server contract suite — isolated temp ROOT, ephemeral port, zero live I/O.
  * NEVER touches the real ./tweaks or ./state.json and never POSTs to a real
- * server. server.js honours BAR_ROOT / BAR_TWEAKS_DIR env overrides (see the
- * TESTABILITY NOTE there) and only binds when run directly, so requiring it
- * here is side-effect free.
+ * server. Each server is explicitly configured with createServer() and only
+ * binds when asked, so requiring server.js is side-effect free.
  * Run: npm test  (or: node --test tests/server.test.js)
  */
 const { describe, it, before, after } = require("node:test");
@@ -22,18 +21,12 @@ let liveStateSnapshot = null;
 function freshServer() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "bar-packer-"));
   const tweaks = path.join(root, "tweaks");
-  fs.mkdirSync(path.join(tweaks, "defs"), { recursive: true });
-  fs.mkdirSync(path.join(tweaks, "units"), { recursive: true });
-  fs.writeFileSync(path.join(tweaks, "state.json"), "{}\n");
   fs.writeFileSync(path.join(root, "index.html"), "<!doctype html><title>stub</title>");
   // Canary OUTSIDE the root: traversal must never leak it.
   const outside = path.join(path.dirname(root), "bar-canary-" + path.basename(root) + ".txt");
   fs.writeFileSync(outside, "CANARY-DO-NOT-SERVE");
 
-  process.env.BAR_ROOT = root;
-  process.env.BAR_TWEAKS_DIR = tweaks;
-  delete require.cache[require.resolve("../server.js")];
-  const srv = require("../server.js");
+  const srv = require("../server.js").createServer({ root: root, tweaksDir: tweaks });
   srv.ensureDirs();
   return { root, tweaks, outside, srv };
 }
@@ -78,9 +71,6 @@ before(async () => {
 
 after(async () => {
   if (server) await new Promise((resolve) => server.close(resolve));
-  delete process.env.BAR_ROOT;
-  delete process.env.BAR_TWEAKS_DIR;
-  delete require.cache[require.resolve("../server.js")];
   try { fs.rmSync(box.root, { recursive: true, force: true }); } catch {}
   try { fs.unlinkSync(box.outside); } catch {}
   // Guard: live state.json must be byte-identical (we never POST to it).
@@ -122,6 +112,37 @@ describe("GET /api/tweaks contract", () => {
     const r = await req(port, "GET", "/api/tweaks");
     const data = JSON.parse(r.body);
     assert.equal(data.defs.find((f) => f.name === "economy/late-game/mex.lua").content, "-- nested mex\n");
+  });
+});
+
+describe("explicit server factory isolation", () => {
+  it("creates independent configured servers without import-time filesystem or bind side effects", async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "bar-packer-isolated-"));
+    const tweaks = path.join(root, "custom-library");
+    let otherServer;
+    try {
+      const other = require("../server.js").createServer({ root: root, tweaksDir: tweaks });
+      assert.deepEqual(other.getPaths(), {
+        ROOT: root,
+        TWEAKS_DIR: tweaks,
+        STATE_FILE: path.join(tweaks, "state.json")
+      });
+      assert.equal(other.server.listening, false);
+      assert.equal(fs.existsSync(tweaks), false, "factory construction must not create library files");
+
+      other.ensureDirs();
+      const file = path.join(tweaks, "defs", "isolated.lua");
+      fs.writeFileSync(file, "-- second instance only\n");
+      otherServer = await listen(other);
+      const otherPort = otherServer.address().port;
+      const response = await req(otherPort, "GET", "/api/tweaks");
+      assert.equal(response.status, 200);
+      assert.deepEqual(JSON.parse(response.body).defs.map((entry) => entry.name), ["isolated.lua"]);
+      assert.ok(!JSON.parse((await req(port, "GET", "/api/tweaks")).body).defs.some((entry) => entry.name === "isolated.lua"));
+    } finally {
+      if (otherServer) await new Promise((resolve) => otherServer.close(resolve));
+      fs.rmSync(root, { recursive: true, force: true });
+    }
   });
 });
 

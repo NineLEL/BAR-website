@@ -1,13 +1,13 @@
 "use strict";
-/* Pure-logic suite for the BAR Tweak Packer (app.js slices via loadPure).
+/* Pure-logic suite for the BAR Tweak Packer's directly imported core module.
  * No DOM, no network, no live tweaks/ — deterministic and order-independent.
  * Run: npm test  (or: node --test tests/pure.test.js)
  */
-const { describe, it, before } = require("node:test");
+const { describe, it } = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("fs");
 const path = require("path");
-const { loadPure } = require("./helpers/loadPure");
+const pure = require("../app-pure");
 
 const LIMIT = 16384;
 const PERF_STRICT = process.env.PERF_STRICT === "1";
@@ -20,7 +20,7 @@ function perfCheck(name, ms, budget) {
   }
 }
 
-// Harness over the REAL packer: pure.packChunks() in app.js returns index
+// Harness over the REAL packer: pure.packChunks() returns index
 // chunks; joining here mirrors joinChunk(). autoPack() itself is DOM-bound
 // (toast/renderSlots/names), so this pins the sizing contract it relies on:
 // worst-case numbered-slot prefix + b64 length <= limit.
@@ -37,8 +37,20 @@ function parseDecodeInput(raw) {
   return m ? { key: m[1], b64: m[2].trim() } : { key: "(unknown key)", b64: raw.trim().split(/\s+/).pop() };
 }
 
-let pure;
-before(() => { pure = loadPure(); });
+describe("pure module API", () => {
+  it("exports the browser-and-Node logic surface", () => {
+    assert.deepEqual(Object.keys(pure), [
+      "MAX_SLOTS", "getLimit", "b64encode", "b64decode", "luaMinify",
+      "luaPrettify", "slotKey", "cmdPrefix", "buildCommand",
+      "mergeTweakUnits", "packChunks", "findDuplicateDst",
+      "resetCommands", "resetAllCommands",
+    ]);
+    for (const name of ["b64encode", "b64decode", "luaMinify", "luaPrettify", "slotKey", "cmdPrefix", "buildCommand", "mergeTweakUnits", "packChunks", "findDuplicateDst", "getLimit", "resetCommands", "resetAllCommands"]) {
+      assert.equal(typeof pure[name], "function", name + " must be callable");
+    }
+    assert.equal(pure.MAX_SLOTS, 10);
+  });
+});
 
 describe("b64 codec (UTF-8 safe)", () => {
   it("roundtrips ASCII exactly", () => {
@@ -369,15 +381,12 @@ describe("collect/decode parser", () => {
 describe("getLimit fallback", () => {
   it("falls back to 16384 for empty/garbage/too-small values", () => {
     for (const v of ["", "abc", "0", "999", "-5", null, undefined]) {
-      pure.__charLimitValue = v;
-      assert.equal(pure.getLimit(), 16384, "value: " + String(v));
+      assert.equal(pure.getLimit(v), 16384, "value: " + String(v));
     }
   });
   it("honours valid custom limits >= 1000", () => {
-    pure.__charLimitValue = "8000";
-    assert.equal(pure.getLimit(), 8000);
-    pure.__charLimitValue = "16384";
-    assert.equal(pure.getLimit(), 16384);
+    assert.equal(pure.getLimit("8000"), 8000);
+    assert.equal(pure.getLimit("16384"), 16384);
   });
 });
 

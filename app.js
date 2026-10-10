@@ -1,11 +1,30 @@
+"use strict";
+/* BAR Tweak Packer — 100% client-side.
+ * tweakdefs: arbitrary Lua run via loadstring after base64-decode.
+ * tweakunits: Lua table deep-merged into UnitDefs.
+ * Slots 0..9 each. Per-message cap 16384 chars incl. command. */
 
-/* ---------- server library (tweaks/ folder) ---------- */
+var Pure = BARAppPure;
+var LibraryApi = BARLibraryApi;
+var MAX_SLOTS = Pure.MAX_SLOTS;
+var b64encode = Pure.b64encode;
+var b64decode = Pure.b64decode;
+var luaMinify = Pure.luaMinify;
+var luaPrettify = Pure.luaPrettify;
+var slotKey = Pure.slotKey;
+var cmdPrefix = Pure.cmdPrefix;
+var buildCommand = Pure.buildCommand;
+var mergeTweakUnits = Pure.mergeTweakUnits;
+var packChunks = Pure.packChunks;
+var findDuplicateDst = Pure.findDuplicateDst;
+var resetAllCommands = Pure.resetAllCommands;
+
+function $(id) { return document.getElementById(id); }
+
+/* ---------- server library presentation ---------- */
 function libFetch() {
   var st = $("libStatus");
-  fetch("api/tweaks?_=" + Date.now(), { cache: "no-store" }).then(function (r) {
-    if (!r.ok) throw new Error("HTTP " + r.status);
-    return r.json();
-  }).then(function (data) {
+  LibraryApi.fetchLibrary().then(function (data) {
     renderLib(data);
   }).catch(function () {
     st.innerHTML = "<p><strong>Server library offline.</strong> Run <code>node server.js</code> and open <code>http://localhost:8080</code> to use <code>.lua</code> files from <code>tweaks/defs</code> and <code>tweaks/units</code>. Manual snippets keep working.</p>";
@@ -44,11 +63,7 @@ function renderLibGroup(el, kind, files) {
     cb.checked = !!f.enabled;
     cb.title = "enable/disable (stored server-side, file is kept)";
     cb.onchange = function () {
-      fetch("api/tweaks/toggle", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ kind: kind, name: f.name, enabled: cb.checked })
-      }).then(function (r) {
+      LibraryApi.toggle(kind, f.name, cb.checked).then(function (r) {
         if (!r.ok) throw new Error("HTTP " + r.status);
         libFetch();
       }, function () { toast("Toggle failed — is the server running?"); });
@@ -104,10 +119,6 @@ function syncLibToPacker() {
   renderAll();
 }
 
-$("libReload").onclick = libFetch;
-$("defsLibReload").onclick = libFetch;
-$("unitsLibReload").onclick = libFetch;
-
 function setAllLib(enabled) {
   var data = window._lib;
   if (!data) { toast("Library not loaded yet."); return; }
@@ -115,251 +126,28 @@ function setAllLib(enabled) {
   data.defs.forEach(function (f) { files.push({ kind: "defs", name: f.name }); });
   data.units.forEach(function (f) { files.push({ kind: "units", name: f.name }); });
   if (!files.length) { toast("No library files."); return; }
-  Promise.all(files.map(function (f) {
-    return fetch("api/tweaks/toggle", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ kind: f.kind, name: f.name, enabled: enabled })
-    });
-  })).then(function () { libFetch(); }, function () { toast("Bulk toggle failed \u2014 is the server running?"); libFetch(); });
+  LibraryApi.toggleAll(files, enabled).then(function () { libFetch(); }, function () { toast("Bulk toggle failed \u2014 is the server running?"); libFetch(); });
 }
+$("libReload").onclick = libFetch;
+$("defsLibReload").onclick = libFetch;
+$("unitsLibReload").onclick = libFetch;
 $("libEnableAll").onclick = function () { setAllLib(true); };
 $("libDisableAll").onclick = function () { setAllLib(false); };
 libFetch();
 var libVersion = null;
 function watchLibrary() {
-  fetch("api/tweaks/version?_=" + Date.now(), { cache: "no-store" }).then(function (r) {
-    if (!r.ok) throw new Error("HTTP " + r.status);
-    return r.json();
-  }).then(function (data) {
+  LibraryApi.fetchVersion().then(function (data) {
     if (libVersion !== null && data.version !== libVersion) libFetch();
     libVersion = data.version;
   }).catch(function () {}).finally(function () { setTimeout(watchLibrary, 2000); });
 }
 watchLibrary();
-"use strict";
-/* BAR Tweak Packer — 100% client-side.
- * tweakdefs: arbitrary Lua run via loadstring after base64-decode.
- * tweakunits: Lua table deep-merged into UnitDefs.
- * Slots 0..9 each. Per-message cap 16384 chars incl. "!bset tweakdefsN ". */
 
-var MAX_SLOTS = 10;
-
-function $(id) { return document.getElementById(id); }
-
-function getLimit() {
-  var v = parseInt($("charLimit").value, 10);
-  if (!v || v < 1000) return 16384;
-  return v;
-}
-
-/* ---------- UTF-8 safe base64 ---------- */
-function b64encode(str, urlSafe) {
-  var bytes = new TextEncoder().encode(str);
-  var bin = "";
-  var CH = 0x8000;
-  for (var i = 0; i < bytes.length; i += CH) {
-    bin += String.fromCharCode.apply(null, bytes.subarray(i, i + CH));
-  }
-  var out = btoa(bin);
-  if (urlSafe) out = out.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-  return out;
-}
 function useUrlSafe() {
   var cb = (typeof document !== "undefined") ? document.getElementById("b64url") : null;
   return !!(cb && cb.checked);
 }
-function b64decode(b64) {
-  var clean = b64.replace(/\s+/g, "");
-  // accept URL-safe variant too
-  clean = clean.replace(/-/g, "+").replace(/_/g, "/");
-  while (clean.length % 4) clean += "=";
-  var bin = atob(clean);
-  var bytes = new Uint8Array(bin.length);
-  for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-  return new TextDecoder().decode(bytes);
-}
-
-/* ---------- Lua minifier ----------
- * Lexes Lua tokens, removes comments/whitespace, and inserts a space only when
- * concatenating adjacent tokens would change how Lua lexes them. Long brackets
- * honor their equals level, so nested-looking text cannot terminate a string or
- * comment early. */
-function luaMinify(src) {
-  var tokens = [];
-  var i = 0, n = src.length;
-  var operators = ["...", "..", "==", "~=", "<=", ">=", "//", "<<", ">>", "::", "+", "-", "*", "/", "%", "^", "#", "&", "~", "|", "<", ">", "=", "(", ")", "{", "}", "[", "]", ";", ":", ",", "."];
-  var compound = ["...", "..", "==", "~=", "<=", ">=", "//", "<<", ">>", "::", "--"];
-
-  function longOpen(at) {
-    var m = src.slice(at).match(/^\[(=*)\[/);
-    return m ? { open: m[0], close: "]" + m[1] + "]" } : null;
-  }
-  function push(text, kind) { tokens.push({ text: text, kind: kind }); }
-  function scanQuoted(at) {
-    var q = src[at], j = at + 1;
-    while (j < n) {
-      if (src[j] === "\\") { j += 2; continue; }
-      if (src[j] === q) return Math.min(j + 1, n);
-      j++;
-    }
-    return n;
-  }
-  function scanLong(at, bracket) {
-    var end = src.indexOf(bracket.close, at + bracket.open.length);
-    return end < 0 ? n : end + bracket.close.length;
-  }
-
-  while (i < n) {
-    var c = src[i];
-    if (/\s/.test(c)) { i++; continue; }
-
-    if (c === "-" && src[i + 1] === "-") {
-      var comment = longOpen(i + 2);
-      if (comment) i = scanLong(i + 2, comment);
-      else {
-        var newline = src.indexOf("\n", i + 2);
-        i = newline < 0 ? n : newline + 1;
-      }
-      continue;
-    }
-
-    if (c === "'" || c === '"') {
-      var qEnd = scanQuoted(i);
-      push(src.slice(i, qEnd), "string");
-      i = qEnd;
-      continue;
-    }
-
-    var bracket = c === "[" ? longOpen(i) : null;
-    if (bracket) {
-      var longEnd = scanLong(i, bracket);
-      push(src.slice(i, longEnd), "string");
-      i = longEnd;
-      continue;
-    }
-
-    if (/[A-Za-z_]/.test(c)) {
-      var idEnd = i + 1;
-      while (idEnd < n && /[A-Za-z0-9_]/.test(src[idEnd])) idEnd++;
-      push(src.slice(i, idEnd), "word");
-      i = idEnd;
-      continue;
-    }
-
-    if (/[0-9]/.test(c) || (c === "." && /[0-9]/.test(src[i + 1] || ""))) {
-      var num = src.slice(i).match(/^(?:0[xX][0-9A-Fa-f]+(?:\.(?!\.)[0-9A-Fa-f]*)?(?:[pP][+-]?[0-9]+)?|[0-9]+(?:\.(?!\.)[0-9]*)?(?:[eE][+-]?[0-9]+)?|\.[0-9]+(?:[eE][+-]?[0-9]+)?)/);
-      if (num) { push(num[0], "number"); i += num[0].length; continue; }
-    }
-
-    var op = null;
-    for (var oi = 0; oi < operators.length; oi++) {
-      if (src.slice(i, i + operators[oi].length) === operators[oi]) { op = operators[oi]; break; }
-    }
-    if (op) { push(op, "symbol"); i += op.length; }
-    else { push(c, "symbol"); i++; }
-  }
-
-  function needsSpace(a, b) {
-    var left = a.text, right = b.text;
-    var last = left[left.length - 1], first = right[0];
-    if (/[A-Za-z0-9_]/.test(last) && /[A-Za-z0-9_]/.test(first)) return true;
-    // Keep numeral/decimal-point boundaries intact (e.g. `1 .. 2`, `. .5`).
-    if ((a.kind === "number" && first === ".") || (a.text === "." && b.kind === "number")) return true;
-    for (var ci = 0; ci < compound.length; ci++) {
-      var token = compound[ci];
-      for (var split = 1; split < token.length; split++) {
-        if (left.slice(-split) === token.slice(0, split) && right.slice(0, token.length - split) === token.slice(split)) return true;
-      }
-    }
-    return false;
-  }
-
-  // Lua permits a final statement separator before block terminators and at
-  // EOF. Remove only those semicolons; separators between two statements are
-  // retained because whitespace alone cannot terminate every Lua statement.
-  function removableSemicolon(index) {
-    if (tokens[index].text !== ";") return false;
-    var next = tokens[index + 1];
-    return !next || /^(?:end|else|elseif|until|\}|\)|\])$/.test(next.text);
-  }
-
-  var out = "";
-  for (var ti = 0; ti < tokens.length; ti++) {
-    if (removableSemicolon(ti)) continue;
-    if (ti > 0 && needsSpace(tokens[ti - 1], tokens[ti])) out += " ";
-    out += tokens[ti].text;
-  }
-  return out;
-}
-
-/* Human-readable Lua formatting built on the exact minifier lexer contract.
- * It intentionally avoids rewriting literals or identifiers; only token
- * spacing, indentation, and statement/block line breaks are changed. */
-function luaPrettify(src) {
-  var compact = luaMinify(src), tokens = [], i = 0, n = compact.length;
-  var multi = ["...", "..", "==", "~=", "<=", ">=", "//", "<<", ">>", "::"];
-  function add(text, kind) { tokens.push({ text: text, kind: kind }); }
-  function quoted(at) {
-    var q = compact[at], j = at + 1;
-    while (j < n) { if (compact[j] === "\\") { j += 2; continue; } if (compact[j] === q) return j + 1; j++; }
-    return n;
-  }
-  function longAt(at) {
-    var m = compact.slice(at).match(/^\[(=*)\[/);
-    if (!m) return null;
-    var close = "]" + m[1] + "]", end = compact.indexOf(close, at + m[0].length);
-    return { end: end < 0 ? n : end + close.length };
-  }
-  while (i < n) {
-    var c = compact[i], lb = c === "[" ? longAt(i) : null;
-    if (c === "'" || c === '"') { var qe = quoted(i); add(compact.slice(i, qe), "literal"); i = qe; continue; }
-    if (lb) { add(compact.slice(i, lb.end), "literal"); i = lb.end; continue; }
-    if (/[A-Za-z_]/.test(c)) { var e = i + 1; while (e < n && /[A-Za-z0-9_]/.test(compact[e])) e++; add(compact.slice(i, e), "word"); i = e; continue; }
-    if (/[0-9]/.test(c) || (c === "." && /[0-9]/.test(compact[i + 1] || ""))) { var nm = compact.slice(i).match(/^(?:0[xX][0-9A-Fa-f]+(?:\.(?!\.)[0-9A-Fa-f]*)?(?:[pP][+-]?[0-9]+)?|[0-9]+(?:\.(?!\.)[0-9]*)?(?:[eE][+-]?[0-9]+)?|\.[0-9]+(?:[eE][+-]?[0-9]+)?)/); if (nm) { add(nm[0], "number"); i += nm[0].length; continue; } }
-    var op = null;
-    for (var k = 0; k < multi.length; k++) if (compact.slice(i, i + multi[k].length) === multi[k]) { op = multi[k]; break; }
-    add(op || c, "symbol"); i += (op || c).length;
-  }
-  var out = "", line = "", indent = 0, parens = 0, pendingSpace = false;
-  function flush() { if (line.trim()) out += "  ".repeat(indent) + line.trim() + "\n"; line = ""; pendingSpace = false; }
-  function append(s, space) { if (space && line && !/[\s(\[{.]$/.test(line)) line += " "; line += s; }
-  tokens.forEach(function (t, index) {
-    var x = t.text, prev = tokens[index - 1] && tokens[index - 1].text;
-    if (x === ";") { flush(); return; }
-    if (x === "end" || x === "else" || x === "elseif" || x === "until") {
-      flush();
-      indent = Math.max(0, indent - 1);
-      append(x, false);
-      flush();
-      if (x === "else" || x === "elseif") indent++;
-      return;
-    }
-    if (x === "then" || x === "do") { append(x, true); flush(); indent++; return; }
-    if (x === "{") { append(x, false); return; }
-    if (x === "}") { append(x, false); return; }
-    if (x === "(") { append(x, false); parens++; return; }
-    if (x === ")") { append(x, false); parens--; return; }
-    if (x === ",") { append(x, false); line += " "; return; }
-    var operator = /^(?:=|==|~=|<=|>=|\.\.|\.\.\.|[+*/%^#&|<>~-])$/.test(x);
-    if (operator) {
-      append(x, true);
-      line += " ";
-    } else {
-      append(x, !!(prev && /^[A-Za-z0-9_\])}]$/.test(prev.slice(-1)) && /^[A-Za-z_0-9"'\[]/.test(x)));
-    }
-  });
-  flush();
-  return out.replace(/\n+$/, "");
-}
-
-/* ---------- slot command ---------- */
-function slotKey(kind, idx) { return idx === 0 ? kind : kind + idx; }
-function cmdPrefix(kind, idx) { return "!bset " + slotKey(kind, idx) + " "; }
-function buildCommand(kind, idx, minified, urlSafe) {
-  var b64 = b64encode(minified, urlSafe);
-  return { b64: b64, cmd: cmdPrefix(kind, idx) + b64 };
-}
+function getLimit() { return Pure.getLimit($("charLimit").value); }
 
 /* ---------- state ---------- */
 function makeGroup(kind, inputsEl, slotsEl) {
@@ -381,21 +169,6 @@ function exampleText(kind) {
     return "-- example: double metal cost of all T2 units\nfor name,ud in pairs(UnitDefs) do\n  local tech = ud.customparams and ud.customparams.techlevel or 1\n  if tech >= 2 then ud.metalcost = (ud.metalcost or 0) * 2 end\nend";
   }
   return "-- example tweakunits table\n{\n  armpw = { metalcost = 10, energycost = 10, },\n  corak = { metalcost = 10, energycost = 10, },\n}";
-}
-
-/* Merge several tweakunits table sources into one table source.
- * Strips outer braces of each and comma-joins the innards. */
-function mergeTweakUnits(sources) {
-  var inners = [];
-  sources.forEach(function (s) {
-    var t = s.trim().replace(/--\[\[[\s\S]*?\]\]/g, "");
-    // drop full-line -- comments
-    t = t.split("\n").filter(function (ln) { return ln.trim().slice(0, 2) !== "--"; }).join("\n");
-    var a = t.indexOf("{"), b = t.lastIndexOf("}");
-    if (a >= 0 && b > a) inners.push(t.slice(a + 1, b).trim().replace(/,+$/, ""));
-    else if (t) inners.push(t);
-  });
-  return "{ " + inners.filter(Boolean).join(", ") + " }";
 }
 
 function renderInputs(g) {
@@ -581,69 +354,7 @@ function renderSlots(g) {
 
 function renderAll() { renderInputs(defs); renderInputs(units); renderSlots(defs); renderSlots(units); }
 
-/* ---------- auto-pack: order-preserving optimal packing ---------- */
-/* Pure core (no DOM — unit-tested via loadPure): greedy first-fit over minified
- * sources. Returns chunks of indices into `minis`. tweakdefs chunks join with
- * "\n" (files must be self-contained: locals inside do/end or loop scope, only
- * UnitDefs mutated — concatenation then preserves behaviour and order).
- * tweakunits chunks merge into one table via mergeTweakUnits. A single item
- * that alone exceeds the limit is kept solo (caller warns). */
-function packChunks(kind, minis, limit, urlSafe) {
-  var n = minis.length;
-  if (!n) return [];
-  function pick(list) { return list.map(function (k) { return minis[k]; }); }
-  function joined(list) {
-    var items = pick(list);
-    if (kind === "tweakdefs") return items.join("\n");
-    return mergeTweakUnits(items);
-  }
-  function sizeOf(luaSrc) {
-    var b = b64encode(luaSrc, urlSafe);
-    // worst-case prefix: numbered slots (1-9) are 1 char longer than bare slot 0
-    return cmdPrefix(kind, 1).length + b.length;
-  }
-  function fits(list) { return sizeOf(joined(list)) <= limit; }
-  var best = new Array(n + 1);
-  best[n] = { count: 0, waste: 0, next: n };
-  for (var i = n - 1; i >= 0; i--) {
-    var choice = null;
-    for (var end = i; end < n; end++) {
-      var indexes = [];
-      for (var k = i; k <= end; k++) indexes.push(k);
-      var size = sizeOf(joined(indexes));
-      if (end > i && size > limit) break;
-      var tail = best[end + 1];
-      var option = { count: tail.count + 1, waste: Math.max(0, limit - size) + tail.waste, next: end + 1 };
-      if (choice === null || option.count < choice.count || (option.count === choice.count && option.waste < choice.waste)) choice = option;
-    }
-    best[i] = choice;
-  }
-  var chunks = [];
-  for (var at = 0; at < n;) {
-    var stop = best[at] && best[at].next > at ? best[at].next : at + 1;
-    var chunk = [];
-    for (var x = at; x < stop; x++) chunk.push(x);
-    chunks.push(chunk);
-    at = stop;
-  }
-  return chunks;
-}
-/* Pure helper: find UnitDefs `dst` keys claimed by 2+ sources. tweakdefs only —
- * same dst in two files means last-writer-wins, so the packer warns (packs anyway). */
-function findDuplicateDst(minis) {
-  var seen = {};
-  var dups = [];
-  minis.forEach(function (m) {
-    var re = /dst\s*=\s*"([^"]+)"/g;
-    var mt, local = {};
-    while ((mt = re.exec(m))) local[mt[1]] = 1;
-    Object.keys(local).forEach(function (k) {
-      if (seen[k]) { if (dups.indexOf(k) < 0) dups.push(k); }
-      else seen[k] = 1;
-    });
-  });
-  return dups;
-}
+/* ---------- auto-pack: DOM orchestration ---------- */
 function joinChunk(g, minis, idxs) {
   var items = idxs.map(function (k) { return minis[k]; });
   if (g.kind === "tweakdefs") return items.join("\n");
@@ -679,16 +390,6 @@ function autoPack(g) {
   renderSlots(g);
 }
 
-/* Reset commands: setting a slot's value to 0 clears it lobby-side. */
-function resetCommands(kind) {
-  var cmds = [];
-  for (var idx = 0; idx < MAX_SLOTS; idx++) cmds.push(cmdPrefix(kind, idx) + "0");
-  return cmds;
-}
-function resetAllCommands() {
-  // Apply unit table resets before runnable definitions, matching combined copy order.
-  return resetCommands("tweakunits").concat(resetCommands("tweakdefs"));
-}
 function collectCommands(g) {
   var srcs = slotSources(g);
   var cmds = [];
