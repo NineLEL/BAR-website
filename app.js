@@ -481,19 +481,77 @@ $("decodeBtn").onclick = function () {
 };
 
 function utilitySetStatus(message, error) {
-  var el = $("utilityStatus"); el.textContent = message; el.style.color = error ? "var(--danger)" : "var(--muted)";
+  var el = $("utilityStatus");
+  el.textContent = message;
+  el.className = "utility-status" + (message ? (error ? " error" : " success") : "");
+}
+function utilitySetOutput(value) {
+  $("utilityOutput").value = value;
+  $("utilityCopy").disabled = value.length === 0;
+}
+function utilityRun(operation, successMessage) {
+  var input = $("utilityInput").value;
+  try {
+    var output = operation(input);
+    utilitySetOutput(output);
+    utilitySetStatus(successMessage(output, input));
+  } catch (e) {
+    utilitySetOutput("");
+    utilitySetStatus("Operation failed: " + (e && e.message ? e.message : "Please check the input."), true);
+  }
 }
 $("utilityEncode").onclick = function () {
-  try { var out = b64encode($("utilityInput").value, $("utilityUrlSafe").checked); $("utilityOutput").value = out; utilitySetStatus(out.length + " Base64 characters"); }
-  catch (e) { utilitySetStatus("Encode failed: " + e.message, true); }
+  utilityRun(function (input) { return b64encode(input, $("utilityUrlSafe").checked); }, function (output) { return output.length + " Base64 characters encoded."; });
 };
 $("utilityDecode").onclick = function () {
-  try { var out = b64decode($("utilityInput").value); $("utilityOutput").value = out; utilitySetStatus(out.length + " decoded UTF-8 characters"); }
-  catch (e) { $("utilityOutput").value = ""; utilitySetStatus("Decode failed: " + e.message, true); }
+  utilityRun(function (input) { return b64decode(input); }, function (output) { return output.length + " UTF-8 characters decoded."; });
 };
-$("utilityMinify").onclick = function () { var out = luaMinify($("utilityInput").value); $("utilityOutput").value = out; utilitySetStatus($("utilityInput").value.length - out.length + " characters removed"); };
-$("utilityPrettify").onclick = function () { var out = luaPrettify($("utilityInput").value); $("utilityOutput").value = out; utilitySetStatus("Lua formatted"); };
-$("utilityClear").onclick = function () { $("utilityInput").value = ""; $("utilityOutput").value = ""; utilitySetStatus(""); };
-$("utilityCopy").onclick = function () { if ($("utilityOutput").value) copyText($("utilityOutput").value); };
+$("utilityMinify").onclick = function () {
+  utilityRun(luaMinify, function (output, input) { return (input.length - output.length) + " characters removed."; });
+};
+$("utilityPrettify").onclick = function () {
+  utilityRun(luaPrettify, function () { return "Lua prettified."; });
+};
+$("utilityClear").onclick = function () {
+  $("utilityInput").value = "";
+  utilitySetOutput("");
+  utilitySetStatus("Input and output cleared.");
+};
+$("utilityUseOutput").onclick = function () {
+  var output = $("utilityOutput").value;
+  if (!output) {
+    utilitySetStatus("There is no output to use as input.", true);
+    return;
+  }
+  $("utilityInput").value = output;
+  $("utilityInput").focus();
+  utilitySetStatus("Output moved to input.");
+};
+$("utilityCopy").onclick = function () {
+  var output = $("utilityOutput").value;
+  if (!output) {
+    utilitySetStatus("There is no output to copy.", true);
+    return;
+  }
+  function copied() { utilitySetStatus("Output copied to clipboard."); }
+  function fallbackCopy() {
+    var field = document.createElement("textarea");
+    field.value = output;
+    field.setAttribute("readonly", "");
+    field.style.position = "fixed";
+    field.style.opacity = "0";
+    document.body.appendChild(field);
+    field.select();
+    var succeeded = false;
+    try { succeeded = document.execCommand("copy"); } catch (e) { succeeded = false; }
+    document.body.removeChild(field);
+    if (succeeded) copied();
+    else utilitySetStatus("Could not copy output. Select it and copy manually.", true);
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    try { navigator.clipboard.writeText(output).then(copied, fallbackCopy); }
+    catch (e) { utilitySetStatus("Could not copy output. Select it and copy manually.", true); }
+  } else fallbackCopy();
+};
 
 renderAll();

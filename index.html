@@ -148,24 +148,49 @@
 
   <section id="panel-utilities" class="panel">
     <div class="card utility-card">
-      <h2>Lua &amp; Base64 utilities</h2>
-      <p>Run the same UTF-8 Base64 codec and Lua minifier used by the packer, or format Lua for editing.</p>
-      <label class="utility-label" for="utilityInput">Input</label>
-      <textarea id="utilityInput" class="utility-input" rows="12" placeholder="Paste Lua or Base64 here..."></textarea>
-      <div class="toolbar utility-toolbar">
-        <button id="utilityEncode" class="primary">Base64 encode</button>
-        <button id="utilityDecode">Base64 decode</button>
-        <button id="utilityMinify">Lua minify</button>
-        <button id="utilityPrettify">Lua prettier</button>
-        <button id="utilityClear">Clear</button>
+      <h2>Text utilities</h2>
+      <p>Convert Base64 or format Lua locally in your browser. Choose an operation for the content in the input field.</p>
+      <label class="utility-label" for="utilityInput">Input text (Lua or Base64)</label>
+      <textarea id="utilityInput" class="utility-input" rows="12" placeholder="Paste Lua source to format or Base64 text to decode..."></textarea>
+
+      <section class="utility-group" aria-labelledby="utility-base64-heading">
+        <div class="utility-group-heading">
+          <h3 id="utility-base64-heading">Base64</h3>
+          <p>Encode UTF-8 text or decode a Base64 payload.</p>
+        </div>
+        <div class="utility-toolbar">
+          <button id="utilityEncode" class="primary">Encode</button>
+          <button id="utilityDecode">Decode</button>
+          <label class="utility-option" for="utilityUrlSafe">
+            <input id="utilityUrlSafe" type="checkbox">
+            URL-safe alphabet (encode only)
+          </label>
+        </div>
+        <p class="utility-help">URL-safe encoding uses “-” and “_” without padding. It does not change decoding behavior.</p>
+      </section>
+
+      <section class="utility-group" aria-labelledby="utility-lua-heading">
+        <div class="utility-group-heading">
+          <h3 id="utility-lua-heading">Lua</h3>
+          <p>Minify Lua for compact output or prettify it for editing.</p>
+        </div>
+        <div class="utility-toolbar">
+          <button id="utilityMinify">Minify</button>
+          <button id="utilityPrettify">Prettify</button>
+          <button id="utilityClear">Clear input and output</button>
+        </div>
+      </section>
+
+      <div class="utility-output-heading">
+        <label class="utility-label" for="utilityOutput">Output (read-only)</label>
+        <button id="utilityUseOutput" type="button">Use output as input</button>
       </div>
-      <label class="utility-option"><input id="utilityUrlSafe" type="checkbox"> URL-safe Base64 (no padding)</label>
-      <label class="utility-label" for="utilityOutput">Output</label>
-      <textarea id="utilityOutput" class="utility-input" rows="12" readonly placeholder="Output appears here..."></textarea>
-      <div class="row">
-        <button id="utilityCopy">Copy output</button>
+      <textarea id="utilityOutput" class="utility-input" rows="12" readonly aria-describedby="utility-output-help" placeholder="Output appears here after you choose an operation..."></textarea>
+      <div class="utility-output-actions">
+        <p id="utility-output-help" class="utility-help">Output is read-only. You can copy it or send it back to the input.</p>
+        <button id="utilityCopy" type="button" disabled>Copy output</button>
       </div>
-      <p id="utilityStatus" class="utility-status" role="status"></p>
+      <p id="utilityStatus" class="utility-status" role="status" aria-live="polite" aria-atomic="true"></p>
     </div>
   </section>
 

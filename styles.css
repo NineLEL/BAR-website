@@ -174,14 +174,26 @@ button:disabled { cursor: not-allowed; opacity: .45; }
 
 /* Utilities */
 .utility-card { max-width: 1000px; }
+.utility-card > p:not(.utility-status) { color: var(--fg-dim); margin-top: -3px; }
 .utility-label { display: block; color: var(--fg-dim); font-size: .85rem; font-weight: 700; margin: 10px 0 6px; }
 .utility-input {
   width: 100%; min-height: 150px; resize: vertical; font-family: var(--mono);
   background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px; line-height: 1.45;
 }
-.utility-toolbar { margin-top: 12px; margin-bottom: 8px; }
-.utility-option { display: inline-flex; gap: 6px; align-items: center; color: var(--fg-dim); font-size: .85rem; }
-.utility-status { min-height: 1.3em; color: var(--fg-dim); font-family: var(--mono); font-size: .8rem; }
+.utility-group { margin-top: 18px; padding: 14px; background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius); }
+.utility-group-heading h3 { margin: 0; font-size: .98rem; }
+.utility-group-heading p { margin: 3px 0 10px; color: var(--fg-dim); font-size: .82rem; }
+.utility-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.utility-option { display: inline-flex; gap: 7px; align-items: center; min-height: 40px; color: var(--fg); font-size: .85rem; }
+.utility-option input { width: 16px; height: 16px; accent-color: var(--accent); }
+.utility-help { margin: 6px 0 0; color: var(--fg-dim); font-size: .78rem; }
+.utility-output-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 14px; }
+.utility-output-heading .utility-label { margin: 0 0 6px; }
+.utility-output-actions { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; }
+.utility-output-actions .utility-help { margin: 8px 0; }
+.utility-status { min-height: 1.4em; margin: 12px 0 0; color: var(--fg-dim); font-size: .85rem; }
+.utility-status.success { color: var(--ok); }
+.utility-status.error { color: var(--danger); }
 
 /* Footer + toast */
 footer { color: var(--fg-dim); font-size: 0.85rem; line-height: 1.6; }
@@ -212,6 +224,13 @@ footer { color: var(--fg-dim); font-size: 0.85rem; line-height: 1.6; }
   .howto-steps li { padding: 12px; }
   .panel { padding: 14px; border-radius: 0 0 var(--radius) var(--radius); }
   .toolbar button { flex: 1 1 auto; }
+  .utility-toolbar button { flex: 1 1 125px; }
+  .utility-option { flex: 1 1 100%; }
+  .utility-output-heading { align-items: flex-start; flex-wrap: wrap; }
+  .utility-output-heading .utility-label { margin-bottom: 0; }
+  .utility-output-heading button { width: 100%; }
+  .utility-output-actions { align-items: stretch; }
+  .utility-output-actions button { width: 100%; }
   .slot header { align-items: flex-start; }
   .cmd { font-size: .68rem; }
 }
