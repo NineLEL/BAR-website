@@ -32,6 +32,21 @@ function freshServer() {
   return { root, tweaks, outside, srv };
 }
 
+it("initializes a missing local state from tracked defaults", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "bar-packer-defaults-"));
+  const tweaks = path.join(root, "tweaks");
+  const defaults = { "defs/alpha.lua": false };
+  fs.mkdirSync(tweaks, { recursive: true });
+  fs.writeFileSync(path.join(tweaks, "state.defaults.json"), JSON.stringify(defaults));
+  try {
+    const srv = require("../server.js").createServer({ root, tweaksDir: tweaks });
+    srv.ensureDirs();
+    assert.deepEqual(JSON.parse(fs.readFileSync(path.join(tweaks, "state.json"), "utf8")), defaults);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 function listen(srv) {
   return new Promise((resolve) => {
     const s = srv.server.listen(0, "127.0.0.1", () => resolve(s));
@@ -363,7 +378,7 @@ describe("XSS / envelope guards (as-coded behaviour)", () => {
 describe("KNOWN GAPS pinned (fail loudly when fixed — update these tests)", () => {
   it("GAP-1: server binds all interfaces (no explicit host) — documents 0.0.0.0 exposure", () => {
     assert.ok(
-      /server\.listen\(PORT/.test(SERVER_SRC),
+      /server\.listen\(port\)/.test(SERVER_SRC),
       "server no longer binds bare PORT — GAP-1 may be fixed; update this test + docs"
     );
   });

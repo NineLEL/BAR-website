@@ -20,7 +20,12 @@ function createConfiguration(options) {
   const env = options.env || process.env;
   const root = path.resolve(options.root || env.BAR_ROOT || __dirname);
   const tweaksDir = path.resolve(options.tweaksDir || env.BAR_TWEAKS_DIR || path.join(root, "tweaks"));
-  return { root: root, tweaksDir: tweaksDir, stateFile: path.join(tweaksDir, "state.json") };
+  return {
+    root: root,
+    tweaksDir: tweaksDir,
+    stateFile: path.join(tweaksDir, "state.json"),
+    defaultStateFile: path.join(tweaksDir, "state.defaults.json")
+  };
 }
 
 function safeName(name) {
@@ -37,7 +42,10 @@ function safeName(name) {
 function createLibrary(config) {
   function ensureDirs() {
     for (const k of KINDS) fs.mkdirSync(path.join(config.tweaksDir, k), { recursive: true });
-    if (!fs.existsSync(config.stateFile)) fs.writeFileSync(config.stateFile, "{}\n");
+    if (!fs.existsSync(config.stateFile)) {
+      if (fs.existsSync(config.defaultStateFile)) fs.copyFileSync(config.defaultStateFile, config.stateFile);
+      else fs.writeFileSync(config.stateFile, "{}\n");
+    }
   }
   function readState() {
     try {
