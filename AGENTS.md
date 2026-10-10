@@ -113,6 +113,7 @@ Before making any change involving BAR units, unit definitions, weapons, movemen
 
 - Inspect the BAR repository and, where engine behavior is involved or BAR does not answer the question, the Recoil Engine and/or Spring Engine repositories.
 - For unit definitions, check https://gex.honu.pw/ and, when needed, the full definitions API: https://gex.honu.pw/api/unit/all-defs.
+- An offline copy of the full Gex definitions API may be available at `C:\Users\acer\AppData\Local\Temp\opencode\bar-unit-all-defs.json`. When present, use it for targeted lookups if the API is unavailable; the JSON is a large array of records, with unit identifiers in each record's `unit` field. Search only for the needed unit identifiers rather than dumping the full file, and do not treat the copy as authoritative if it may be stale.
 - Verify details that affect the change (including unit availability, supported weapon slots, scripts, and behavior) in the source data/code.
 - If these sources do not establish the needed facts, stop and ask for clarification rather than inventing details.
 - In your final response, briefly identify the sources checked; do not claim verification you did not perform.
