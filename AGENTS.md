@@ -1,3 +1,76 @@
+<unified_tool_matrix>
+
+To maximize execution speed, maintain workspace integrity, and optimize context token usage, you must select the correct tool for every task. You are strictly prohibited from using raw shell commands or custom scripting when a dedicated tool exists.
+
+---
+
+## 📂 1. Files & Search
+
+| Tool | Primary Purpose | Replaced Anti-pattern (❌ DO NOT USE) |
+| :--- | :--- | :--- |
+| **`aft_read`** | Loads and summarizes files, directories, archives, SQLite tables, PDFs, notebooks, URLs, and PR paths. | ❌ `cat <file>`, `head`, `tail`, or custom Python reading loops (causes context bloat and lacks automatic token clipping). |
+| **`aft_write`** | Atomically creates or overwrites a file or archive entry with auto-backup and formatting. | ❌ `echo "..." > file` or scripting file-writes (lacks diagnostics, validation, and automated rollback). |
+| **`aft_patch`** | Applies precise updates using Hashline patches with content-hash anchors and stale-anchor recovery. | ❌ `sed`, `awk`, or writing full-file rewrites to make minor changes (fragile, prone to line-drift and merge conflicts). |
+| **`aft_grep`** | Performs trigram-indexed parallel regex searches across files and globs. | ❌ Shell `grep`, `rg`, or nested directory parsing scripts (slow, unindexed, serial). |
+| **`grep`** | Use to search OMP devices, like xd://, | using aft_grep or shell grep with :// urls |
+| **`glob`** | Instant path and file matching using a persistent, ignore-aware trigram index. | ❌ `find . -name <pattern>` or recursive `ls -R` (triggers slow process-forking and ignores `.gitignore`). |
+| **`aft_delete`** | Safely delete one or more files with backup | ❌ Manually using rm |
+| **`aft_move`** | Safely move files and directories with backup | ❌ Manually using mv |
+| **`aft_safety`** | Use to snapshot and restore files being edited | ❌ Misapplying a patch, garbleing it and having to rewrite it. |
+
+---
+
+## 👁️ 2. Searching for code
+
+| Tool | Primary Purpose | Replaced Anti-pattern (❌ DO NOT USE) |
+| :--- | :--- | :--- |
+| **`aft_outline`** | Maps all classes, functions, nested members, and line ranges in a file, directory, or URL. | ❌ Manually reading entire source files to extract structure or identify symbol locations. |
+| **`aft_zoom`** | Isolates and extracts a specific class, function, or type definition (with optional inline caller annotations). | ❌ Spawning a full file read just to inspect a single sub-component. |
+| **`aft_search`** | Semantic and lexical hybrid code search over the indexed workspace. | ❌ Complex keyword-regex scripts when searching for conceptual or logical matches (e.g. searching "database pooling"). |
+| **`ast_grep_search`** | Tree sitter grep | ❌ Grepping through code bases |
+| **`ast_grep_replace`** | Tree sitter sed | ❌ Execing sed through code bases |
+| **`aft_callgraph`** | Traces callers, callees, data flows, and impact paths across symbols. | ❌ Manually executing recursive keyword searches to reconstruct a call tree or dependency hierarchy. |
+| **`aft_inspect`** | Generates an on-demand codebase health report (compiler diagnostics, dead code, duplicated exports). | ❌ Manually running standalone linters or compiling files just to catch diagnostic warnings or dead paths. |
+| **`github`** | Wrapper for gh | ❌ Manually calling `gh` or `git` |
+| **`bash: ghq get`** | One bash exception, using `ghq get` to pull a repo down locally | ❌ Making repeated calls to Github API to look at a repository and getting rate limited |
+
+---
+
+## ✋ 3. Code refactoring beyond the basics
+
+| Tool | Primary Purpose | Replaced Anti-pattern (❌ DO NOT USE) |
+| :--- | :--- | :--- |
+| **`apply_patch`** | Performs multi-file transaction patches with atomic rollback upon validation failure. | ❌ Writing custom shell or Python scripts to run raw unified diffs (lacks safety gates and rollback capability). |
+| **`aft_refactor`** | Executes workspace-wide symbol moves or function extractions, automatically rewriting reference imports. | ❌ Multi-file search-and-replace to rename symbols (breaks imports, re-exports, and relative paths). |
+| **`aft_import`** | Language-aware import addition, deletion, and organization. | ❌ Manually editing file import blocks (prone to syntax errors, orphaned variables, and broken dependencies). |
+| **`ast_grep`** | Performs structural syntax searches using tree-sitter AST patterns. | ❌ Complex regex queries with variable-spacing assumptions to find nested language blocks. |
+| **`ast_edit`** | Previews and applies structural syntax rewrites via AST replacements. | ❌ Running fragile text-based string replacements across variable nested constructs. |
+| **`aft_conflicts`** | Show all git conflicts | ❌ Using git CLI |
+| **`aft_grep_replace`** | AST aware rpelacement of code paterns | ❌ Using sed |
+| **`aft_import`** | Manage code imports | ❌ Using packag managers manually |
+
+---
+
+## ⚙️ 4. Runtime & Intelligence (Oh My Pi! Runtime & Shell)
+
+| Tool | Primary Purpose | Replaced Anti-pattern (❌ DO NOT USE) |
+| :--- | :--- | :--- |
+| **`bash`** | Spawns execution commands. Uses `pi-builtins` to run **46 core utilities in-process** (no fork/exec overhead). | ❌ Forking standard shell subprocesses to run basic system utils (`sort`, `jq`, `ls`, `grep`). |
+| **`eval`** | Runs persistent Python, Julia and JavaScript cells sharing a stateful prelude with loopback tool access. | ❌ running `python -c` or `node` scripts from scratch or doing maths in your head. |
+| **`lsp`** | Direct LSP integration for diagnostics, symbol navigation, code actions, and raw server queries. | ❌ Static regex-based jump-to-definition searches or directory-level string renames. |
+| **`debug`** | Controls active DAP sessions (breakpoints, stepping, thread inspection, variable state). | ❌ Sprinkling printing commands (`console.log`, `print`) across source files to trace runtime errors or deadlocks. |
+| **`security_scan`** | Executes automated security and threat reviews of workspace files. | ❌ Manually scanning file directories looking for vulnerability patterns. |
+
+---
+
+## 💡 Quick Integration Rules
+
+1. **Understand Structure First:** Never read a full source file to locate a definition. Call `aft_outline` to locate symbols, then use `aft_zoom` or `read` on precise line ranges.
+2. **Prefer Symbols Over Lines:** Use `edit` or `ast_edit` for precise edits. Avoid full-file writes (`write`) when targeting specific blocks.
+3. **Use In-Process Shell Built-ins:** When running scripts via the `bash` tool, rely on the built-in commands. Do not write complex wrapper loops to process text outputs when `pi-builtins` (like `sed`, `xargs`, or `jq`) can execute them directly in-process.
+4. **Leverage the Debugger:** If a program fails or crashes, do not add logging statements. Attach `debug` to inspect the live thread stacks and variable heaps directly.
+</unified_tool_matrix>
+
 <!-- CODEGRAPH_START -->
 ## CodeGraph
 
@@ -8,3 +81,12 @@ In repositories indexed by CodeGraph (a `.codegraph/` directory exists at the re
 
 If there is no `.codegraph/` directory, skip CodeGraph entirely — indexing is the user's decision.
 <!-- CODEGRAPH_END -->
+## Mandatory BAR research requirements
+
+Before making any change involving BAR units, unit definitions, weapons, movement, build options, game mechanics, or engine behavior, you MUST verify the relevant facts against authoritative sources. Do not guess, rely only on memory, or assume a unit or mechanic behaves as its name suggests.
+
+- Inspect the BAR repository and, where engine behavior is involved or BAR does not answer the question, the Recoil Engine and/or Spring Engine repositories.
+- For unit definitions, check https://gex.honu.pw/ and, when needed, the full definitions API: https://gex.honu.pw/api/unit/all-defs.
+- Verify details that affect the change (including unit availability, supported weapon slots, scripts, and behavior) in the source data/code.
+- If these sources do not establish the needed facts, stop and ask for clarification rather than inventing details.
+- In your final response, briefly identify the sources checked; do not claim verification you did not perform.
