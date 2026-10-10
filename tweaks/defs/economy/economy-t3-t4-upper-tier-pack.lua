@@ -122,8 +122,8 @@ do
     local source = U[sp[2]]
     if source then
       local resource = sp[4] == "m" and "Metal" or "Energy"
-      local rank = sp[4] == "m" and "Epic" or "Legendary"
-      local name = rank .. " " .. resource .. " Storage"
+      local rank = sp[5] == 3 and "Epic" or "Legendary"
+      local name = rank .. " T" .. sp[5] .. " " .. resource .. " Storage"
       local unit = copy(source)
       unit.unitname, unit.name, unit.description = sp[1], name, name
       if sp[4] == "m" then unit.metalstorage, unit.energystorage = sp[6], 0
@@ -133,9 +133,8 @@ do
       unit.weapondefs = unit.weapondefs or {}
       unit.customparams = unit.customparams or {}
       unit.customparams.techlevel = sp[5]
-      localized(unit, name, sp[4] == "m"
-        and ("Epic metal storage adds %d capacity. Explodes violently if destroyed."):format(sp[6])
-        or ("Legendary energy storage adds %d capacity. Explodes catastrophically if destroyed."):format(sp[6]))
+      localized(unit, name, (rank .. " " .. resource .. " storage adds %d capacity. Explodes "
+        .. (sp[5] == 3 and "violently" or "catastrophically") .. " if destroyed."):format(sp[6]))
       publish(sp[1], unit)
       for _, builderName in ipairs(builders[sp[3]]) do add(builderName, sp[1]) end
       local sub = subs[sp[3]]
