@@ -70,7 +70,7 @@ test("all Scav-only Mega squads spawn three units starting at 20 percent anger",
     riftcolossus: [20, 900], riftjump: [30, 875], vortexdominator: [20, 900],
     vortexwell: [25, 850], aegisbreaker: [40, 950], solardecimator: [20, 900],
     skyfurnace: [40, 950], stormsovereign: [30, 950], pyroclast: [30, 950],
-    worldbeam: [20, 900], singularity: [25, 900], aethersiege: [20, 900],
+    singularity: [25, 900], aethersiege: [20, 900],
     phantomleviathan: [25, 1000], archangel: [40, 1000],
   };
   const entries = [...lua.matchAll(/scavx_mega_(\w+) = \{ customparams = \{([^\n]+)\} \},/g)];

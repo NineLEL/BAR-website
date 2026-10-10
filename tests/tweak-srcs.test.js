@@ -175,7 +175,7 @@ test("Scav-only Mega variants replace player Mega Units in ScavX squads", () => 
     "player_pyroclast", "player_singularity", "player_aethersiege",
     "player_phantomleviathan", "player_archangel",
   ];
-  assert.ok(megaIds.length >= 14, "expected the player mega pack roster");
+  assert.ok(megaIds.length >= 13, "expected the player mega pack roster");
   for (const name of megaIds) {
     assert.equal(roster.has(name), false, `${name} must stay player-only`);
     const body = roster.get(name.replace("player_", "scavx_mega_")) || "";
@@ -190,7 +190,7 @@ test("Everything Experimental exposes every player Mega Unit", () => {
   const megaIds = [
     "player_riftcolossus", "player_riftjump", "player_vortexdominator", "player_vortexwell",
     "player_aegisbreaker", "player_solardecimator", "player_skyfurnace", "player_stormsovereign",
-    "player_pyroclast", "player_worldbeam", "player_singularity", "player_aethersiege",
+    "player_pyroclast", "player_singularity", "player_aethersiege",
     "player_phantomleviathan", "player_archangel",
   ];
   assert.match(text, /local megaUnits = \{/);
@@ -365,11 +365,27 @@ test("RaptorX custom definitions are enabled, verified and wired into squads", (
 test("RaptorX squad metadata and progression are valid", () => {
   const behaviors = new Set(["raider", "berserk", "artillery", "kamikaze", "healer"]);
   const roster = raptorRoster();
+  const openingLimits = new Map([
+    ["raptor_land_swarmer_basic_t1_v1", [0, 90, 160]],
+    ["raptor_land_swarmer_basic_t2_v1", [5, 100, 150]],
+    ["raptor_air_scout_basic_t2_v1", [5, 6, 100]],
+    ["raptor_land_swarmer_basic_t2_v2", [10, 90, 140]],
+    ["raptor_allterrain_swarmer_basic_t2_v1", [10, 60, 110]],
+    ["raptor_land_swarmer_fire_t2_v1", [15, 64, 120]],
+    ["raptor_land_kamikaze_basic_t2_v1", [20, 40, 90]],
+  ]);
   for (const [name, body] of roster) {
     assert.equal(body.match(/raptorsquadbehavior = "(\w+)"/)?.[1] && behaviors.has(body.match(/raptorsquadbehavior = "(\w+)"/)[1]), true, `${name}: behavior`);
     const n = (key) => Number(body.match(new RegExp(`\\b${key} = (\\d+(?:\\.\\d+)?)`))?.[1]);
     assert.ok(n("raptorsquadbehaviorchance") === 1 && n("raptorsquadunitsamount") > 0 && n("raptorsquadweight") > 0 && n("raptorsquadbehaviordistance") > 0, `${name}: squad values`);
     assert.ok(n("raptorsquadminanger") >= 0 && n("raptorsquadminanger") < n("raptorsquadmaxanger") && n("raptorsquadmaxanger") <= 150, `${name}: anger window`);
+  }
+  for (const [name, [minAnger, amount, weight]] of openingLimits) {
+    const body = roster.get(name) || "";
+    const n = (key) => Number(body.match(new RegExp(`\\b${key} = (\\d+(?:\\.\\d+)?)`))?.[1]);
+    assert.equal(n("raptorsquadminanger"), minAnger, `${name}: opening anger gate changed`);
+    assert.equal(n("raptorsquadunitsamount"), amount, `${name}: opening squad size`);
+    assert.equal(n("raptorsquadweight"), weight, `${name}: opening squad weight`);
   }
   assert.ok((roster.get("raptor_land_assault_basic_t4_v1") || "").includes("raptorsquadminanger = 35"));
   assert.ok((roster.get("raptor_queen_hard") || "").includes("raptorsquadminanger = 75"));
