@@ -8,6 +8,7 @@
     "node": ">=22"
   },
   "scripts": {
+    "start": "node server.js",
     "test": "node --test",
     "test:pure": "node --test tests/pure.test.js",
     "test:client": "node --test tests/library-client.test.js",

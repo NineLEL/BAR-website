@@ -215,9 +215,26 @@ if (require.main === module) {
   instance.ensureDirs();
   instance.watchLibraryUpdates();
   const server = instance.server;
-  server.listen(PORT, function () {
-    console.log("BAR Tweak Packer at http://localhost:" + PORT + "  (tweaks folder: ./tweaks)");
-  });
+  function listen(port) {
+    function onError(error) {
+      server.removeListener("listening", onListening);
+      if (error.code === "EADDRINUSE" && port < 65535) {
+        console.warn("Port " + port + " is already in use; trying " + (port + 1) + ".");
+        listen(port + 1);
+        return;
+      }
+      console.error("Unable to start server on port " + port + ": " + error.message);
+      process.exitCode = 1;
+    }
+    function onListening() {
+      server.removeListener("error", onError);
+      console.log("BAR Tweak Packer at http://localhost:" + port + "  (tweaks folder: ./tweaks)");
+    }
+    server.once("error", onError);
+    server.once("listening", onListening);
+    server.listen(port);
+  }
+  listen(PORT);
 }
 
 // Compatibility wrappers initialize a non-listening, non-writing default instance
