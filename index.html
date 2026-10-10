@@ -95,13 +95,25 @@
   </div>
 
   <section id="panel-defs" class="panel active" role="tabpanel" aria-labelledby="tab-defs" tabindex="0">
-    <div class="toolbar">
-      <button id="defsAdd">+ Add snippet</button>
-      <button id="defsPack" class="primary">Auto-pack into fewest slots</button>
-      <button id="defsClear">Clear all</button>
-      <button id="defsCopyAll">Copy all commands</button>
-      <button id="defsCopyCombined" class="primary">Copy all combined</button>
-      <button id="defsLibReload">Reload server library</button>
+    <div class="workflow-actions" aria-label="Tweakdefs actions">
+      <div class="action-group" role="group" aria-labelledby="defs-edit-label">
+        <h2 id="defs-edit-label" class="action-label">Edit</h2>
+        <button id="defsAdd">+ Add snippet</button>
+      </div>
+      <div class="action-group" role="group" aria-labelledby="defs-pack-label">
+        <h2 id="defs-pack-label" class="action-label">Pack</h2>
+        <button id="defsPack" class="primary">Auto-pack into fewest slots</button>
+      </div>
+      <div class="action-group action-group-copy" role="group" aria-labelledby="defs-copy-label">
+        <h2 id="defs-copy-label" class="action-label">Copy</h2>
+        <button id="defsCopyAll" class="copy-primary">Copy all commands</button>
+        <button id="defsCopyCombined">Copy all combined</button>
+      </div>
+      <div class="action-group action-group-manage" role="group" aria-labelledby="defs-manage-label">
+        <h2 id="defs-manage-label" class="action-label">Manage</h2>
+        <button id="defsLibReload">Reload server library</button>
+        <button id="defsClear">Clear all</button>
+      </div>
     </div>
     <div id="defsInputs" class="inputs"></div>
     <h2>Slots &mdash; <code>!bset tweakdefs</code> &hellip; <code>!bset tweakdefs9</code></h2>
@@ -109,13 +121,25 @@
   </section>
 
   <section id="panel-units" class="panel" role="tabpanel" aria-labelledby="tab-units" tabindex="0" hidden>
-    <div class="toolbar">
-      <button id="unitsAdd">+ Add snippet</button>
-      <button id="unitsPack" class="primary">Auto-pack into fewest slots</button>
-      <button id="unitsClear">Clear all</button>
-      <button id="unitsCopyAll">Copy all commands</button>
-      <button id="unitsCopyCombined" class="primary">Copy all combined</button>
-      <button id="unitsLibReload">Reload server library</button>
+    <div class="workflow-actions" aria-label="Tweakunits actions">
+      <div class="action-group" role="group" aria-labelledby="units-edit-label">
+        <h2 id="units-edit-label" class="action-label">Edit</h2>
+        <button id="unitsAdd">+ Add snippet</button>
+      </div>
+      <div class="action-group" role="group" aria-labelledby="units-pack-label">
+        <h2 id="units-pack-label" class="action-label">Pack</h2>
+        <button id="unitsPack" class="primary">Auto-pack into fewest slots</button>
+      </div>
+      <div class="action-group action-group-copy" role="group" aria-labelledby="units-copy-label">
+        <h2 id="units-copy-label" class="action-label">Copy</h2>
+        <button id="unitsCopyAll" class="copy-primary">Copy all commands</button>
+        <button id="unitsCopyCombined">Copy all combined</button>
+      </div>
+      <div class="action-group action-group-manage" role="group" aria-labelledby="units-manage-label">
+        <h2 id="units-manage-label" class="action-label">Manage</h2>
+        <button id="unitsLibReload">Reload server library</button>
+        <button id="unitsClear">Clear all</button>
+      </div>
     </div>
     <div id="unitsInputs" class="inputs"></div>
     <h2>Slots &mdash; <code>!bset tweakunits</code> &hellip; <code>!bset tweakunits9</code></h2>

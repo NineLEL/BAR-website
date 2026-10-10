@@ -116,6 +116,25 @@ main { max-width: 1240px; margin: 0 auto; padding: 28px 24px 48px; }
 
 /* Toolbar + buttons */
 .toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; align-items: center; }
+.workflow-actions {
+  display: grid; grid-template-columns: auto auto minmax(280px, 1fr) auto;
+  gap: 10px; align-items: stretch; margin-bottom: 22px;
+}
+.action-group {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-width: 0;
+  padding: 10px; background: #11151a; border: 1px solid var(--line); border-radius: var(--radius);
+}
+.action-label {
+  flex: 0 0 100%; margin: 0; color: var(--fg-dim); font-size: .68rem;
+  font-weight: 800; letter-spacing: .1em; line-height: 1.2; text-transform: uppercase;
+}
+.action-group button { min-height: 40px; }
+.action-group-copy { border-color: #e8a33d45; background: #181711; }
+.action-group-copy .copy-primary { background: #e8a33d; border-color: #e8a33d; color: #16100a; font-weight: 700; }
+.action-group-copy .copy-primary:hover { background: #f0b356; border-color: #f0b356; }
+.action-group-manage { border-style: dashed; }
+.action-group-manage #defsClear, .action-group-manage #unitsClear { color: #d39a95; border-color: #74413e; }
+.action-group-manage #defsClear:hover, .action-group-manage #unitsClear:hover { color: #ffd8d5; border-color: var(--danger); }
 button {
   padding: 8px 14px; border-radius: var(--radius); cursor: pointer; font-size: .9rem;
   background: var(--surface); color: var(--fg); border: 1px solid var(--line);
@@ -237,6 +256,11 @@ footer { color: var(--fg-dim); font-size: 0.85rem; line-height: 1.6; }
   .howto-steps li { padding: 12px; }
   .panel { padding: 14px; border-radius: 0 0 var(--radius) var(--radius); }
   .toolbar button { flex: 1 1 auto; }
+  .workflow-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .action-group { align-content: start; }
+  .action-group button { flex: 1 1 100%; }
+  .action-group-copy, .action-group-manage { grid-column: span 2; }
+  .action-group-copy button, .action-group-manage button { flex: 1 1 160px; }
   .utility-toolbar button { flex: 1 1 125px; }
   .utility-option { flex: 1 1 100%; }
   .utility-output-heading { align-items: flex-start; flex-wrap: wrap; }
