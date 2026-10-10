@@ -525,6 +525,25 @@ test("Aegis Breaker has explicit shotgun projectile behavior", () => {
   assert.match(body, /customparams = \{ shotgun = true/);
 });
 
+test("Mega Units have role-specific weapon mechanics and pack cleanly", () => {
+  const text = fs.readFileSync(path.join(__dirname, "..", "tweaks", "defs", "player", "megas", "player-mega-units.lua"), "utf8");
+  const command = pure.buildCommand("tweakdefs", 9, pure.luaMinify(text), true).cmd;
+  assert.ok(command.length <= pure.getLimit(), `${command.length}/${pure.getLimit()} characters`);
+
+  assert.match(text, /burst = 6,[\s\S]*?projectilespershot = 4/, "Sky Furnace should retain 24 flak rounds in paced salvos");
+  assert.match(text, /paralyzer = true,[\s\S]*?paralyzetime = 10/, "Singularity EMP must use the actual paralysis weapon mechanic");
+  assert.match(text, /canattackground = true,[\s\S]*?aether_sec/, "Aether deck guns should engage ground targets");
+  assert.match(text, /canattackground = true,[\s\S]*?pbarrage/, "Phantom rift barrage should engage ground targets");
+  assert.match(text, /camerashake = 180/, "Supernova presentation should remain forceful without extreme screen shake");
+  assert.match(text, /camerashake = 45/, "Pyroclast repeated impacts should avoid excessive screen shake");
+  assert.match(text, /size = 44,[\s\S]*?stages = 48/, "Supernova should have a larger, richer impact effect");
+  assert.match(text, /thickness = 9,[\s\S]*?corethickness = 0\.8/, "World Beam should read clearly at range");
+  assert.match(text, /size = 26,[\s\S]*?stages = 36/, "EMP impacts should be visually distinct");
+  assert.match(text, /"EMP dreadnought\."/);
+  assert.match(text, /"Close-range shotgun titan\."/);
+  assert.match(text, /"player_riftcolossus"[\s\S]*?"player_archangel"/, "the complete Mega roster should remain defined");
+});
+
 test("Mirror Array is configured as the Prism Disruptor", () => {
   const text = fs.readFileSync(path.join(__dirname, "..", "tweaks", "defs", "player", "turrets", "player-turrets-ultra-advanced.lua"), "utf8");
   const start = text.indexOf('"player_mirrorarray"');
