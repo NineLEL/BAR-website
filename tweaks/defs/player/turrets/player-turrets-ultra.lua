@@ -514,50 +514,48 @@ do
 				})
 			end,
 		},
-		-- 12. ASTRAEUS STARFALL: Massive Saturation Celestial Bombardment
+-- 12. AEGIS ORBITFALL: Autonomous Kinetic Rail Battery
 		{
-			"player_starfallcataclysm",
-			{ "legstarfall", "corint", "armbrtha" },
-			{ 1300e3, 2800e4, 1100e3, 2, 94000, 800, 4200 },
-			"Astraeus Starfall",
-			"Orbital-arc saturation artillery. Rains apocalyptic spreads of celestial plasma.",
+			"player_orbitfall",
+			{ "legstarfall", "armbrtha", "corint" },
+			{ 1280e3, 2700e4, 1050e3, 2, 92000, 950, 4800 },
+			"Aegis Orbitfall",
+			"Fully automatic continuous kinetic battery. Rains rapid precision hyper-velocity rods across strategic ranges.",
 			function(u, src)
-				u.hightrajectorytype = 1
-				installWeapon(u, src, 1, "ASTRAEUS_STARFALL", {
+				u.hightrajectorytype = 2 -- Auto-calculate ballistic trajectory per target distance
+				installWeapon(u, src, 1, "AEGIS_ORBITFALL", {
 					weapontype = C_CAN,
-					range = 9600,
-					reloadtime = 1.4,
+					range = 9400,
 
-					-- 20 salvo waves of 40 shells = 800 shells per barrage
-					burst = 20,
-					burstrate = 0.05,
-					projectilespershot = 40,
+					-- Rapid cyclic cadence: ~5.5 rounds every second without manual firing
+					reloadtime = 0.18,
+					burst = 1,
+					projectilespershot = 1,
 
-					-- Keep the huge barrage concentrated around the selected target
-					sprayangle = 700,
-					accuracy = 75,
+					-- Tight dispersion with slight natural scatter for self-sweeping barrages
+					sprayangle = 240,
+					accuracy = 85,
 
-					-- Ballistics: faster shells on an even higher, longer arc
-					hightrajectory = 1,
-					weaponvelocity = 3200,
-					mygravity = 0.28,
+					-- Extreme muzzle velocity eliminates excessive shell travel delay
+					weaponvelocity = 6400,
+					mygravity = 0.35,
 
-					areaofeffect = 950,
-					camerashake = 240,
-					energypershot = 480,
+					areaofeffect = 380,
+					edgeeffectiveness = 0.6,
+					camerashake = 45,
+					energypershot = 22000,
 
-					craterboost = 6.5,
-					cratermult = 4.5,
-					impulsefactor = 14.0,
-					impulseboost = 8.0,
-					firestarter = 100,
-					size = 20.0,
+					craterboost = 3.0,
+					cratermult = 2.0,
+					impulsefactor = 6.0,
+					impulseboost = 4.0,
+					size = 9.5,
 
-					-- 800 shells * 9000 default damage = 7.2M direct damage per barrage
-					damage = D(9000, nil, 18000, 3000),
-					cegtag = "starfire",
-					explosiongenerator = "custom:starfire-explosion",
-					soundstart = S_CAN2,
+					-- 48,000 baseline / 120,000 shield damage per round (~260k DPS sustained)
+					damage = D(48000, nil, 120000, 16000),
+					cegtag = "railgun-trail-blue",
+					explosiongenerator = "custom:genericshellexplosion-medium",
+					soundstart = S_CAN1,
 					soundhit = "rflrpcexplo",
 					soundhitwet = "splshbig",
 					onlytargetcategory = T_S,
