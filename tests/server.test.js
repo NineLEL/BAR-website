@@ -333,19 +333,11 @@ describe("corrupt state.json fallback", () => {
 });
 
 describe("oversized body / abort resilience", () => {
-  it("1MB+ body destroys the socket; server stays alive for the next GET", async () => {
+  it("1MB+ body receives 413; server stays alive for the next GET", async () => {
     const big = "x".repeat(1_100_000);
-    let outcome = "unknown";
-    try {
-      const r = await req(port, "POST", "/api/tweaks/toggle", big, { "Content-Type": "application/json" });
-      outcome = "responded:" + r.status;
-    } catch (e) {
-      outcome = "socket-destroyed:" + (e.code || e.message);
-    }
-    assert.ok(
-      outcome.startsWith("socket-destroyed") || outcome.startsWith("responded:400"),
-      "unexpected outcome: " + outcome
-    );
+    const r = await req(port, "POST", "/api/tweaks/toggle", big, { "Content-Type": "application/json" });
+    assert.equal(r.status, 413);
+    assert.equal(r.body, "request body too large");
     // Server must still serve afterwards (no crash, no wedged state).
     const r2 = await req(port, "GET", "/api/tweaks");
     assert.equal(r2.status, 200);
@@ -376,14 +368,36 @@ describe("XSS / envelope guards (as-coded behaviour)", () => {
   });
 });
 
-describe("KNOWN GAPS pinned (fail loudly when fixed — update these tests)", () => {
-  it("GAP-1: server binds all interfaces (no explicit host) — documents 0.0.0.0 exposure", () => {
-    assert.ok(
-      /server\.listen\(port\)/.test(SERVER_SRC),
-      "server no longer binds bare PORT — GAP-1 may be fixed; update this test + docs"
-    );
+describe("server hardening", () => {
+  it("the command-line server binds to loopback only", () => {
+    assert.match(SERVER_SRC, /server\.listen\(port,\s*["']127\.0\.0\.1["']\)/);
   });
-  it("GAP-2: /api/tweaks returns FULL file contents unbounded — pins current behaviour", async () => {
+  it("does not expose internal files through static routes", async () => {
+    fs.mkdirSync(path.join(box.root, ".git"), { recursive: true });
+    fs.writeFileSync(path.join(box.root, ".git", "config"), "private git config");
+    fs.writeFileSync(path.join(box.root, "secret.txt"), "private root file");
+    fs.writeFileSync(path.join(box.tweaks, "state.json"), "private state");
+    for (const url of ["/.git/config", "/secret.txt", "/tweaks/state.json"]) {
+      const r = await req(port, "GET", url);
+      assert.equal(r.status, 404, url);
+      assert.ok(!r.body.includes("private"), url + " leaked file contents");
+    }
+  });
+  it("returns a controlled 400 for malformed percent-encoding", async () => {
+    const r = await req(port, "GET", "/%E0%A4%A");
+    assert.equal(r.status, 400);
+    assert.equal(r.body, "bad request");
+  });
+  it("returns 413 for oversized toggle bodies and continues serving requests", async () => {
+    const r = await req(port, "POST", "/api/tweaks/toggle", "x".repeat(1_000_001));
+    assert.equal(r.status, 413);
+    assert.equal(r.body, "request body too large");
+    assert.equal((await req(port, "GET", "/api/tweaks")).status, 200);
+  });
+  it("does not expose exception details in internal errors", () => {
+    assert.match(SERVER_SRC, /res\.end\(e\.statusCode === 413 \? "request body too large" : e\.statusCode \? "bad request" : "server error"\)/);
+  });
+  it("/api/tweaks returns FULL file contents unbounded (documented behaviour)", async () => {
     const big = "-- big\n" + ("local pad = '" + "x".repeat(200) + "'\n").repeat(20);
     fs.writeFileSync(path.join(box.tweaks, "defs", "big.lua"), big);
     try {
@@ -393,12 +407,6 @@ describe("KNOWN GAPS pinned (fail loudly when fixed — update these tests)", ()
     } finally {
       fs.unlinkSync(path.join(box.tweaks, "defs", "big.lua"));
     }
-  });
-  it("GAP-3: 500 handler echoes e.message — pins current leak surface", () => {
-    assert.ok(
-      /server error: " \+ e\.message/.test(SERVER_SRC),
-      "500 handler changed — GAP-3 may be fixed; update this test + docs"
-    );
   });
 });
 

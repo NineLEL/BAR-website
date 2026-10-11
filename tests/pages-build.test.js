@@ -16,6 +16,7 @@ test("Pages builder packages static assets and a deterministically ordered libra
   });
   for (const file of ["index.html", "styles.css", "app-pure.js", "app-library.js", "app.js"])
     fs.writeFileSync(path.join(root, file), file);
+  fs.writeFileSync(path.join(root, ".env"), "private value");
   const tweaks = path.join(root, "tweaks");
   fs.mkdirSync(path.join(tweaks, "defs", "nested"), { recursive: true });
   fs.mkdirSync(path.join(tweaks, "units"), { recursive: true });
@@ -31,4 +32,6 @@ test("Pages builder packages static assets and a deterministically ordered libra
   assert.equal(library.defs[1].enabled, false);
   assert.deepEqual(JSON.parse(fs.readFileSync(path.join(output, "library.json"), "utf8")), library);
   assert.equal(fs.readFileSync(path.join(output, "index.html"), "utf8"), "index.html");
+  assert.deepEqual(fs.readdirSync(output).sort(), ["app-library.js", "app-pure.js", "app.js", "index.html", "library.json", "styles.css"]);
+  assert.equal(fs.existsSync(path.join(output, ".env")), false);
 });

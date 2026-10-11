@@ -134,24 +134,47 @@ const MIME = {
   ".json": "application/json; charset=utf-8",
   ".png": "image/png"
 };
+const STATIC_FILES = new Set(["index.html", "styles.css", "app-pure.js", "app-library.js", "app.js", "library.json"]);
 function serveStatic(root, res, urlPath) {
-  let rel = decodeURIComponent(urlPath.split("?")[0]);
-  if (rel === "/") rel = "/index.html";
-  const file = path.normalize(path.join(root, rel));
-  if (file !== root && !file.startsWith(root + path.sep)) {
-    res.writeHead(403); res.end("forbidden"); return;
+  let rel;
+  try {
+    rel = decodeURIComponent(new URL(urlPath, "http://localhost").pathname).replace(/^\/+/, "");
+  } catch (e) {
+    res.writeHead(400); res.end("bad request"); return;
   }
+  if (!rel) rel = "index.html";
+  if (!STATIC_FILES.has(rel)) { res.writeHead(404); res.end("not found"); return; }
+  const rootPath = path.resolve(root);
+  const file = path.join(rootPath, rel);
   let stat = null;
   try { stat = fs.statSync(file); } catch (e) { stat = null; }
   if (!stat || stat.isDirectory()) { res.writeHead(404); res.end("not found"); return; }
+  try {
+    const realRoot = fs.realpathSync(rootPath);
+    if (fs.realpathSync(file) !== path.join(realRoot, rel)) {
+      res.writeHead(404); res.end("not found"); return;
+    }
+  } catch (e) { res.writeHead(404); res.end("not found"); return; }
   res.writeHead(200, { "Content-Type": MIME[path.extname(file).toLowerCase()] || "application/octet-stream" });
   fs.createReadStream(file).pipe(res);
 }
 function readBody(req) {
   return new Promise(function (resolve, reject) {
-    let body = "";
-    req.on("data", function (c) { body += c; if (body.length > 1e6) req.destroy(); });
-    req.on("end", function () { resolve(body); });
+    const chunks = [];
+    let size = 0;
+    let tooLarge = false;
+    req.on("data", function (chunk) {
+      size += chunk.length;
+      if (size > 1e6) tooLarge = true;
+      else if (!tooLarge) chunks.push(chunk);
+    });
+    req.on("end", function () {
+      if (tooLarge) {
+        const error = new Error("request body too large");
+        error.statusCode = 413;
+        reject(error);
+      } else resolve(Buffer.concat(chunks).toString("utf8"));
+    });
     req.on("error", reject);
   });
 }
@@ -171,7 +194,10 @@ function createRequestHandler(config, library) {
       }
       if (req.method === "POST" && req.url === "/api/tweaks/toggle") {
         let data = {};
-        try { data = JSON.parse((await readBody(req)) || "{}"); } catch (e) { data = {}; }
+        try { data = JSON.parse((await readBody(req)) || "{}"); } catch (e) {
+          if (e.statusCode === 413) throw e;
+          data = {};
+        }
         const safe = safeName(data.name);
         if (KINDS.indexOf(data.kind) < 0 || !safe || typeof data.enabled !== "boolean") {
           res.writeHead(400); res.end("bad request"); return;
@@ -191,7 +217,12 @@ function createRequestHandler(config, library) {
       if (req.method === "GET") { serveStatic(config.root, res, req.url); return; }
       res.writeHead(405); res.end("method not allowed");
     })().catch(function (e) {
-      try { res.writeHead(500); res.end("server error: " + e.message); } catch (ignored) {}
+      try {
+        if (res.headersSent || res.destroyed) return;
+        if (e instanceof URIError) { res.writeHead(400); res.end("bad request"); return; }
+        res.writeHead(e.statusCode || 500);
+        res.end(e.statusCode === 413 ? "request body too large" : e.statusCode ? "bad request" : "server error");
+      } catch (ignored) {}
     });
   };
 }
@@ -241,7 +272,7 @@ if (require.main === module) {
     }
     function onListening() {
       server.removeListener("error", onError);
-      const url = "http://localhost:" + port;
+      const url = "http://127.0.0.1:" + port;
       const tweaksDir = instance.getPaths().TWEAKS_DIR;
       const libraryPath = path.relative(process.cwd(), tweaksDir) || ".";
       console.log([
@@ -257,7 +288,7 @@ if (require.main === module) {
     }
     server.once("error", onError);
     server.once("listening", onListening);
-    server.listen(port);
+    server.listen(port, "127.0.0.1");
   }
   listen(PORT);
 }
