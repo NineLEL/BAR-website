@@ -37,6 +37,31 @@ test("every tweak clone src exists in BAR", () => {
   assert.deepEqual(missing, [], `unknown clone sources:\n${missing.join("\n")}`);
 });
 
+test("default experimental gantry buff covers stock rosters with the requested profile", () => {
+  const file = path.join(defsDir, "player", "megas", "buff-default-units.lua");
+  const text = fs.readFileSync(file, "utf8");
+  const expected = {
+    armshltx: ["armbanth", "armraz", "armmar", "armvang", "armlun", "armthor"],
+    corgant: ["corkorg", "corkarg", "corjugg", "corshiva", "corcat", "corsok", "cordemon"],
+    leggant: ["legeheatraymech", "legeallterrainmech", "legjav", "legelrpcmech", "legehovertank", "legerailtank", "legeshotgunmech", "legkeres"],
+  };
+
+  for (const [factory, expectedUnits] of Object.entries(expected)) {
+    const group = text.match(new RegExp(`^  ${factory} = \\{([\\s\\S]*?)^  \\},?$`, "m"));
+    assert.ok(group, `missing ${factory} stock roster`);
+    const actualUnits = [...group[1].matchAll(/"([A-Za-z0-9_]+)"/g)].map(([, name]) => name);
+    assert.deepEqual(actualUnits, expectedUnits, `${factory} roster changed`);
+    for (const name of actualUnits) assert.ok(known.has(name), `unknown BAR gantry unit: ${name}`);
+  }
+
+  assert.match(text, /HEALTH_MULTIPLIER = 1\.2/);
+  assert.match(text, /DAMAGE_MULTIPLIER = 1\.1/);
+  assert.match(text, /unitDef\.health = health \* HEALTH_MULTIPLIER/);
+  assert.match(text, /value \* DAMAGE_MULTIPLIER/);
+  assert.match(text, /player_default_units_buff/);
+  assert.ok(pure.buildCommand("tweakdefs", 9, pure.luaMinify(text), false).cmd.length <= 16384);
+});
+
 // This data-only tweak uses two-space top-level keys. Inspect the roster without
 // executing Lua or touching live state; this is not a replacement for an in-game run.
 function nightmareRoster() {
