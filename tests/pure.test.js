@@ -7,6 +7,7 @@ const { describe, it } = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("fs");
 const path = require("path");
+const vm = require("vm");
 const pure = require("../app-pure");
 
 const LIMIT = 16384;
@@ -31,15 +32,41 @@ function greedyPack(pure, kind, minis, limit) {
   });
 }
 
+function autoPackHarness(limit) {
+  const app = fs.readFileSync(path.join(__dirname, "..", "app.js"), "utf8");
+  const start = app.indexOf("function joinChunk(g, minis, idxs)");
+  const end = app.indexOf("function collectCommands(g)", start);
+  assert.ok(start >= 0 && end > start, "could not isolate autoPack source");
+  const calls = { notices: [], renders: 0 };
+  const sandbox = {
+    MAX_SLOTS: pure.MAX_SLOTS,
+    luaMinify: pure.luaMinify,
+    buildCommand: pure.buildCommand,
+    mergeTweakUnits: pure.mergeTweakUnits,
+    planChunks: pure.planChunks,
+    findDuplicateDstDetails: pure.findDuplicateDstDetails,
+    findDuplicateTweakUnitKeyDetails: pure.findDuplicateTweakUnitKeyDetails,
+    findUnsupportedTweakUnitFieldSources: pure.findUnsupportedTweakUnitFieldSources,
+    splitTweakUnitsSource: pure.splitTweakUnitsSource,
+    getLimit: () => limit,
+    useUrlSafe: () => false,
+    toast: (message) => calls.notices.push(message),
+    renderSlots: () => { calls.renders++; }
+  };
+  vm.createContext(sandbox);
+  vm.runInContext(app.slice(start, end), sandbox, { filename: "app.js#autoPack" });
+  return { autoPack: sandbox.autoPack, calls };
+}
+
 describe("pure module API", () => {
   it("exports the browser-and-Node logic surface", () => {
     assert.deepEqual(Object.keys(pure), [
       "MAX_SLOTS", "getLimit", "b64encode", "b64decode", "luaMinify",
       "luaPrettify", "slotKey", "cmdPrefix", "buildCommand", "parseDecodeInput",
-      "mergeTweakUnits", "planChunks", "packChunks", "findDuplicateDst", "findDuplicateDstDetails",
+      "mergeTweakUnits", "splitTweakUnitsSource", "planChunks", "packChunks", "findDuplicateDst", "findDuplicateTweakUnitKeyDetails", "findUnsupportedTweakUnitFieldSources", "findDuplicateDstDetails",
       "resetCommands", "resetAllCommands",
     ]);
-    for (const name of ["b64encode", "b64decode", "luaMinify", "luaPrettify", "slotKey", "cmdPrefix", "buildCommand", "parseDecodeInput", "mergeTweakUnits", "planChunks", "packChunks", "findDuplicateDst", "findDuplicateDstDetails", "getLimit", "resetCommands", "resetAllCommands"]) {
+    for (const name of ["b64encode", "b64decode", "luaMinify", "luaPrettify", "slotKey", "cmdPrefix", "buildCommand", "parseDecodeInput", "mergeTweakUnits", "splitTweakUnitsSource", "planChunks", "packChunks", "findDuplicateDst", "findDuplicateTweakUnitKeyDetails", "findUnsupportedTweakUnitFieldSources", "findDuplicateDstDetails", "getLimit", "resetCommands", "resetAllCommands"]) {
       assert.equal(typeof pure[name], "function", name + " must be callable");
     }
     assert.equal(pure.MAX_SLOTS, 10);
@@ -240,6 +267,54 @@ describe("mergeTweakUnits", () => {
     assert.equal(pure.mergeTweakUnits(["  ", "-- nothing"]), "{  }");
   });
 });
+
+describe("splitTweakUnitsSource", () => {
+  it("splits only between complete top-level fields and preserves order", () => {
+    const source = "{ alpha = { nested = 1, other = 2 }, beta = 2, gamma = 3, delta = 4 }";
+    const pieces = pure.splitTweakUnitsSource(source, 100, false);
+    assert.ok(pieces.length > 1);
+    assert.equal(pure.mergeTweakUnits(pieces), "{ alpha = { nested = 1, other = 2 }, beta = 2, gamma = 3, delta = 4 }");
+    for (const piece of pieces) assert.ok(pure.buildCommand("tweakunits", 1, piece).cmd.length <= 100);
+  });
+  it("rejects a field that cannot individually fit", () => {
+    assert.throws(() => pure.splitTweakUnitsSource("{ enormous = "+"x".repeat(200)+" }", 60), /field cannot fit/);
+  });
+  it("rejects duplicate and computed-key inputs rather than changing semantics", () => {
+    assert.throws(() => pure.splitTweakUnitsSource("{ same = {}, same = {} }", 40), /repeated top-level/);
+    assert.throws(() => pure.splitTweakUnitsSource("{ [dynamic] = {}, other = {} }", 40), /non-identifier/);
+  });
+  it("fails closed on commas in function bodies instead of emitting malformed Lua", () => {
+    const source = "{ callback = function() local a,b=1 end, payload = '" + "x".repeat(200) + "' }";
+    assert.throws(() => pure.splitTweakUnitsSource(source, 90), /function bodies/);
+  });
+  it("rejects crossed delimiter nesting rather than splitting malformed Lua", () => {
+    const source = "{ alpha = ([)], beta = '" + "x".repeat(200) + "' }";
+    assert.throws(() => pure.splitTweakUnitsSource(source, 90), /Mismatched delimiters/);
+  });
+});
+
+describe("tweakunits top-level key collision diagnostics", () => {
+  it("reports duplicate keys across sources and repeated keys within one source", () => {
+    assert.deepEqual(pure.findDuplicateTweakUnitKeyDetails([
+      "{ armpw = { health = 1 }, armflash = {} }",
+      "{ armpw = { health = 2 } }",
+      "{ armflash = {}, armflash = {} }"
+    ]), [
+      { key: "armpw", sources: [0, 1] },
+      { key: "armflash", sources: [0, 2] }
+    ]);
+  });
+  it("does not confuse nested keys or key-like text in strings/comments", () => {
+    assert.deepEqual(pure.findDuplicateTweakUnitKeyDetails([
+      '{ one = { repeated = 1 }, two = { repeated = 2 }, text = "fake = {}" } -- ghost = {}',
+      "{ three = { repeated = 3 } }"
+    ]), []);
+  });
+
+  it("flags non-identifier top-level fields as uncertain", () => {
+    assert.deepEqual(pure.findUnsupportedTweakUnitFieldSources(["{ [unitName] = {}, armflash = {} }", "{ armpw = {} }"]), [0]);
+    assert.deepEqual(pure.findUnsupportedTweakUnitFieldSources(["{ armflash = {}, armpw = {} }"]), []);
+  });});
 
 describe("autopack sizing contract (limit 16384)", () => {
   it("reports individually oversized inputs without changing the chunks-only API", () => {
@@ -502,5 +577,50 @@ describe("perf smoke (size asserts primary, budgets warn unless PERF_STRICT=1)",
     const rt = pure.b64decode(pure.b64encode(s));
     perfCheck("W4 b64-64k", performance.now() - t0, 500);
     assert.equal(rt, s);
+  });
+});
+
+describe("autoPack orchestration", () => {
+  it("retains prior output and provides advisory capacity guidance without mutating inputs", () => {
+    const harness = autoPackHarness(16384);
+    const files = Array.from({ length: 11 }, (_, index) => ({
+      name: "defs-" + index + ".lua",
+      text: "local value" + index + " = '" + "x".repeat(9000) + "'",
+      enabled: true
+    }));
+    const before = JSON.stringify(files);
+    const group = { kind: "tweakdefs", serverSnippets: files, snippets: [], packed: ["old-packed"], packedNames: [["old"]], packNotice: null };
+    harness.autoPack(group);
+    assert.equal(group.packed[0], "old-packed");
+    assert.match(group.packNotice, /requires 11 slot\(s\)/);
+    assert.match(group.packNotice, /recommendation only; nothing was changed/);
+    assert.equal(JSON.stringify(files), before);
+    assert.equal(harness.calls.renders, 1);
+  });
+
+  it("packs a safe oversized table into ordered, source-attributed parts", () => {
+    const harness = autoPackHarness(1000);
+    const fields = Array.from({ length: 12 }, (_, index) => "unit" + index + " = { name = '" + "x".repeat(250) + "' }");
+    const group = { kind: "tweakunits", serverSnippets: [{ name: "large.lua", text: "{ " + fields.join(", ") + " }" }], snippets: [], packed: ["old"], packedNames: [["old"]], packNotice: null };
+    harness.autoPack(group);
+    assert.ok(group.packed.length > 1);
+    assert.ok(group.packedNames.every((names) => names.length > 0 && names[0].startsWith("large.lua (part ")));
+    group.packed.forEach((source, index) => assert.ok(pure.buildCommand("tweakunits", index, source).cmd.length <= 1000));
+    const actualKeys = Array.from(group.packed).flatMap((part) => Array.from(part.matchAll(/unit\d+\s*=/g), (match) => match[0].replace(/\s*=/, "")));
+    assert.deepEqual(actualKeys, fields.map((field) => field.slice(0, field.indexOf(" ="))));
+  });
+
+  it("groups overflow blockers and removal advice by original source file", () => {
+    const harness = autoPackHarness(1000);
+    const fields = Array.from({ length: 11 }, (_, index) => "unit" + index + " = { name = '" + "x".repeat(650) + "' }");
+    const group = { kind: "tweakunits", serverSnippets: [
+      { name: "large.lua", text: "{ " + fields.join(", ") + " }" },
+      { name: "small.lua", text: "{ smallunit = { health = 1 } }" }
+    ], snippets: [], packed: ["old"], packedNames: [["old"]], packNotice: null };
+    harness.autoPack(group);
+    assert.match(group.packNotice, /blockers: large\.lua \(overflow slot\(s\)/);
+    assert.match(group.packNotice, /consider temporarily disabling: large\.lua \(/);
+    assert.doesNotMatch(group.packNotice, /large\.lua \(part \d+\//);
+    assert.equal(group.packed[0], "old");
   });
 });

@@ -17,6 +17,8 @@ var buildCommand = Pure.buildCommand;
 var mergeTweakUnits = Pure.mergeTweakUnits;
 var planChunks = Pure.planChunks;
 var findDuplicateDstDetails = Pure.findDuplicateDstDetails;
+var findDuplicateTweakUnitKeyDetails = Pure.findDuplicateTweakUnitKeyDetails;
+var splitTweakUnitsSource = Pure.splitTweakUnitsSource;
 var resetAllCommands = Pure.resetAllCommands;
 
 function $(id) { return document.getElementById(id); }
@@ -481,11 +483,35 @@ function autoPack(g) {
       return;
     }
     if (minified) {
-      validItems.push(items[itemIndex]);
-      minis.push(minified);
+      if (g.kind === "tweakunits" && buildCommand(g.kind, 1, minified, useUrlSafe()).cmd.length > limit) {
+        try {
+          var internalDuplicates = findDuplicateTweakUnitKeyDetails([minified]);
+          if (internalDuplicates.length) {
+            throw new Error("contains repeated top-level unit key(s): " + internalDuplicates.map(function (detail) { return detail.key; }).join(", ") + "; cannot split without changing last-wins behavior");
+          }
+          var pieces = splitTweakUnitsSource(minified, limit, useUrlSafe());
+          pieces.forEach(function (piece, partIndex) {
+            validItems.push({ name: items[itemIndex].name + " (part " + (partIndex + 1) + "/" + pieces.length + ")", sourceName: items[itemIndex].sourceName || items[itemIndex].name, sourceIndex: items[itemIndex].sourceIndex, text: piece });
+            minis.push(piece);
+          });
+        } catch (splitError) {
+          showFailure(items[itemIndex].name + " is oversized and cannot be split safely: " + describeError(splitError));
+          return;
+        }
+      } else {
+        validItems.push(items[itemIndex]);
+        minis.push(minified);
+      }
     }
   }
   items = validItems;
+  if (g.kind === "tweakunits") {
+    var unsupportedFields = findUnsupportedTweakUnitFieldSources(minis);
+    if (unsupportedFields.length) {
+      showFailure("cannot verify computed or non-identifier top-level tweakunits fields in " + unsupportedFields.map(function (index) { return items[index].name; }).join(", ") + "; convert them to literal unit-name keys before packing");
+      return;
+    }
+  }
   if (!items.length) { toast("Nothing to pack after removing comments and whitespace"); return; }
 
   var plan;
@@ -497,15 +523,73 @@ function autoPack(g) {
   }
   var idxChunks = plan.chunks;
 
+  // Refuse any repeated literal unit key. One combined Lua table loses the
+  // earlier value; separate BAR slots recursively merge, so silently changing
+  // the partition would otherwise change the result rather than fix ambiguity.
+  if (g.kind === "tweakunits") {
+    var collisionDetails = findDuplicateTweakUnitKeyDetails(minis);
+    if (collisionDetails.length) {
+      var collisionSummary = collisionDetails.map(function (detail) {
+        return detail.key + " in " + detail.sources.map(function (index) { return items[index].name; }).join(" + ");
+      }).join("; ");
+      showFailure("duplicate top-level tweakunits key(s) have partition-dependent behavior and may discard earlier table entries: " + collisionSummary + ". Separate or reconcile these definitions before packing");
+      return;
+    }
+  }
+
   if (plan.oversized.length || plan.overflow.length) {
-    var failures = [];
-    if (plan.oversized.length) {
-      failures.push("over character limit: " + plan.oversized.map(function (i) { return items[i].name; }).join(", "));
+    var diagnostics = [];
+    diagnostics.push("requires " + idxChunks.length + " slot(s); BAR supports " + MAX_SLOTS);
+    var blockersBySource = Object.create(null);
+    function sourceBlocker(index) {
+      var item = items[index], key = item.sourceIndex;
+      if (!blockersBySource[key]) blockersBySource[key] = { name: item.sourceName || item.name, oversized: 0, slots: [] };
+      return blockersBySource[key];
     }
-    if (plan.overflow.length) {
-      failures.push("beyond the " + MAX_SLOTS + "-slot limit: " + plan.overflow.map(function (i) { return items[i].name; }).join(", "));
+    plan.oversized.forEach(function (i) {
+      var cmd = buildCommand(g.kind, 1, minis[i], useUrlSafe()).cmd;
+      var blocker = sourceBlocker(i);
+      blocker.oversized = Math.max(blocker.oversized, cmd.length - limit);
+    });
+    plan.overflow.forEach(function (i) {
+      var blocker = sourceBlocker(i);
+      var slot = plan.chunks.findIndex(function (chunk) { return chunk.indexOf(i) >= 0; }) + 1;
+      if (blocker.slots.indexOf(slot) < 0) blocker.slots.push(slot);
+    });
+    var blockers = Object.keys(blockersBySource).map(function (key) {
+      var blocker = blockersBySource[key], detail = blocker.name;
+      if (blocker.oversized) detail += " (" + blocker.oversized + " chars over limit)";
+      if (blocker.slots.length) detail += " (overflow slot(s) " + blocker.slots.join(", ") + ")";
+      return detail;
+    });
+    if (blockers.length) diagnostics.push("blockers: " + blockers.join(", "));
+
+    // Advisory only: estimate removal candidates by original source, never by generated split part.
+    var sourceGroups = Object.create(null);
+    items.forEach(function (item, index) {
+      var key = item.sourceIndex;
+      if (!sourceGroups[key]) sourceGroups[key] = { name: item.sourceName || item.name, indexes: [], size: 0 };
+      sourceGroups[key].indexes.push(index);
+      sourceGroups[key].size += buildCommand(g.kind, 1, minis[index], useUrlSafe()).cmd.length;
+    });
+    var candidates = Object.keys(sourceGroups).map(function (key) { return sourceGroups[key]; })
+      .sort(function (a, b) { return b.size - a.size; });
+    var removed = Object.create(null), suggestion = [];
+    for (var candidateIndex = 0; candidateIndex < candidates.length; candidateIndex++) {
+      var candidate = candidates[candidateIndex];
+      candidate.indexes.forEach(function (index) { removed[index] = true; });
+      suggestion.push(candidate.name);
+      var remaining = minis.filter(function (_, index) { return !removed[index]; });
+      if (!remaining.length) break;
+      var trial = planChunks(g.kind, remaining, limit, useUrlSafe());
+      if (!trial.oversized.length && !trial.overflow.length) break;
     }
-    showFailure(failures.join("; "));
+    if (suggestion.length && suggestion.length < items.length) {
+      diagnostics.push("to test a fit, consider temporarily disabling: " + suggestion.join(", ") + " (recommendation only; nothing was changed)");
+    } else {
+      diagnostics.push("reduce content or raise the configured character limit only if the target lobby permits it");
+    }
+    showFailure(diagnostics.join(". "));
     return;
   }
 

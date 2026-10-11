@@ -344,6 +344,120 @@
     return planChunks(kind, minis, limit, urlSafe).chunks;
   }
 
+  /* Split a standalone tweakunits table at complete top-level fields. BAR applies
+   * numbered tweakunits slots as ordered recursive patches, so this is safe only
+   * when each original table has unique top-level unit keys (checked by caller). */
+  function splitTweakUnitsSource(source, limit, urlSafe) {
+    source = String(source == null ? "" : source);
+    var tokens = luaTokenize(source);
+    if (!tokens.length || tokens[0].text !== "{") throw new SyntaxError("Expected a standalone tweakunits table starting with '{'");
+    var delimiterStack = [], closeIndex = -1, separators = [];
+    var matchingClose = { "{": "}", "(": ")", "[": "]" };
+    for (var i = 0; i < tokens.length; i++) {
+      var token = tokens[i];
+      if (delimiterStack.length === 1 && delimiterStack[0] === "}" && token.kind === "word" && token.text === "function") {
+        throw new SyntaxError("Cannot safely split table values containing Lua function bodies");
+      }
+      if (matchingClose[token.text]) {
+        delimiterStack.push(matchingClose[token.text]);
+      } else if (token.text === "}" || token.text === ")" || token.text === "]") {
+        if (!delimiterStack.length || delimiterStack.pop() !== token.text) {
+          throw new SyntaxError("Mismatched delimiters in tweakunits table");
+        }
+        if (!delimiterStack.length) { closeIndex = i; break; }
+      } else if (delimiterStack.length === 1 && delimiterStack[0] === "}" && (token.text === "," || token.text === ";")) {
+        separators.push(i);
+      }
+    }
+    if (delimiterStack.length) throw new SyntaxError("Unclosed delimiters in tweakunits table");
+    if (closeIndex < 0 || closeIndex !== tokens.length - 1) throw new SyntaxError("Expected one complete standalone tweakunits table");
+
+    var fields = [], start = tokens[0].end;
+    separators.forEach(function (index) {
+      var stop = tokens[index].start;
+      var field = source.slice(start, stop).trim();
+      if (field) fields.push(field);
+      start = tokens[index].end;
+    });
+    var tail = source.slice(start, tokens[closeIndex].start).trim();
+    if (tail) fields.push(tail);
+    if (!fields.length) return ["{}"];
+    if (findDuplicateTweakUnitKeyDetails([source]).length) throw new SyntaxError("Cannot split a table with repeated top-level unit keys");
+    fields.forEach(function (field) {
+      var fieldTokens = luaTokenize(field);
+      if (fieldTokens.length < 2 || fieldTokens[0].kind !== "word" || fieldTokens[1].text !== "=") {
+        throw new SyntaxError("Cannot safely split non-identifier top-level table fields");
+      }
+    });
+    function tableOf(parts) { return "{ " + parts.join(", ") + " }"; }
+    function fits(parts) {
+      return buildCommand("tweakunits", 1, tableOf(parts), urlSafe).cmd.length <= limit;
+    }
+    var result = [], current = [];
+    fields.forEach(function (field) {
+      var candidate = current.concat([field]);
+      if (fits(candidate)) { current = candidate; return; }
+      if (!current.length) throw new RangeError("A top-level tweakunits field cannot fit within the command limit");
+      result.push(tableOf(current));
+      current = [field];
+      if (!fits(current)) throw new RangeError("A top-level tweakunits field cannot fit within the command limit");
+    });
+    if (current.length) result.push(tableOf(current));
+    return result;
+  }
+
+  /* Detect duplicate literal identifier keys before table interiors are concatenated. */
+  function findDuplicateTweakUnitKeyDetails(sources) {
+    var occurrences = Object.create(null);
+    sources.forEach(function (source, sourceIndex) {
+      var tokens = luaTokenize(String(source == null ? "" : source));
+      if (!tokens.length || tokens[0].text !== "{") return;
+      var depth = 0, local = Object.create(null);
+      for (var i = 0; i + 1 < tokens.length; i++) {
+        var token = tokens[i];
+        var previous = tokens[i - 1];
+        if (depth === 1 && token.kind === "word" && tokens[i + 1].text === "=" &&
+            (!previous || previous.text === "{" || previous.text === "," || previous.text === ";")) {
+          if (!local[token.text]) local[token.text] = 0;
+          local[token.text]++;
+        }
+        if (token.text === "{") depth++;
+        else if (token.text === "}") depth--;
+      }
+      Object.keys(local).forEach(function (key) {
+        if (!occurrences[key]) occurrences[key] = { count: 0, sources: [] };
+        occurrences[key].count += local[key];
+        occurrences[key].sources.push({ index: sourceIndex, count: local[key] });
+      });
+    });
+    return Object.keys(occurrences).filter(function (key) {
+      return occurrences[key].count > 1;
+    }).map(function (key) {
+      return { key: key, sources: occurrences[key].sources.map(function (source) { return source.index; }) };
+    });
+  }
+
+  /* Identify top-level fields the literal-key detector cannot reason about. */
+  function findUnsupportedTweakUnitFieldSources(sources) {
+    var unsupported = [];
+    sources.forEach(function (source, sourceIndex) {
+      var tokens = luaTokenize(String(source == null ? "" : source));
+      if (!tokens.length || tokens[0].text !== "{") return;
+      var depth = 0, found = false;
+      for (var i = 0; i < tokens.length; i++) {
+        var token = tokens[i], previous = tokens[i - 1];
+        if (token.kind === "word" && token.text === "function") found = true;
+        if (depth === 1 && token.text !== "," && token.text !== ";" &&
+            (!previous || previous.text === "{" || previous.text === "," || previous.text === ";") &&
+            !(token.kind === "word" && tokens[i + 1] && tokens[i + 1].text === "=")) found = true;
+        if (token.text === "{") depth++;
+        else if (token.text === "}") depth--;
+      }
+      if (found) unsupported.push(sourceIndex);
+    });
+    return unsupported;
+  }
+
   /* Duplicate literal dst fields are warnings, not pack blockers. */
   function findDuplicateDstDetails(minis) {
     var sourcesByDst = Object.create(null);
@@ -399,9 +513,12 @@
     buildCommand: buildCommand,
     parseDecodeInput: parseDecodeInput,
     mergeTweakUnits: mergeTweakUnits,
+    splitTweakUnitsSource: splitTweakUnitsSource,
     planChunks: planChunks,
     packChunks: packChunks,
     findDuplicateDst: findDuplicateDst,
+    findDuplicateTweakUnitKeyDetails: findDuplicateTweakUnitKeyDetails,
+    findUnsupportedTweakUnitFieldSources: findUnsupportedTweakUnitFieldSources,
     findDuplicateDstDetails: findDuplicateDstDetails,
     resetCommands: resetCommands,
     resetAllCommands: resetAllCommands
