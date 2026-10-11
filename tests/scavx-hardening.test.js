@@ -30,6 +30,24 @@ test("hardening is enabled after imported packs and fits a command slot", () => 
   assert.ok(pure.buildCommand("tweakdefs", 9, pure.luaMinify(source), false).cmd.length <= 16384);
 });
 
+test("restored ScavX imports remain enabled and individually packable", () => {
+  // Upstream parity coverage is intentionally retired: its sole source was the
+  // removed ScavX release text. Restore it if a maintained upstream fixture returns.
+  // This import is intentionally off in the test-owned default profile.
+  const unitImport = "units/scavx/scavx-standard-overrides.lua";
+  const unitSource = fs.readFileSync(path.join(root, "tweaks", unitImport), "utf8");
+  assert.ok(pure.buildCommand("tweakunits", 9, pure.luaMinify(unitSource), false).cmd.length <= 16384,
+    `${unitImport} exceeds a command slot`);
+
+  for (let i = 0; i < 7; i++) {
+    const imported = `defs/scavx/scavx-custom-unit-pack-${String(i).padStart(2, "0")}.lua`;
+    assertDefaultEnabled(imported);
+    const lua = fs.readFileSync(path.join(root, "tweaks", imported), "utf8");
+    assert.ok(pure.buildCommand("tweakdefs", 9, pure.luaMinify(lua), false).cmd.length <= 16384,
+      `${imported} exceeds a command slot`);
+  }
+});
+
 test("hardening preserves mechanics and guards against repeated multiplication", () => {
   assert.match(source, /if not u\.customparams\.scavx_hardened then/);
   assert.match(source, /not seen\[u\]/);

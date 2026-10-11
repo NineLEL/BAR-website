@@ -22,7 +22,18 @@ The generated `dist/` directory contains the site assets and published tweak lib
 
 ## Verify
 
+Run tests relevant to your changes against the remote base branch:
+
 ```sh
+npm run test:changed -- --base origin/main
+# or
+TEST_BASE_REF=origin/main npm run test:changed
+```
+
+The script selects relevant tests automatically. Broad or unknown changed paths fall back to the full suite. If the diff is empty or the base is invalid, it stops; pass `--all` to run the full suite instead. To explicitly run the full test suite and all verification checks, use:
+
+```sh
+npm test
 npm run verify
 ```
 

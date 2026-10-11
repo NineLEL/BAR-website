@@ -352,22 +352,22 @@ test("combined T3/T4 upper-tier pack is enabled and fits one BAR command", () =>
     "armafust3", "corafust3", "legafust3", "armnanotct2", "cornanotct2", "legnanotct2",
   ]) assert.ok(known.has(name), `${name} must be a real BAR source unit`);
 
-  assert.match(text, /local rank = sp\[4\] == 3 and "Legendary" or "Ultra"/);
-  assert.match(text, /local name = rank \.\. " Energy Converter"/);
-  assert.match(text, /local rank = sp\[5\] == 3 and "Epic" or "Legendary"/);
-  assert.match(text, /local name = "Legendary Fusion Reactor"/);
-  assert.match(text, /local name = "Epic Construction Turret"/);
-  assert.match(text, /local name = "Legendary Construction Turret"/);
-  assert.match(text, /local effect = "custom:genericbuildingexplosion-"/);
+  assert.match(text, /s\[4\] == 3 and "Legendary" or "Ultra"/);
+  assert.match(text, /local n = \(s\[4\] == 3 and "Legendary" or "Ultra"\) \.\. " Energy Converter"/);
+  assert.match(text, /local rk = s\[5\] == 3 and "Epic" or "Legendary"/);
+  assert.match(text, /local n = "Legendary Fusion Reactor"/);
+  assert.match(text, /t3\.unitname, t3\.name, t3\.description = t3N, "Epic Construction Turret"/);
+  assert.match(text, /t4\.unitname, t4\.name, t4\.description = t4N, "Legendary Construction Turret"/);
+  assert.match(text, /local eg = "custom:genericbuildingexplosion-"/);
   assert.match(text, /AreaOfEffect = p\[1\]/);
   assert.match(text, /cameraShake = p\[2\]/);
-  assert.match(text, /unit\.explodeas, unit\.selfdestructas = death, selfd/);
+  assert.match(text, /u\.explodeas, u\.selfdestructas = dN, sN/);
   for (const category of ["convboom", "mexboom", "storagemetalboom", "storageenergyboom", "fusionboom", "constructionboom"]) {
     assert.match(text, new RegExp(category), `missing T3/T4 ${category} explosions`);
   }
-  assert.match(text, /4800, 2400, gigantic, 500000/);
-  assert.match(text, /3600, 1800, gigantic, 240000/);
-  assert.match(text, /blast\(U\[converter \..*B\.c\[index\]\)/);
+  assert.match(text, /4800, 2400, egig, 500000/);
+  assert.match(text, /3600, 1800, egig, 240000/);
+  assert.match(text, /blast\(U\[cN \.\. "_t" \.\. tr\], "convboom", tr, B\.c\[idx\]\)/);
 });
 
 test("Scav AI smarts is enabled and has tactical role coverage", () => {
