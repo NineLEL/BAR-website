@@ -45,86 +45,133 @@
    * concatenating adjacent tokens would change how Lua lexes them. Long brackets
    * honor their equals level, so nested-looking text cannot terminate a string or
    * comment early. */
-  function luaMinify(src) {
+  /* Shared Lua lexer for minification, formatting, and table inspection.
+   * Source spans keep diagnostics and delimiter matching out of literal text. */
+  function luaTokenize(src, includeComments) {
+    src = String(src == null ? "" : src);
     var tokens = [];
-    var i = 0, n = src.length;
+    var i = 0, n = src.length, line = 1, column = 1, previousCR = false;
     var operators = ["...", "..", "==", "~=", "<=", ">=", "//", "<<", ">>", "::", "+", "-", "*", "/", "%", "^", "#", "&", "~", "|", "<", ">", "=", "(", ")", "{", "}", "[", "]", ";", ":", ",", "."];
-    var compound = ["...", "..", "==", "~=", "<=", ">=", "//", "<<", ">>", "::", "--"];
 
+    function fail(message, offset, atLine, atColumn) {
+      var error = new SyntaxError(message + " at line " + atLine + ", column " + atColumn);
+      error.offset = offset;
+      error.line = atLine;
+      error.column = atColumn;
+      throw error;
+    }
+    function advanceTo(end) {
+      while (i < end) {
+        var c = src[i];
+        if (c === "\r") { line++; column = 1; previousCR = true; }
+        else if (c === "\n") { if (!previousCR) line++; column = 1; previousCR = false; }
+        else { column++; previousCR = false; }
+        i++;
+      }
+    }
     function longOpen(at) {
-      var m = src.slice(at).match(/^\[(=*)\[/);
+      var m = /^\[(=*)\[/.exec(src.slice(at));
       return m ? { open: m[0], close: "]" + m[1] + "]" } : null;
     }
-    function push(text, kind) { tokens.push({ text: text, kind: kind }); }
-    function scanQuoted(at) {
-      var q = src[at], j = at + 1;
+    function scanLong(at, bracket, startLine, startColumn, isComment) {
+      var end = src.indexOf(bracket.close, at + bracket.open.length);
+      if (end < 0) fail(isComment ? "Unterminated long-bracket comment" : "Unterminated long-bracket string", at, startLine, startColumn);
+      return end + bracket.close.length;
+    }
+    function scanQuoted(at, startLine, startColumn) {
+      var quote = src[at], j = at + 1;
       while (j < n) {
-        if (src[j] === "\\") { j += 2; continue; }
-        if (src[j] === q) return Math.min(j + 1, n);
+        var c = src[j];
+        if (c === "\\") {
+          if (j + 1 >= n) break;
+          if (src[j + 1] === "\r" && src[j + 2] === "\n") j += 3;
+          else j += 2;
+          continue;
+        }
+        if (c === quote) return j + 1;
+        if (c === "\n" || c === "\r") fail("Unescaped newline in quoted string", at, startLine, startColumn);
         j++;
       }
-      return n;
+      fail("Unterminated quoted string", at, startLine, startColumn);
     }
-    function scanLong(at, bracket) {
-      var end = src.indexOf(bracket.close, at + bracket.open.length);
-      return end < 0 ? n : end + bracket.close.length;
+    function add(text, kind, start, startLine, startColumn, end) {
+      tokens.push({ text: text, kind: kind, start: start, end: end, line: startLine, column: startColumn });
     }
 
     while (i < n) {
       var c = src[i];
-      if (/\s/.test(c)) { i++; continue; }
+      if (/\s/.test(c)) { advanceTo(i + 1); continue; }
 
+      var start = i, startLine = line, startColumn = column;
       if (c === "-" && src[i + 1] === "-") {
         var comment = longOpen(i + 2);
-        if (comment) i = scanLong(i + 2, comment);
-        else {
-          var newline = src.indexOf("\n", i + 2);
-          i = newline < 0 ? n : newline + 1;
+        if (comment) {
+          var commentEnd = scanLong(i + 2, comment, startLine, startColumn, true);
+          if (includeComments) add(src.slice(i, commentEnd), "comment", start, startLine, startColumn, commentEnd);
+          advanceTo(commentEnd);
+        } else {
+          var lineEnd = i + 2;
+          while (lineEnd < n && src[lineEnd] !== "\n" && src[lineEnd] !== "\r") lineEnd++;
+          if (includeComments) add(src.slice(i, lineEnd), "comment", start, startLine, startColumn, lineEnd);
+          advanceTo(lineEnd);
         }
         continue;
       }
 
       if (c === "'" || c === '"') {
-        var qEnd = scanQuoted(i);
-        push(src.slice(i, qEnd), "string");
-        i = qEnd;
+        var quoteEnd = scanQuoted(i, startLine, startColumn);
+        add(src.slice(i, quoteEnd), "string", start, startLine, startColumn, quoteEnd);
+        advanceTo(quoteEnd);
         continue;
       }
 
       var bracket = c === "[" ? longOpen(i) : null;
       if (bracket) {
-        var longEnd = scanLong(i, bracket);
-        push(src.slice(i, longEnd), "string");
-        i = longEnd;
+        var longEnd = scanLong(i, bracket, startLine, startColumn, false);
+        add(src.slice(i, longEnd), "string", start, startLine, startColumn, longEnd);
+        advanceTo(longEnd);
         continue;
       }
 
       if (/[A-Za-z_]/.test(c)) {
         var idEnd = i + 1;
         while (idEnd < n && /[A-Za-z0-9_]/.test(src[idEnd])) idEnd++;
-        push(src.slice(i, idEnd), "word");
-        i = idEnd;
+        add(src.slice(i, idEnd), "word", start, startLine, startColumn, idEnd);
+        advanceTo(idEnd);
         continue;
       }
 
       if (/[0-9]/.test(c) || (c === "." && /[0-9]/.test(src[i + 1] || ""))) {
-        var num = src.slice(i).match(/^(?:0[xX][0-9A-Fa-f]+(?:\.(?!\.)[0-9A-Fa-f]*)?(?:[pP][+-]?[0-9]+)?|[0-9]+(?:\.(?!\.)[0-9]*)?(?:[eE][+-]?[0-9]+)?|\.[0-9]+(?:[eE][+-]?[0-9]+)?)/);
-        if (num) { push(num[0], "number"); i += num[0].length; continue; }
+        var number = src.slice(i).match(/^(?:0[xX][0-9A-Fa-f]+(?:\.(?!\.)[0-9A-Fa-f]*)?(?:[pP][+-]?[0-9]+)?|[0-9]+(?:\.(?!\.)[0-9]*)?(?:[eE][+-]?[0-9]+)?|\.[0-9]+(?:[eE][+-]?[0-9]+)?)/);
+        if (number) {
+          var numberEnd = i + number[0].length;
+          add(number[0], "number", start, startLine, startColumn, numberEnd);
+          advanceTo(numberEnd);
+          continue;
+        }
       }
 
       var op = null;
       for (var oi = 0; oi < operators.length; oi++) {
         if (src.slice(i, i + operators[oi].length) === operators[oi]) { op = operators[oi]; break; }
       }
-      if (op) { push(op, "symbol"); i += op.length; }
-      else { push(c, "symbol"); i++; }
+      var symbol = op || c;
+      var symbolEnd = i + symbol.length;
+      add(symbol, "symbol", start, startLine, startColumn, symbolEnd);
+      advanceTo(symbolEnd);
     }
+    return tokens;
+  }
+
+  /* Token boundaries are preserved; only comments and unnecessary whitespace are removed. */
+  function luaMinify(src) {
+    var tokens = luaTokenize(src);
+    var compound = ["...", "..", "==", "~=", "<=", ">=", "//", "<<", ">>", "::", "--"];
 
     function needsSpace(a, b) {
       var left = a.text, right = b.text;
       var last = left[left.length - 1], first = right[0];
       if (/[A-Za-z0-9_]/.test(last) && /[A-Za-z0-9_]/.test(first)) return true;
-      // Keep numeral/decimal-point boundaries intact (e.g. `1 .. 2`, `. .5`).
       if ((a.kind === "number" && first === ".") || (a.text === "." && b.kind === "number")) return true;
       for (var ci = 0; ci < compound.length; ci++) {
         var token = compound[ci];
@@ -134,9 +181,6 @@
       }
       return false;
     }
-
-    // Lua permits a final statement separator before block terminators and at
-    // EOF. Remove only those semicolons; separators between statements remain.
     function removableSemicolon(index) {
       if (tokens[index].text !== ";") return false;
       var next = tokens[index + 1];
@@ -155,30 +199,7 @@
   /* Human-readable Lua formatting built on the exact minifier lexer contract.
    * It intentionally avoids rewriting literals or identifiers. */
   function luaPrettify(src) {
-    var compact = luaMinify(src), tokens = [], i = 0, n = compact.length;
-    var multi = ["...", "..", "==", "~=", "<=", ">=", "//", "<<", ">>", "::"];
-    function add(text, kind) { tokens.push({ text: text, kind: kind }); }
-    function quoted(at) {
-      var q = compact[at], j = at + 1;
-      while (j < n) { if (compact[j] === "\\") { j += 2; continue; } if (compact[j] === q) return j + 1; j++; }
-      return n;
-    }
-    function longAt(at) {
-      var m = compact.slice(at).match(/^\[(=*)\[/);
-      if (!m) return null;
-      var close = "]" + m[1] + "]", end = compact.indexOf(close, at + m[0].length);
-      return { end: end < 0 ? n : end + close.length };
-    }
-    while (i < n) {
-      var c = compact[i], lb = c === "[" ? longAt(i) : null;
-      if (c === "'" || c === '"') { var qe = quoted(i); add(compact.slice(i, qe), "literal"); i = qe; continue; }
-      if (lb) { add(compact.slice(i, lb.end), "literal"); i = lb.end; continue; }
-      if (/[A-Za-z_]/.test(c)) { var e = i + 1; while (e < n && /[A-Za-z0-9_]/.test(compact[e])) e++; add(compact.slice(i, e), "word"); i = e; continue; }
-      if (/[0-9]/.test(c) || (c === "." && /[0-9]/.test(compact[i + 1] || ""))) { var nm = compact.slice(i).match(/^(?:0[xX][0-9A-Fa-f]+(?:\.(?!\.)[0-9A-Fa-f]*)?(?:[pP][+-]?[0-9]+)?|[0-9]+(?:\.(?!\.)[0-9]*)?(?:[eE][+-]?[0-9]+)?|\.[0-9]+(?:[eE][+-]?[0-9]+)?)/); if (nm) { add(nm[0], "number"); i += nm[0].length; continue; } }
-      var op = null;
-      for (var k = 0; k < multi.length; k++) if (compact.slice(i, i + multi[k].length) === multi[k]) { op = multi[k]; break; }
-      add(op || c, "symbol"); i += (op || c).length;
-    }
+    var tokens = luaTokenize(luaMinify(src));
     var out = "", line = "", indent = 0, parens = 0, pendingSpace = false;
     function flush() { if (line.trim()) out += "  ".repeat(indent) + line.trim() + "\n"; line = ""; pendingSpace = false; }
     function append(s, space) { if (space && line && !/[\s(\[{.]$/.test(line)) line += " "; line += s; }
@@ -228,16 +249,43 @@
       : { key: "(unknown key)", b64: input.split(/\s+/).pop() };
   }
 
-  /* Merge several tweakunits table sources into one table source. */
+  /* Merge standalone tweakunits table sources into one table source. */
   function mergeTweakUnits(sources) {
     var inners = [];
     sources.forEach(function (s) {
-      var t = s.trim().replace(/--\[\[[\s\S]*?\]\]/g, "");
-      // drop full-line -- comments
-      t = t.split("\n").filter(function (ln) { return ln.trim().slice(0, 2) !== "--"; }).join("\n");
-      var a = t.indexOf("{"), b = t.lastIndexOf("}");
-      if (a >= 0 && b > a) inners.push(t.slice(a + 1, b).trim().replace(/,+$/, ""));
-      else if (t) inners.push(t);
+      var source = String(s == null ? "" : s);
+      var tokens = luaTokenize(source, true);
+      var significant = tokens.filter(function (token) { return token.kind !== "comment"; });
+      if (!significant.length) return;
+      if (significant[0].text !== "{") {
+        throw new SyntaxError("Expected a standalone tweakunits table starting with '{'");
+      }
+
+      var depth = 0, closeIndex = -1;
+      for (var i = 0; i < significant.length; i++) {
+        if (significant[i].text === "{") depth++;
+        else if (significant[i].text === "}") {
+          depth--;
+          if (depth < 0) throw new SyntaxError("Unexpected '}' in tweakunits table");
+          if (depth === 0) { closeIndex = i; break; }
+        }
+      }
+      if (closeIndex < 0) throw new SyntaxError("Unclosed '{' in tweakunits table");
+      if (closeIndex !== significant.length - 1) {
+        throw new SyntaxError("Unexpected content after the tweakunits table");
+      }
+
+      var innerStart = significant[0].end, innerEnd = significant[closeIndex].start;
+      var parts = [], cursor = innerStart;
+      tokens.forEach(function (token) {
+        if (token.kind !== "comment" || token.start < innerStart || token.end > innerEnd) return;
+        parts.push(source.slice(cursor, token.start));
+        parts.push(token.text.replace(/[^\r\n]/g, " "));
+        cursor = token.end;
+      });
+      parts.push(source.slice(cursor, innerEnd));
+      var inner = parts.join("").trim().replace(/,+$/, "");
+      if (inner) inners.push(inner);
     });
     return "{ " + inners.filter(Boolean).join(", ") + " }";
   }
@@ -296,20 +344,36 @@
     return planChunks(kind, minis, limit, urlSafe).chunks;
   }
 
-  /* Duplicate UnitDefs destinations are warnings, not pack blockers. */
-  function findDuplicateDst(minis) {
-    var seen = {};
-    var dups = [];
-    minis.forEach(function (m) {
-      var re = /dst\s*=\s*"([^"]+)"/g;
-      var mt, local = {};
-      while ((mt = re.exec(m))) local[mt[1]] = 1;
-      Object.keys(local).forEach(function (k) {
-        if (seen[k]) { if (dups.indexOf(k) < 0) dups.push(k); }
-        else seen[k] = 1;
+  /* Duplicate literal dst fields are warnings, not pack blockers. */
+  function findDuplicateDstDetails(minis) {
+    var sourcesByDst = Object.create(null);
+    minis.forEach(function (minified, sourceIndex) {
+      var tokens = luaTokenize(minified), local = Object.create(null);
+      for (var i = 0; i + 2 < tokens.length; i++) {
+        if (tokens[i].kind !== "word" || tokens[i].text !== "dst" || tokens[i + 1].text !== "=" || tokens[i + 2].kind !== "string") continue;
+        var previous = tokens[i - 1];
+        if (previous && (previous.text === "." || previous.text === ":")) continue;
+        if (previous && previous.text !== "{" && previous.text !== "," && previous.text !== ";") continue;
+        var literal = tokens[i + 2].text;
+        if (literal.charAt(0) !== '"' && literal.charAt(0) !== "'") continue;
+        var fieldEnd = tokens[i + 3];
+        if (fieldEnd && fieldEnd.text !== "," && fieldEnd.text !== ";" && fieldEnd.text !== "}") continue;
+        local[literal.slice(1, -1)] = true;
+      }
+      Object.keys(local).forEach(function (dst) {
+        if (!sourcesByDst[dst]) sourcesByDst[dst] = [];
+        sourcesByDst[dst].push(sourceIndex);
       });
     });
-    return dups;
+
+    return Object.keys(sourcesByDst).filter(function (dst) {
+      return sourcesByDst[dst].length > 1;
+    }).map(function (dst) {
+      return { dst: dst, sources: sourcesByDst[dst] };
+    });
+  }
+  function findDuplicateDst(minis) {
+    return findDuplicateDstDetails(minis).map(function (detail) { return detail.dst; });
   }
 
   /* Reset commands: setting a slot's value to 0 clears it lobby-side. */
@@ -338,6 +402,7 @@
     planChunks: planChunks,
     packChunks: packChunks,
     findDuplicateDst: findDuplicateDst,
+    findDuplicateDstDetails: findDuplicateDstDetails,
     resetCommands: resetCommands,
     resetAllCommands: resetAllCommands
   };

@@ -36,10 +36,10 @@ describe("pure module API", () => {
     assert.deepEqual(Object.keys(pure), [
       "MAX_SLOTS", "getLimit", "b64encode", "b64decode", "luaMinify",
       "luaPrettify", "slotKey", "cmdPrefix", "buildCommand", "parseDecodeInput",
-      "mergeTweakUnits", "planChunks", "packChunks", "findDuplicateDst",
+      "mergeTweakUnits", "planChunks", "packChunks", "findDuplicateDst", "findDuplicateDstDetails",
       "resetCommands", "resetAllCommands",
     ]);
-    for (const name of ["b64encode", "b64decode", "luaMinify", "luaPrettify", "slotKey", "cmdPrefix", "buildCommand", "parseDecodeInput", "mergeTweakUnits", "planChunks", "packChunks", "findDuplicateDst", "getLimit", "resetCommands", "resetAllCommands"]) {
+    for (const name of ["b64encode", "b64decode", "luaMinify", "luaPrettify", "slotKey", "cmdPrefix", "buildCommand", "parseDecodeInput", "mergeTweakUnits", "planChunks", "packChunks", "findDuplicateDst", "findDuplicateDstDetails", "getLimit", "resetCommands", "resetAllCommands"]) {
       assert.equal(typeof pure[name], "function", name + " must be callable");
     }
     assert.equal(pure.MAX_SLOTS, 10);
@@ -166,6 +166,15 @@ describe("luaMinify", () => {
     assert.equal(pure.luaMinify("   \n\t  "), "");
     assert.equal(pure.luaMinify("-- only a comment"), "");
   });
+  it("rejects unterminated quoted and long-bracket literals with source locations", () => {
+    assert.throws(() => pure.luaMinify("local name = 'unfinished"), /Unterminated quoted string at line 1, column 14/);
+    assert.throws(() => pure.luaMinify("local name = \"line one\nline two\""), /Unescaped newline in quoted string at line 1, column 14/);
+    assert.throws(() => pure.luaMinify("local value = [==[unfinished"), /Unterminated long-bracket string at line 1, column 15/);
+    assert.throws(() => pure.luaMinify("--[==[unfinished"), /Unterminated long-bracket comment at line 1, column 1/);
+  });
+  it("handles CRLF line comments and escaped physical newlines in strings", () => {
+    assert.equal(pure.luaMinify("local value = 'one\\\r\ntwo' -- comment\r\nlocal next = 2"), "local value='one\\\r\ntwo'local next=2");
+  });
   it("is deterministic (same input → identical bytes)", () => {
     const src = "for name,ud in pairs(UnitDefs) do -- loop\n  ud.metalcost=(ud.metalcost or 0)*2 end";
     assert.equal(pure.luaMinify(src), pure.luaMinify(src));
@@ -210,6 +219,21 @@ describe("mergeTweakUnits", () => {
     const out = pure.mergeTweakUnits(["-- head\n{ a = { x = 1, }, }", "--[[ b ]] { b = { y = 2, }, }"]);
     assert.ok(!out.includes("--"), out);
     assert.ok(out.includes("a =") && out.includes("b ="), out);
+  });
+  it("matches nested table braces without treating string/comment contents as delimiters", () => {
+    const out = pure.mergeTweakUnits([
+      "--[==[ ignored { braces } ]==]\n{ a = { label = 'literal } {', body = [=[also } {]=], }, }",
+      "{ b = { value = 2, }, }",
+    ]);
+    assert.ok(out.startsWith("{") && out.endsWith("}"), out);
+    assert.ok(out.includes("literal } {"), out);
+    assert.ok(out.includes("[=[also } {]=]"), out);
+    assert.ok(out.includes("b = { value = 2, }"), out);
+  });
+  it("rejects tweakunits sources that cannot be safely extracted as one table", () => {
+    assert.throws(() => pure.mergeTweakUnits(["local units = { a = 1 }"]), /standalone tweakunits table/);
+    assert.throws(() => pure.mergeTweakUnits(["{ a = 1 } extra"]), /Unexpected content after the tweakunits table/);
+    assert.throws(() => pure.mergeTweakUnits(["{ a = { b = 1 }"]), /Unclosed '\{' in tweakunits table/);
   });
   it("skips empties; empty input yields empty table", () => {
     assert.equal(pure.mergeTweakUnits([]), "{  }");
@@ -339,6 +363,13 @@ describe("packChunks index contract + findDuplicateDst", () => {
   it("findDuplicateDst: repeat inside ONE source is not a duplicate", () => {
     const m = pure.luaMinify('u.explodeas = "x"\n{ dst = "solo", }\n{ dst = "solo", }');
     assert.equal(JSON.stringify(pure.findDuplicateDst([m])), "[]");
+  });
+  it("findDuplicateDst ignores string contents and reports source indexes for real fields", () => {
+    const a = pure.luaMinify('{ dst = "shared", note = "dst = \\\"fake\\\"", }');
+    const b = pure.luaMinify("{ dst = 'shared', }");
+    assert.deepEqual(pure.findDuplicateDst([a, b]), ["shared"]);
+    assert.deepEqual(pure.findDuplicateDstDetails([a, b]), [{ dst: "shared", sources: [0, 1] }]);
+    assert.deepEqual(pure.findDuplicateDst([pure.luaMinify('{ note = "dst = \\\"alone\\\"", }')]), []);
   });
   it("live scenario: both defs fixtures combine into ONE slot", () => {
     const dir = path.join(__dirname, "fixtures");

@@ -16,7 +16,7 @@ var cmdPrefix = Pure.cmdPrefix;
 var buildCommand = Pure.buildCommand;
 var mergeTweakUnits = Pure.mergeTweakUnits;
 var planChunks = Pure.planChunks;
-var findDuplicateDst = Pure.findDuplicateDst;
+var findDuplicateDstDetails = Pure.findDuplicateDstDetails;
 var resetAllCommands = Pure.resetAllCommands;
 
 function $(id) { return document.getElementById(id); }
@@ -336,13 +336,13 @@ function renderSlots(g) {
     } else {
       var min, b64, cmd, err = null;
       try {
-        var toMin = (g.kind === "tweakunits" && g.packed) ? raw : raw;
-        min = luaMinify(toMin);
+        min = luaMinify(raw);
+        if (g.kind === "tweakunits") mergeTweakUnits([min]);
         var r = buildCommand(g.kind, idx, min, useUrlSafe());
         b64 = r.b64; cmd = r.cmd;
       } catch (e) { err = String(e); }
       if (err) {
-        st.textContent = "encode error: " + err;
+        st.textContent = "Lua input error: " + err;
         div.classList.add("over");
       } else {
         var total = cmd.length;
@@ -457,8 +457,40 @@ function autoPack(g) {
   if (!items.length) { toast("Nothing to pack"); return; }
   if (items.length > 60) { toast("Too many snippets"); return; }
 
-  var minis = items.map(function (it) { return luaMinify(it.text); });
-  var plan = planChunks(g.kind, minis, limit, useUrlSafe());
+  function showFailure(message) {
+    g.packNotice = "Auto-pack not applied — " + message + ". " + (g.packed ? "Current packed output was retained" : "Existing slot mapping was left unchanged") + "; no partial pack was applied.";
+    toast("Auto-pack not applied. See the packing status below the slots.");
+    renderSlots(g);
+  }
+  function describeError(error) {
+    return error && error.message ? error.message : String(error);
+  }
+
+  var validItems = [], minis = [];
+  for (var itemIndex = 0; itemIndex < items.length; itemIndex++) {
+    var minified;
+    try {
+      minified = luaMinify(items[itemIndex].text);
+      if (g.kind === "tweakunits" && minified) mergeTweakUnits([minified]);
+    } catch (error) {
+      showFailure(items[itemIndex].name + ": " + describeError(error));
+      return;
+    }
+    if (minified) {
+      validItems.push(items[itemIndex]);
+      minis.push(minified);
+    }
+  }
+  items = validItems;
+  if (!items.length) { toast("Nothing to pack after removing comments and whitespace"); return; }
+
+  var plan;
+  try {
+    plan = planChunks(g.kind, minis, limit, useUrlSafe());
+  } catch (error) {
+    showFailure("could not safely combine the inputs: " + describeError(error));
+    return;
+  }
   var idxChunks = plan.chunks;
 
   if (plan.oversized.length || plan.overflow.length) {
@@ -469,19 +501,22 @@ function autoPack(g) {
     if (plan.overflow.length) {
       failures.push("beyond the " + MAX_SLOTS + "-slot limit: " + plan.overflow.map(function (i) { return items[i].name; }).join(", "));
     }
-    g.packNotice = "Auto-pack incomplete — " + failures.join("; ") + ". " + (g.packed ? "Current packed output was retained" : "Existing slot mapping was left unchanged") + "; no partial pack was applied.";
-    toast("Auto-pack incomplete. See the packing status below the slots.");
-    renderSlots(g);
+    showFailure(failures.join("; "));
     return;
   }
 
   var msg = "Packed " + items.length + " item(s) into " + idxChunks.length + " slot(s)";
+  var duplicateSummary = "";
   if (g.kind === "tweakdefs") {
-    var dups = findDuplicateDst(minis);
-    if (dups.length) msg += " — WARNING duplicate dst (last wins): " + dups.join(", ");
+    var duplicates = findDuplicateDstDetails(minis);
+    duplicateSummary = duplicates.map(function (detail) {
+      var contributors = detail.sources.map(function (index) { return items[index].name; });
+      return '"' + detail.dst + '" in ' + contributors.join(" + ");
+    }).join("; ");
+    if (duplicateSummary) msg += " — WARNING duplicate dst: " + duplicateSummary;
   }
   toast(msg);
-  g.packNotice = null;
+  g.packNotice = duplicateSummary ? "Duplicate destination warning — " + duplicateSummary : null;
   g.packed = idxChunks.map(function (idxs) { return joinChunk(g, minis, idxs); });
   g.packedNames = idxChunks.map(function (idxs) {
     return idxs.map(function (k) { return items[k].name; });
@@ -494,7 +529,9 @@ function collectCommands(g) {
   var cmds = [];
   for (var idx = 0; idx < srcs.length && idx < MAX_SLOTS; idx++) {
     if (!srcs[idx].trim()) continue;
-    cmds.push(buildCommand(g.kind, idx, luaMinify(srcs[idx]), useUrlSafe()).cmd);
+    var minified = luaMinify(srcs[idx]);
+    if (g.kind === "tweakunits") mergeTweakUnits([minified]);
+    cmds.push(buildCommand(g.kind, idx, minified, useUrlSafe()).cmd);
   }
   return cmds;
 }
@@ -502,6 +539,16 @@ function collectCombinedCommands() {
   // Keep tweakunits first: BAR applies the table edits before tweakdefs adds
   // or modifies UnitDefs, matching the intended ScavX/EditP pipeline.
   return collectCommands(units).concat(collectCommands(defs));
+}
+
+function copyCommandSet(collect, emptyMessage) {
+  try {
+    var commands = collect();
+    if (!commands.length) return toast(emptyMessage);
+    copyText(commands.join("\n"));
+  } catch (error) {
+    toast("Could not build commands: " + (error && error.message ? error.message : String(error)));
+  }
 }
 
 function copyText(t) {
@@ -554,21 +601,15 @@ $("unitsPack").onclick = function () { autoPack(units); };
 $("defsClear").onclick = function () { defs.snippets = [""]; defs.packed = null; defs.packedNames = null; renderAll(); };
 $("unitsClear").onclick = function () { units.snippets = [""]; units.packed = null; units.packedNames = null; renderAll(); };
 $("defsCopyAll").onclick = function () {
-  var c = collectCommands(defs);
-  if (!c.length) return toast("No tweakdefs to copy");
-  copyText(c.join("\n"));
+  copyCommandSet(function () { return collectCommands(defs); }, "No tweakdefs to copy");
 };
 function copyCombined() {
-  var c = collectCombinedCommands();
-  if (!c.length) return toast("No tweakdefs or tweakunits to copy");
-  copyText(c.join("\n"));
+  copyCommandSet(collectCombinedCommands, "No tweakdefs or tweakunits to copy");
 }
 $("defsCopyCombined").onclick = copyCombined;
 $("resetAll").onclick = function () { copyText(resetAllCommands().join("\n")); };
 $("unitsCopyAll").onclick = function () {
-  var c = collectCommands(units);
-  if (!c.length) return toast("No tweakunits to copy");
-  copyText(c.join("\n"));
+  copyCommandSet(function () { return collectCommands(units); }, "No tweakunits to copy");
 };
 $("unitsCopyCombined").onclick = copyCombined;
 $("charLimit").oninput = function () { renderSlots(defs); renderSlots(units); };
