@@ -259,6 +259,22 @@ test("player Mega roster is split exactly once between air and land packs", () =
   }
 });
 
+test("combined player Mega pack retains the complete original roster and fits one BAR command", () => {
+  const relative = "defs/player/megas/player-mega-units.lua";
+  assertDefaultEnabled(relative);
+  const file = path.join(__dirname, "..", "tweaks", ...relative.split("/"));
+  const text = fs.readFileSync(file, "utf8");
+  const expectedIds = [
+    "player_riftcolossus", "player_vortexdominator", "player_aegisbreaker", "player_solardecimator",
+    "player_skyfurnace", "player_stormsovereign", "player_pyroclast", "player_singularity",
+    "player_aethersiege", "player_phantomleviathan", "player_archangel", "player_apollyonfortress",
+  ];
+
+  assert.deepEqual(megaDefinedIds(text), expectedIds, "combined Mega pack IDs changed or are duplicated");
+  const command = pure.buildCommand("tweakdefs", 9, pure.luaMinify(text), true).cmd;
+  assert.ok(command.length <= 16384, `${relative}: ${command.length}/16384 characters`);
+});
+
 test("T3 construction turrets expose requested build progression", () => {
   const root = path.join(__dirname, "..");
   const file = path.join(root, "tweaks", "defs", "zz-player-construction-turrets-t3-t4.lua");

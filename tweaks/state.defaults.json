@@ -36,6 +36,7 @@
   "defs/economy/economy-t3-t4-upper-tier-pack.lua": true,
   "defs/player/defenses/player-defense-epic-walls.lua": false,
   "defs/player/defenses/player-defense-shield-aa.lua": false,
+  "defs/player/megas/player-mega-units.lua": false,
   "defs/player/megas/player-mega-air-pack.lua": false,
   "defs/player/megas/player-mega-land-pack.lua": false,
   "defs/player/turrets/player-turrets-ultra.lua": true,
