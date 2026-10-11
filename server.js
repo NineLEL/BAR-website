@@ -15,6 +15,11 @@ const path = require("path");
 
 const KINDS = ["defs", "units"];
 
+function terminalStyle(text, code) {
+  if (!process.stdout.isTTY || process.env.NO_COLOR !== undefined || process.env.FORCE_COLOR === "0") return text;
+  return "\u001b[" + code + "m" + text + "\u001b[0m";
+}
+
 function createConfiguration(options) {
   options = options || {};
   const env = options.env || process.env;
@@ -107,7 +112,7 @@ function createLibrary(config) {
       const currentVersion = libraryVersion();
       if (currentVersion !== previousVersion) {
         previousVersion = currentVersion;
-        console.log("Server library updated");
+        console.log("  " + terminalStyle("↻", "36") + " " + terminalStyle("Library updated", "1;36") + terminalStyle(" · changes are ready in the browser", "90"));
       }
     }, intervalMs || 2000);
     return function stopWatchingLibrary() { clearInterval(interval); };
@@ -227,16 +232,28 @@ if (require.main === module) {
     function onError(error) {
       server.removeListener("listening", onListening);
       if (error.code === "EADDRINUSE" && port < 65535) {
-        console.warn("Port " + port + " is already in use; trying " + (port + 1) + ".");
+        console.warn(terminalStyle("  ! ", "1;33") + "Port " + port + " is already in use; trying " + (port + 1) + ".");
         listen(port + 1);
         return;
       }
-      console.error("Unable to start server on port " + port + ": " + error.message);
+      console.error(terminalStyle("  ✕ Unable to start server", "1;31") + " on port " + port + ": " + error.message);
       process.exitCode = 1;
     }
     function onListening() {
       server.removeListener("error", onError);
-      console.log("BAR Tweak Packer at http://localhost:" + port + "  (tweaks folder: ./tweaks)");
+      const url = "http://localhost:" + port;
+      const tweaksDir = instance.getPaths().TWEAKS_DIR;
+      const libraryPath = path.relative(process.cwd(), tweaksDir) || ".";
+      console.log([
+        "",
+        "  " + terminalStyle("◆ BAR TWEAK PACKER", "1;33"),
+        "  " + terminalStyle("────────────────────────────────────", "90"),
+        "  " + terminalStyle("●", "32") + " " + terminalStyle("READY", "1;32") + "  " + terminalStyle(url, "36"),
+        "  " + terminalStyle("Library", "90") + "    " + libraryPath,
+        "  " + terminalStyle("Live reload", "90") + " Enabled — tweak changes are picked up automatically",
+        "  " + terminalStyle("Stop", "90") + "       Press Ctrl+C",
+        ""
+      ].join("\n"));
     }
     server.once("error", onError);
     server.once("listening", onListening);

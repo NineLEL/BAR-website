@@ -174,14 +174,15 @@ describe("server library update logging", () => {
     const deadline = new Promise((_, reject) => { rejectTimeout = reject; });
     console.log = (message) => {
       messages.push(message);
-      if (message === "Server library updated") resolveLog();
+      if (message.includes("Library updated")) resolveLog();
     };
     stopWatching = box.srv.watchLibraryUpdates(10);
     try {
       timeout = setTimeout(() => rejectTimeout(new Error("watcher did not report the file change within 1 second")), 1000);
       fs.appendFileSync(path.join(box.tweaks, "defs", "alpha.lua"), "-- changed\n");
       await Promise.race([logged, deadline]);
-      assert.deepEqual(messages, ["Server library updated"]);
+      assert.equal(messages.length, 1);
+      assert.match(messages[0], /Library updated/);
     } finally {
       clearTimeout(timeout);
       stopWatching();
