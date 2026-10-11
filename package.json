@@ -9,12 +9,13 @@
   },
   "scripts": {
     "start": "node server.js",
+    "build:pages": "node scripts/build-pages.js",
     "test": "node --test",
     "test:pure": "node --test tests/pure.test.js",
     "test:client": "node --test tests/library-client.test.js",
     "test:server": "node --test tests/server.test.js",
     "test:tweaks": "node --test tests/default-enabled.test.js tests/tweak-srcs.test.js tests/scavx-release.test.js tests/scavx-hardening.test.js tests/raptor-minibosses.test.js",
-    "check": "node --check app.js && node --check app-pure.js && node --check app-library.js && node --check server.js && node --check tests/helpers/enabledTweaks.js && node --check tests/default-enabled.test.js && node --check tests/library-client.test.js && node --check tests/pure.test.js && node --check tests/server.test.js && node --check tests/tweak-srcs.test.js && node --check tests/scavx-release.test.js && node --check tests/scavx-hardening.test.js && node --check tests/raptor-minibosses.test.js",
+    "check": "node --check app.js && node --check app-pure.js && node --check app-library.js && node --check server.js && node --check scripts/build-pages.js && node --check tests/helpers/enabledTweaks.js && node --check tests/default-enabled.test.js && node --check tests/library-client.test.js && node --check tests/pages-build.test.js && node --check tests/pure.test.js && node --check tests/server.test.js && node --check tests/tweak-srcs.test.js && node --check tests/scavx-release.test.js && node --check tests/scavx-hardening.test.js && node --check tests/raptor-minibosses.test.js",
     "verify": "npm run check && npm test"
   }
 }

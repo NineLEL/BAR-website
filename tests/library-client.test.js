@@ -80,3 +80,33 @@ test("fetchVersion requests uncached version JSON", async (t) => {
   assert.match(request.url, /^api\/tweaks\/version\?_=/);
   assert.deepEqual(request.options, { cache: "no-store" });
 });
+
+test("static library fallback persists per-browser selections and disables server polling", async (t) => {
+  const values = new Map();
+  const originalStorage = Object.getOwnPropertyDescriptor(global, "localStorage");
+  Object.defineProperty(global, "localStorage", { configurable: true, value: {
+    getItem: (key) => values.get(key) ?? null,
+    setItem: (key, value) => values.set(key, value),
+  } });
+  t.after(() => {
+    if (originalStorage) Object.defineProperty(global, "localStorage", originalStorage);
+    else delete global.localStorage;
+  });
+  const payload = { defs: [{ name: "nested/example.lua", enabled: true, content: "return {}", chars: 9 }], units: [] };
+  const requests = [];
+  stubFetch(t, async (url, options) => {
+    requests.push(url);
+    if (url.startsWith("api/")) return { ok: false, status: 404 };
+    return { ok: true, json: async () => structuredClone(payload) };
+  });
+
+  const loaded = await api.fetchLibrary();
+  assert.equal(loaded.defs[0].enabled, true);
+  assert.equal(api.isServerMode(), false);
+  assert.deepEqual(requests.map((url) => url.split("?")[0]), ["api/tweaks", "library.json"]);
+
+  await api.toggle("defs", "nested/example.lua", false);
+  assert.equal((await api.fetchLibrary()).defs[0].enabled, false);
+  assert.deepEqual(await api.fetchVersion(), { version: "static" });
+  assert.equal(api.isServerMode(), false);
+});

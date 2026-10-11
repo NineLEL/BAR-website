@@ -24,11 +24,11 @@ function $(id) { return document.getElementById(id); }
 /* ---------- server library presentation ---------- */
 function libFetch() {
   var st = $("libStatus");
-  st.textContent = "Loading server library…";
+  st.textContent = "Loading tweak library…";
   LibraryApi.fetchLibrary().then(function (data) {
     renderLib(data);
   }).catch(function () {
-    st.textContent = "Server library offline. Run node server.js and open http://localhost:8080 to use .lua files from tweaks/defs and tweaks/units. Manual snippets keep working.";
+    st.textContent = "Library unavailable. Run node server.js locally, or reload the published site. Manual snippets keep working.";
     $("libDefs").textContent = "";
     $("libUnits").textContent = "";
   });
@@ -38,7 +38,10 @@ function renderLib(data) {
   var nD = data.defs.length, nU = data.units.length;
   var eD = data.defs.filter(function (f) { return f.enabled; }).length;
   var eU = data.units.filter(function (f) { return f.enabled; }).length;
-  $("libStatus").textContent = "Serving " + nD + " defs (" + eD + " enabled) + " + nU + " units (" + eU + " enabled) from tweaks/. Changes reload automatically while server.js is running. Enabled files flow into the packer automatically.";
+  var sourceMessage = LibraryApi.isServerMode()
+    ? "Loaded from the local server; file changes reload automatically."
+    : "Static published library; your enable/disable choices are saved only in this browser.";
+  $("libStatus").textContent = "Loaded " + nD + " defs (" + eD + " enabled) + " + nU + " units (" + eU + " enabled). " + sourceMessage + " Enabled files flow into the packer automatically.";
   window._lib = data;
   renderLibGroup($("libDefs"), "defs", data.defs);
   renderLibGroup($("libUnits"), "units", data.units);
@@ -76,7 +79,7 @@ function renderLibGroup(el, kind, files) {
     var actions = document.createElement("span"); actions.className = "library-group-actions";
     [true, false].forEach(function (enable) {
       var action = document.createElement("button"); action.type = "button"; action.textContent = enable ? "Enable group" : "Disable group";
-      action.onclick = function (event) { event.preventDefault(); event.stopPropagation(); LibraryApi.toggleAll(groupFiles.map(function (f) { return { kind: kind, name: f.name }; }), enable).then(libFetch, function () { toast("Group toggle failed — is the server running?"); libFetch(); }); };
+      action.onclick = function (event) { event.preventDefault(); event.stopPropagation(); LibraryApi.toggleAll(groupFiles.map(function (f) { return { kind: kind, name: f.name }; }), enable).then(libFetch, function () { toast("Group toggle failed."); libFetch(); }); };
       actions.appendChild(action);
     });
     summary.appendChild(actions); details.appendChild(summary);
@@ -92,9 +95,9 @@ function renderLibGroup(el, kind, files) {
     cb.setAttribute("aria-label", "Enable " + f.name);
     cb.onchange = function () {
       LibraryApi.toggle(kind, f.name, cb.checked).then(function (r) {
-        if (!r.ok) throw new Error("HTTP " + r.status);
+        if (!r || !r.ok) throw new Error("Toggle failed");
         libFetch();
-      }, function () { toast("Toggle failed — is the server running?"); });
+      }, function () { toast("Toggle failed; browser storage may be unavailable."); });
     };
     head.onclick = function (event) {
       if (event.target === cb || event.target.tagName === "BUTTON" || event.target.tagName === "INPUT") return;
@@ -192,6 +195,7 @@ $("libDefs").setAttribute("data-kind", "defs"); $("libUnits").setAttribute("data
 libFetch();
 var libVersion = null;
 function watchLibrary() {
+  if (!LibraryApi.isServerMode()) return;
   LibraryApi.fetchVersion().then(function (data) {
     if (libVersion !== null && data.version !== libVersion) libFetch();
     libVersion = data.version;

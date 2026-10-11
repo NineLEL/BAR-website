@@ -42,7 +42,7 @@
         <span class="step-number" aria-hidden="true">01</span>
         <div class="howto-step-copy">
           <h3>Load a library <span class="step-optional">Optional</span></h3>
-          <p>Run <code>node server.js</code> and open <code>localhost:8080</code>. Add <code>.lua</code> files to <code>tweaks/defs</code> or <code>tweaks/units</code>, then pick them in the server library tab.</p>
+            <p>On the hosted site, choose files from the published library; your enable/disable choices are saved in this browser. For local library editing, run <code>node server.js</code>, add <code>.lua</code> files to <code>tweaks/defs</code> or <code>tweaks/units</code>, then pick them in the library tab.</p>
         </div>
       </li>
       <li>
@@ -87,7 +87,7 @@
   <nav class="tabs" role="tablist" aria-label="Tweak tools">
     <button id="tab-defs" class="tab active" role="tab" aria-selected="true" aria-controls="panel-defs" tabindex="0" data-tab="defs">tweakdefs (code)</button>
     <button id="tab-units" class="tab" role="tab" aria-selected="false" aria-controls="panel-units" tabindex="-1" data-tab="units">tweakunits (tables)</button>
-    <button id="tab-library" class="tab" role="tab" aria-selected="false" aria-controls="panel-library" tabindex="-1" data-tab="library">server library</button>
+    <button id="tab-library" class="tab" role="tab" aria-selected="false" aria-controls="panel-library" tabindex="-1" data-tab="library">tweak library</button>
     <button id="tab-decode" class="tab" role="tab" aria-selected="false" aria-controls="panel-decode" tabindex="-1" data-tab="decode">decode / inspect</button>
     <button id="tab-utilities" class="tab" role="tab" aria-selected="false" aria-controls="panel-utilities" tabindex="-1" data-tab="utilities">utilities</button>
   </nav>
@@ -113,7 +113,7 @@
       </div>
       <div class="action-group action-group-manage" role="group" aria-labelledby="defs-manage-label">
         <h2 id="defs-manage-label" class="action-label">Manage</h2>
-        <button id="defsLibReload">Reload server library</button>
+          <button id="defsLibReload">Reload library</button>
         <button id="defsClear">Clear all</button>
       </div>
     </div>
@@ -139,7 +139,7 @@
       </div>
       <div class="action-group action-group-manage" role="group" aria-labelledby="units-manage-label">
         <h2 id="units-manage-label" class="action-label">Manage</h2>
-        <button id="unitsLibReload">Reload server library</button>
+          <button id="unitsLibReload">Reload library</button>
         <button id="unitsClear">Clear all</button>
       </div>
     </div>
@@ -149,8 +149,8 @@
   </section>
 
   <section id="panel-library" class="panel" role="tabpanel" aria-labelledby="tab-library" tabindex="0" hidden>
-    <h2>Server library</h2>
-    <div id="libStatus" class="card" role="status" aria-live="polite" aria-atomic="true"><p>Loading server library&hellip;</p></div>
+    <h2>Tweak library</h2>
+    <div id="libStatus" class="card" role="status" aria-live="polite" aria-atomic="true"><p>Loading tweak library&hellip;</p></div>
     <label class="library-search-label" for="libSearch">Search library filenames</label>
     <div class="library-search"><input id="libSearch" type="search" autocomplete="off" placeholder="Search filenames"><button id="libSearchClear" type="button" aria-label="Clear library search">Clear</button></div>
     <div class="toolbar">
