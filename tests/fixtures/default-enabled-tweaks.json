@@ -1,6 +1,7 @@
 {
   "defs/economy/economy-t3-t4-upper-tier-pack.lua": true,
-  "defs/player/megas/player-mega-units.lua": true,
+  "defs/player/megas/player-mega-air-pack.lua": true,
+  "defs/player/megas/player-mega-land-pack.lua": true,
   "defs/raptorx/raptorx-custom-unit-core.lua": true,
   "defs/raptorx/raptorx-miniboss-specialists.lua": true,
   "defs/scavx/scavx-custom-unit-pack-00.lua": true,

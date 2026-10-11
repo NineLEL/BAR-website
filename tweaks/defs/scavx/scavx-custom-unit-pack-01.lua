@@ -242,7 +242,7 @@ do
 			u.buildoptions = bo
 			clone_set_name(u, "Everything Experimental", "???")
 			clone_sync_shield_visuals(u)
-			-- player-mega-units.lua runs before this ScavX clone is created.
+			-- Both player-mega-air-pack.lua and player-mega-land-pack.lua precede ScavX consumers, including this clone.
 			-- Add the Mega roster here so Everything Experimental always exposes it.
 			local megaUnits = {
 				"player_riftcolossus", "player_riftjump", "player_vortexdominator", "player_vortexwell",

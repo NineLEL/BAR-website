@@ -88,8 +88,14 @@ test("all Scav-only Mega squads spawn three units starting at 20 percent anger",
 test("enemy Mega definitions have existing sources, isolated weapons and no player build path", () => {
   const relative = "defs/scavx/scavx-mega-enemy-variants.lua";
   const lua = fs.readFileSync(path.join(root, "tweaks", relative), "utf8");
-  const player = fs.readFileSync(path.join(root, "tweaks/defs/player/megas/player-mega-units.lua"), "utf8");
-  const defined = new Set([...player.matchAll(/^\s*"(player_\w+)",/gm)].map(m => m[1]));
+  const playerSources = [
+    "defs/player/megas/player-mega-air-pack.lua",
+    "defs/player/megas/player-mega-land-pack.lua",
+  ];
+  const defined = new Set(playerSources.flatMap((playerSource) => {
+    const player = fs.readFileSync(path.join(root, "tweaks", playerSource), "utf8");
+    return [...player.matchAll(/^\s*"(player_\w+)",/gm)].map((m) => m[1]);
+  }));
   const specs = [...lua.matchAll(/\{ "(scavx_(?:mega|boss)_\w+)", "(player_\w+)"/g)];
   assert.equal(specs.length, 16);
   assert.equal(new Set(specs.map(m => m[1])).size, 16);
@@ -101,8 +107,10 @@ test("enemy Mega definitions have existing sources, isolated weapons and no play
   assert.match(lua, /volley \+ 0\.05/);
   assert.doesNotMatch(lua, /source\.\w+\s*=|teach\(|u\.script\s*=|u\.objectname\s*=|u\.weapons\s*=/);
   assertDefaultEnabled(relative);
-  assertDefaultEnabled("defs/player/megas/player-mega-units.lua");
-  assert.ok("defs/player/megas/player-mega-units.lua" < relative);
+  for (const playerSource of playerSources) {
+    assertDefaultEnabled(playerSource);
+    assert.ok(playerSource < relative);
+  }
   assert.ok(pure.buildCommand("tweakdefs", 9, pure.luaMinify(lua), false).cmd.length <= 16384);
 });
 

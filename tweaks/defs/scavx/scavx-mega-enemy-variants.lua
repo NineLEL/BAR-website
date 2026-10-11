@@ -1,4 +1,4 @@
--- Requires defs/player/megas/player-mega-units.lua (sorts before this pack).
+-- Requires both player-mega-air-pack.lua and player-mega-land-pack.lua; both precede ScavX consumers.
 -- Independent deep copies: no player build menus or shared weapon tables.
 -- Squad eligibility is assigned by scavx-nightmare-hardmode-roster.lua.
 do

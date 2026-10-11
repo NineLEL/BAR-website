@@ -22,6 +22,16 @@ function luaFiles(dir) {
   return out;
 }
 
+const megaPackNames = ["player-mega-air-pack.lua", "player-mega-land-pack.lua"];
+function megaSources() {
+  const dir = path.join(defsDir, "player", "megas");
+  return megaPackNames.map((name) => fs.readFileSync(path.join(dir, name), "utf8"));
+}
+
+function megaDefinedIds(text) {
+  return [...text.matchAll(/^\s*"(player_[a-z0-9]+)",\s*$/gm)].map(([, name]) => name);
+}
+
 test("every tweak clone src exists in BAR", () => {
   const files = luaFiles(defsDir).sort();
   assert.ok(files.length > 0, "no tweak files found");
@@ -93,8 +103,9 @@ test("Nightmare unit keys resolve to BAR units or our ScavX clones", () => {
     for (const [, name] of text.matchAll(/local n = "(\w+)"/g)) clones.add(name);
     for (const [, name] of text.matchAll(/\{ "(scavx_(?:mega|boss)_\w+)", "player_\w+"/g)) clones.add(name);
   }
-  const megaText = fs.readFileSync(path.join(__dirname, "..", "tweaks", "defs", "player", "megas", "player-mega-units.lua"), "utf8");
-  for (const [, name] of megaText.matchAll(/\n\s*"(player_[a-z0-9]+)",/g)) clones.add(name);
+  for (const megaText of megaSources()) {
+    for (const name of megaDefinedIds(megaText)) clones.add(name);
+  }
   for (const name of nightmareRoster().keys()) {
     assert.ok(known.has(name) || clones.has(name), `unknown Nightmare unit: ${name}`);
   }
@@ -222,7 +233,30 @@ test("Everything Experimental exposes every player Mega Unit", () => {
   for (const name of megaIds) {
     assert.match(text, new RegExp(`"${name}"`), `${name} must be available from everyexpe`);
   }
-  assertDefaultEnabled("defs/player/megas/player-mega-units.lua");
+  assertDefaultEnabled("defs/player/megas/player-mega-air-pack.lua");
+  assertDefaultEnabled("defs/player/megas/player-mega-land-pack.lua");
+});
+
+test("player Mega roster is split exactly once between air and land packs", () => {
+  const [air, land] = megaSources();
+  const airIds = ["player_singularity", "player_aethersiege", "player_phantomleviathan", "player_archangel"];
+  const landIds = [
+    "player_riftcolossus", "player_vortexdominator", "player_aegisbreaker", "player_solardecimator",
+    "player_skyfurnace", "player_stormsovereign", "player_pyroclast", "player_apollyonfortress",
+  ];
+
+  const actualAirIds = megaDefinedIds(air);
+  const actualLandIds = megaDefinedIds(land);
+  assert.deepEqual(actualAirIds, airIds, "air pack Mega IDs changed or are duplicated");
+  assert.deepEqual(actualLandIds, landIds, "land pack Mega IDs changed or are duplicated");
+  assert.equal(new Set([...actualAirIds, ...actualLandIds]).size, 12);
+  assert.equal(actualAirIds.length, 4);
+  assert.equal(actualLandIds.length, 8);
+
+  for (const [name, text] of megaPackNames.map((name, index) => [name, [air, land][index]])) {
+    const command = pure.buildCommand("tweakdefs", 9, pure.luaMinify(text), true).cmd;
+    assert.ok(command.length <= pure.getLimit(), `${name}: ${command.length}/${pure.getLimit()} characters`);
+  }
 });
 
 test("T3 construction turrets expose requested build progression", () => {
@@ -504,7 +538,7 @@ test("RaptorX custom units have explicit weapon mechanics and effects", () => {
 });
 
 test("Phantom Leviathan uses its three corcrwh slots for combat and shielding", () => {
-  const text = fs.readFileSync(path.join(__dirname, "..", "tweaks", "defs", "player", "megas", "player-mega-units.lua"), "utf8");
+  const text = megaSources()[0];
   assert.match(text, /pshield\s*=\s*\{/);
   assert.match(text, /weapontype\s*=\s*"Shield"/);
   assert.match(text, /slots\s*=\s*\{\s*\[1\]\s*=\s*WP\.torp,\s*\[2\]\s*=\s*WP\.pshield,\s*\[3\]\s*=\s*WP\.pbr/);
@@ -560,7 +594,7 @@ test("slot preview buttons capture their own command and minified text", () => {
 });
 
 test("Aegis Breaker has explicit shotgun projectile behavior", () => {
-  const text = fs.readFileSync(path.join(__dirname, "..", "tweaks", "defs", "player", "megas", "player-mega-units.lua"), "utf8");
+  const text = megaSources()[1];
   const body = text.match(/crack = W\([\s\S]*?\n\s*\}\s*\),\n\s*sol =/u)?.[0] || "";
   assert.match(body, /projectilespershot = 8/);
   assert.match(body, /burst = 2/);
@@ -570,9 +604,7 @@ test("Aegis Breaker has explicit shotgun projectile behavior", () => {
 });
 
 test("Mega Units have role-specific weapon mechanics and pack cleanly", () => {
-  const text = fs.readFileSync(path.join(__dirname, "..", "tweaks", "defs", "player", "megas", "player-mega-units.lua"), "utf8");
-  const command = pure.buildCommand("tweakdefs", 9, pure.luaMinify(text), true).cmd;
-  assert.ok(command.length <= pure.getLimit(), `${command.length}/${pure.getLimit()} characters`);
+  const text = megaSources().join("\n");
 
   assert.match(text, /burst = 6,[\s\S]*?projectilespershot = 4/, "Sky Furnace should retain 24 flak rounds in paced salvos");
   assert.match(text, /paralyzer = true,[\s\S]*?paralyzetime = 10/, "Singularity EMP must use the actual paralysis weapon mechanic");
@@ -589,7 +621,7 @@ test("Mega Units have role-specific weapon mechanics and pack cleanly", () => {
   assert.match(text, /size = 26,[\s\S]*?stages = 36/, "EMP impacts should be visually distinct");
   assert.match(text, /"EMP dreadnought"/);
   assert.match(text, /"Shotgun titan"/);
-  assert.match(text, /"player_riftcolossus"[\s\S]*?"player_archangel"/, "the complete Mega roster should remain defined");
+  assert.ok(text.includes('"player_riftcolossus"') && text.includes('"player_archangel"'), "the complete Mega roster should remain defined");
 });
 
 test("Mirror Array is configured as the Prism Disruptor", () => {

@@ -28,7 +28,7 @@ test("ScavX restored imports match the new release and remain packable", () => {
     if (i === 2) {
       // The sole local import extension adds player Megas to everyexpe after
       // its creation. Separate build-menu tests cover this retained hook.
-      const hook = /\t\t\t-- player-mega-units[\s\S]*?(?=\t\tend\r?\n\tend)/;
+      const hook = /\t\t\t-- Both player-mega-air-pack\.lua and player-mega-land-pack\.lua[\s\S]*?(?=\t\tend\r?\n\tend)/;
       assert.match(comparable, hook, "preserve the local Mega build-menu hook");
       comparable = comparable.replace(hook, "");
     }
