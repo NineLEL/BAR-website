@@ -277,13 +277,16 @@ test("combined T3/T4 upper-tier pack is enabled and fits one BAR command", () =>
     "armafust3", "corafust3", "legafust3", "armnanotct2", "cornanotct2", "legnanotct2",
   ]) assert.ok(known.has(name), `${name} must be a real BAR source unit`);
 
-  assert.match(text, /3, 3000, \.06/);
-  assert.match(text, /4, 6000, \.06/);
-  assert.match(text, /sp\[4\] == 3 and "Legendary" or "Ultra"/);
-  assert.match(text, /T4 Legendary Fusion Reactor/);
-  assert.match(text, /sp\[4\] == "m" and "Epic" or "Legendary"/);
-  assert.match(text, /T3 Epic Construction Turret/);
-  assert.match(text, /T4 Legendary Construction Turret/);
+  assert.match(text, /local rank = sp\[4\] == 3 and "Legendary" or "Ultra"/);
+  assert.match(text, /local name = rank \.\. " Energy Converter"/);
+  assert.match(text, /local rank = sp\[5\] == 3 and "Epic" or "Legendary"/);
+  assert.match(text, /local name = "Legendary Fusion Reactor"/);
+  assert.match(text, /local name = "Epic Construction Turret"/);
+  assert.match(text, /local name = "Legendary Construction Turret"/);
+  assert.match(text, /local effect = "custom:genericbuildingexplosion-"/);
+  assert.match(text, /AreaOfEffect = p\[1\]/);
+  assert.match(text, /cameraShake = p\[2\]/);
+  assert.match(text, /unit\.explodeas, unit\.selfdestructas = death, selfd/);
   for (const category of ["convboom", "mexboom", "storagemetalboom", "storageenergyboom", "fusionboom", "constructionboom"]) {
     assert.match(text, new RegExp(category), `missing T3/T4 ${category} explosions`);
   }
@@ -366,12 +369,12 @@ test("RaptorX squad metadata and progression are valid", () => {
   const behaviors = new Set(["raider", "berserk", "artillery", "kamikaze", "healer"]);
   const roster = raptorRoster();
   const openingLimits = new Map([
-    ["raptor_land_swarmer_basic_t1_v1", [0, 90, 160]],
-    ["raptor_land_swarmer_basic_t2_v1", [5, 100, 150]],
+    ["raptor_land_swarmer_basic_t1_v1", [0, 45, 50]],
+    ["raptor_land_swarmer_basic_t2_v1", [5, 24, 45]],
     ["raptor_air_scout_basic_t2_v1", [5, 6, 100]],
-    ["raptor_land_swarmer_basic_t2_v2", [10, 90, 140]],
-    ["raptor_allterrain_swarmer_basic_t2_v1", [10, 60, 110]],
-    ["raptor_land_swarmer_fire_t2_v1", [15, 64, 120]],
+    ["raptor_land_swarmer_basic_t2_v2", [10, 20, 40]],
+    ["raptor_allterrain_swarmer_basic_t2_v1", [10, 16, 35]],
+    ["raptor_land_swarmer_fire_t2_v1", [15, 16, 35]],
     ["raptor_land_kamikaze_basic_t2_v1", [20, 40, 90]],
   ]);
   for (const [name, body] of roster) {
@@ -394,7 +397,7 @@ test("RaptorX squad metadata and progression are valid", () => {
   assert.match(allRaptorUnits, /raptorx_stormmaw[^\n]*raptorsquadunitsamount = 20/);
   assert.match(allRaptorUnits, /raptorx_broodlord[^\n]*raptorsquadunitsamount = 10/);
   assert.match(allRaptorUnits, /raptorx_ironfang[\s\S]*?raptorsquadminanger = 20/);
-  assert.match(allRaptorUnits, /raptorx_dreadrunner[^\n]*raptorsquadunitsamount = 54/);
+  assert.match(allRaptorUnits, /raptorx_dreadrunner[^\n]*raptorsquadunitsamount = 12/);
   assert.match(allRaptorUnits, /raptorx_burnmaw[\s\S]*?raptorsquadminanger = 30/);
   for (const unit of ["raptorx_apex_colossus", "raptorx_spectre_overlord", "raptorx_queen_ascendant"]) {
     assert.match(allRaptorUnits, new RegExp(`${unit}[\\s\\S]*?raptorsquadunitsamount = 1`), `${unit} must spawn alone`);
@@ -410,7 +413,7 @@ test("RaptorX squad metadata and progression are valid", () => {
   assert.match(allRaptorUnits, /raptorx_earlycrusher[\s\S]*?raptorsquadminanger = 10/);
   assert.match(allRaptorUnits, /raptorx_midravager[^\n]*raptorsquadminanger = 30/);
   assert.match(allRaptorUnits, /raptorx_latebehemoth[^\n]*raptorsquadminanger = 40/);
-  assert.match(allRaptorUnits, /raptorx_earlytalon[^\n]*raptorsquadunitsamount = 36/);
+  assert.match(allRaptorUnits, /raptorx_earlytalon[^\n]*raptorsquadunitsamount = 10/);
   assert.match(allRaptorUnits, /raptorx_midfirewing[^\n]*raptorsquadunitsamount = 16/);
   assert.match(allRaptorUnits, /raptorx_lateskyreaper[^\n]*raptorsquadunitsamount = 8/);
 
