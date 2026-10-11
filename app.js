@@ -25,15 +25,45 @@ function $(id) { return document.getElementById(id); }
 
 /* ---------- server library presentation ---------- */
 function libFetch() {
+  var request = ++libraryRequest;
   var st = $("libStatus");
   st.textContent = "Loading tweak library…";
   LibraryApi.fetchLibrary().then(function (data) {
+    if (request !== libraryRequest) return;
     renderLib(data);
   }).catch(function () {
+    if (request !== libraryRequest) return;
     st.textContent = "Library unavailable. Run node server.js locally, or reload the published site. Manual snippets keep working.";
-    $("libDefs").textContent = "";
-    $("libUnits").textContent = "";
+    if (!libraryRendered && !window._lib) {
+      $("libDefs").textContent = "";
+      $("libUnits").textContent = "";
+    }
   });
+}
+
+var libraryRequest = 0, libraryRendered = false, librarySearchTimer = null;
+var libraryToggleQueues = Object.create(null);
+
+function toggleLibraryFile(kind, name, enabled) {
+  var key = kind + "/" + name;
+  var previous = libraryToggleQueues[key] || Promise.resolve();
+  var current = previous.catch(function () {}).then(function () {
+    return LibraryApi.toggle(kind, name, enabled);
+  });
+  libraryToggleQueues[key] = current;
+  return current.then(function (result) {
+    if (libraryToggleQueues[key] === current) delete libraryToggleQueues[key];
+    return result;
+  }, function (error) {
+    if (libraryToggleQueues[key] === current) delete libraryToggleQueues[key];
+    throw error;
+  });
+}
+
+function toggleLibraryFiles(files, enabled) {
+  return Promise.all(files.map(function (file) {
+    return toggleLibraryFile(file.kind, file.name, enabled);
+  }));
 }
 
 function renderLib(data) {
@@ -45,18 +75,26 @@ function renderLib(data) {
     : "Static published library; your enable/disable choices are saved only in this browser.";
   $("libStatus").textContent = "Loaded " + nD + " defs (" + eD + " enabled) + " + nU + " units (" + eU + " enabled). " + sourceMessage + " Enabled files flow into the packer automatically.";
   window._lib = data;
-  renderLibGroup($("libDefs"), "defs", data.defs);
-  renderLibGroup($("libUnits"), "units", data.units);
   syncLibToPacker();
+  if (libraryRendered) renderLibrary();
+}
+
+function renderLibrary() {
+  if (!window._lib) return;
+  libraryRendered = true;
+  renderLibGroup($("libDefs"), "defs", window._lib.defs);
+  renderLibGroup($("libUnits"), "units", window._lib.units);
 }
 
 function renderLibGroup(el, kind, files) {
-  el.innerHTML = "";
+  var fragment = document.createDocumentFragment();
+  var fileIndexes = Object.create(null);
+  files.forEach(function (file, index) { fileIndexes[file.name] = index; });
   if (!files.length) {
     var none = document.createElement("div");
     none.className = "slot empty";
     none.textContent = "(no .lua files yet)";
-    el.appendChild(none);
+    fragment.appendChild(none); el.replaceChildren(fragment);
     return;
   }
   var query = ($("libSearch") ? $("libSearch").value : "").toLowerCase();
@@ -64,7 +102,7 @@ function renderLibGroup(el, kind, files) {
   if (!filtered.length) {
     var none = document.createElement("div"); none.className = "slot empty";
     none.textContent = files.length ? "No filenames match your search." : "No .lua files yet.";
-    el.appendChild(none); return;
+    fragment.appendChild(none); el.replaceChildren(fragment); return;
   }
   var groups = {};
   filtered.forEach(function (f) {
@@ -73,18 +111,18 @@ function renderLibGroup(el, kind, files) {
     groups[folder].push(f);
   });
   var names = Object.keys(groups).sort(function (a, b) { if (!a) return -1; if (!b) return 1; return a.toLowerCase().localeCompare(b.toLowerCase()); });
-  names.forEach(function (folder, groupIndex) {
+  names.forEach(function (folder) {
     var groupFiles = groups[folder].sort(function (a, b) { return a.name.toLowerCase().localeCompare(b.name.toLowerCase()); });
     var enabled = groupFiles.filter(function (f) { return f.enabled; }).length;
     var details = document.createElement("details"); details.className = "library-group"; details.open = true;
     var summary = document.createElement("summary"); summary.textContent = (folder || "Root") + " — " + enabled + "/" + groupFiles.length + " enabled";
-    var actions = document.createElement("span"); actions.className = "library-group-actions";
+    var actions = document.createElement("div"); actions.className = "library-group-actions";
     [true, false].forEach(function (enable) {
       var action = document.createElement("button"); action.type = "button"; action.textContent = enable ? "Enable group" : "Disable group";
-      action.onclick = function (event) { event.preventDefault(); event.stopPropagation(); LibraryApi.toggleAll(groupFiles.map(function (f) { return { kind: kind, name: f.name }; }), enable).then(libFetch, function () { toast("Group toggle failed."); libFetch(); }); };
+      action.onclick = function () { toggleLibraryFiles(groupFiles.map(function (f) { return { kind: kind, name: f.name }; }), enable).then(libFetch, function () { toast("Group toggle failed."); libFetch(); }); };
       actions.appendChild(action);
     });
-    summary.appendChild(actions); details.appendChild(summary);
+    details.appendChild(summary); details.appendChild(actions);
     groupFiles.forEach(function (f) {
     var div = document.createElement("div");
     div.className = "slot" + (f.enabled ? "" : " empty");
@@ -94,23 +132,21 @@ function renderLibGroup(el, kind, files) {
     cb.type = "checkbox";
     cb.checked = !!f.enabled;
     cb.title = "Enable or disable " + f.name + " (file is kept)";
-    cb.setAttribute("aria-label", "Enable " + f.name);
+    var checkboxLabel = document.createElement("label");
+    checkboxLabel.className = "library-file-toggle";
+    checkboxLabel.appendChild(cb);
     cb.onchange = function () {
-      LibraryApi.toggle(kind, f.name, cb.checked).then(function (r) {
+      toggleLibraryFile(kind, f.name, cb.checked).then(function (r) {
         if (!r || !r.ok) throw new Error("Toggle failed");
         libFetch();
       }, function () { toast("Toggle failed; browser storage may be unavailable."); });
     };
-    head.onclick = function (event) {
-      if (event.target === cb || event.target.tagName === "BUTTON" || event.target.tagName === "INPUT") return;
-      cb.checked = !cb.checked;
-      if (typeof Event === "function") cb.dispatchEvent(new Event("change", { bubbles: true }));
-    };
     var nm = document.createElement("span");
     nm.className = "name";
-    nm.textContent = " " + f.name;
-    left.appendChild(cb);
-    left.appendChild(nm);
+    nm.textContent = f.name;
+    checkboxLabel.appendChild(nm);
+    checkboxLabel.setAttribute("aria-label", (f.enabled ? "Disable " : "Enable ") + f.name);
+    left.appendChild(checkboxLabel);
     var st = document.createElement("span");
     st.className = "stats";
     st.textContent = f.chars + " chars";
@@ -124,23 +160,21 @@ function renderLibGroup(el, kind, files) {
      pv.setAttribute("aria-expanded", "false");
      var pre = document.createElement("pre");
      pre.className = "mono output";
-      pre.id = "lib-preview-" + kind + "-" + files.indexOf(f);
+      pre.id = "lib-preview-" + kind + "-" + fileIndexes[f.name];
       pv.setAttribute("aria-controls", pre.id);
-     pre.style.display = "none";
+     pre.hidden = true;
      // Keep large library scripts out of the DOM until the user asks to see
      // them. This avoids creating hundreds of thousands of text nodes on load.
      pv.onclick = function () {
-       var opening = pre.style.display === "none";
+       var opening = pre.hidden;
        if (opening) {
           pre.textContent = f.content;
           pre.hidden = false;
-         pre.style.display = "block";
         pv.textContent = "Hide script";
         pv.setAttribute("aria-expanded", "true");
        } else {
           pre.textContent = "";
-          pre.hidden = true;
-         pre.style.display = "none";
+         pre.hidden = true;
         pv.textContent = "Preview";
         pv.setAttribute("aria-expanded", "false");
        }
@@ -158,8 +192,9 @@ function renderLibGroup(el, kind, files) {
       bulk.appendChild(button);
     });
     details.appendChild(bulk);
-    el.appendChild(details);
+    fragment.appendChild(details);
   });
+  el.replaceChildren(fragment);
 }
 
 function syncLibToPacker() {
@@ -183,7 +218,7 @@ function setAllLib(enabled, onlyKind) {
   if (!onlyKind || onlyKind === "defs") data.defs.forEach(function (f) { files.push({ kind: "defs", name: f.name }); });
   if (!onlyKind || onlyKind === "units") data.units.forEach(function (f) { files.push({ kind: "units", name: f.name }); });
   if (!files.length) { toast("No library files."); return; }
-  LibraryApi.toggleAll(files, enabled).then(function () { libFetch(); }, function () { toast("Bulk toggle failed \u2014 is the server running?"); libFetch(); });
+  toggleLibraryFiles(files, enabled).then(function () { libFetch(); }, function () { toast("Bulk toggle failed \u2014 is the server running?"); libFetch(); });
 }
 $("libReload").onclick = libFetch;
 $("defsLibReload").onclick = libFetch;
@@ -191,10 +226,9 @@ $("unitsLibReload").onclick = libFetch;
 $("libEnableAll").onclick = function () { setAllLib(true); };
 $("libDisableAll").onclick = function () { setAllLib(false); };
 $("libDefs").setAttribute("data-kind", "defs"); $("libUnits").setAttribute("data-kind", "units");
-$("libSearch").oninput = function () { if (window._lib) { renderLibGroup($("libDefs"), "defs", window._lib.defs); renderLibGroup($("libUnits"), "units", window._lib.units); } };
-$("libSearchClear").onclick = function () { $("libSearch").value = ""; $("libSearch").focus(); $("libSearch").oninput(); };
+$("libSearch").oninput = function () { clearTimeout(librarySearchTimer); librarySearchTimer = setTimeout(function () { if (libraryRendered) renderLibrary(); }, 180); };
+$("libSearchClear").onclick = function () { $("libSearch").value = ""; clearTimeout(librarySearchTimer); if (libraryRendered) renderLibrary(); $("libSearch").focus(); };
 $("libDefs").setAttribute("data-kind", "defs"); $("libUnits").setAttribute("data-kind", "units");
-libFetch();
 var libVersion = null;
 function watchLibrary() {
   if (!LibraryApi.isServerMode()) return;
@@ -203,6 +237,7 @@ function watchLibrary() {
     libVersion = data.version;
   }).catch(function () {}).finally(function () { setTimeout(watchLibrary, 2000); });
 }
+libFetch();
 watchLibrary();
 
 function useUrlSafe() {
@@ -668,6 +703,7 @@ function activateTab(btn, moveFocus) {
   btn.classList.add("active"); btn.setAttribute("aria-selected", "true"); btn.setAttribute("tabindex", "0");
   var panel = $("panel-" + btn.dataset.tab); panel.classList.add("active"); panel.hidden = false;
   if (moveFocus) btn.focus();
+  if (btn.dataset.tab === "library") renderLibrary();
 }
 document.querySelectorAll(".tab").forEach(function (btn) {
   btn.onclick = function () { activateTab(btn, false); };
