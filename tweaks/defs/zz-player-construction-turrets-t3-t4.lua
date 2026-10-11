@@ -171,9 +171,10 @@ do
 		local legendaryName = faction.prefix .. "nanotct4"
 		if U[turretName] then
 			ensureOption(turretName, turretName)
-			for _, optionName in ipairs(sharedBuildOptions) do
-				ensureOption(turretName, optionName)
-			end
+				for _, optionName in ipairs(sharedBuildOptions) do
+					ensureOption(turretName, optionName)
+					ensureOption(legendaryName, optionName)
+				end
 			for _, optionName in ipairs(factionDefenseOptions[faction.prefix]) do
 				ensureOption(turretName, optionName)
 				ensureOption(legendaryName, optionName)
