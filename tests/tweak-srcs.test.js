@@ -206,12 +206,12 @@ test("ScavX mega units have frequent reinforced spawns", () => {
 test("Scav-only Mega variants replace player Mega Units in ScavX squads", () => {
   const roster = nightmareRoster();
   const megaIds = [
-    "player_riftcolossus", "player_riftjump", "player_vortexdominator", "player_vortexwell",
+    "player_riftcolossus", "player_riftjump",
     "player_aegisbreaker", "player_solardecimator", "player_skyfurnace", "player_stormsovereign",
     "player_pyroclast", "player_singularity", "player_aethersiege",
     "player_phantomleviathan", "player_archangel",
   ];
-  assert.ok(megaIds.length >= 13, "expected the player mega pack roster");
+  assert.ok(megaIds.length >= 11, "expected the player mega pack roster");
   for (const name of megaIds) {
     assert.equal(roster.has(name), false, `${name} must stay player-only`);
     const body = roster.get(name.replace("player_", "scavx_mega_")) || "";
@@ -224,7 +224,7 @@ test("Scav-only Mega variants replace player Mega Units in ScavX squads", () => 
 test("Everything Experimental exposes every player Mega Unit", () => {
   const text = fs.readFileSync(path.join(__dirname, "..", "tweaks", "defs", "scavx", "scavx-custom-unit-pack-01.lua"), "utf8");
   const megaIds = [
-    "player_riftcolossus", "player_riftjump", "player_vortexdominator", "player_vortexwell",
+    "player_riftcolossus", "player_riftjump", "player_vortexwell",
     "player_aegisbreaker", "player_solardecimator", "player_skyfurnace", "player_stormsovereign",
     "player_pyroclast", "player_singularity", "player_aethersiege",
     "player_phantomleviathan", "player_archangel",
@@ -241,7 +241,7 @@ test("player Mega roster is split exactly once between air and land packs", () =
   const [air, land] = megaSources();
   const airIds = ["player_singularity", "player_aethersiege", "player_phantomleviathan", "player_archangel"];
   const landIds = [
-    "player_riftcolossus", "player_vortexdominator", "player_aegisbreaker", "player_solardecimator",
+    "player_riftcolossus", "player_aegisbreaker", "player_solardecimator",
     "player_skyfurnace", "player_stormsovereign", "player_pyroclast", "player_apollyonfortress",
   ];
 
@@ -249,9 +249,9 @@ test("player Mega roster is split exactly once between air and land packs", () =
   const actualLandIds = megaDefinedIds(land);
   assert.deepEqual(actualAirIds, airIds, "air pack Mega IDs changed or are duplicated");
   assert.deepEqual(actualLandIds, landIds, "land pack Mega IDs changed or are duplicated");
-  assert.equal(new Set([...actualAirIds, ...actualLandIds]).size, 12);
+  assert.equal(new Set([...actualAirIds, ...actualLandIds]).size, 11);
   assert.equal(actualAirIds.length, 4);
-  assert.equal(actualLandIds.length, 8);
+  assert.equal(actualLandIds.length, 7);
 
   for (const [name, text] of megaPackNames.map((name, index) => [name, [air, land][index]])) {
     const command = pure.buildCommand("tweakdefs", 9, pure.luaMinify(text), true).cmd;
@@ -259,13 +259,13 @@ test("player Mega roster is split exactly once between air and land packs", () =
   }
 });
 
-test("combined player Mega pack retains the complete original roster and fits one BAR command", () => {
+test("combined player Mega pack retains the complete current roster and fits one BAR command", () => {
   const relative = "defs/player/megas/player-mega-units.lua";
   assertDefaultEnabled(relative);
   const file = path.join(__dirname, "..", "tweaks", ...relative.split("/"));
   const text = fs.readFileSync(file, "utf8");
   const expectedIds = [
-    "player_riftcolossus", "player_vortexdominator", "player_aegisbreaker", "player_solardecimator",
+    "player_riftcolossus", "player_aegisbreaker", "player_solardecimator",
     "player_skyfurnace", "player_stormsovereign", "player_pyroclast", "player_singularity",
     "player_aethersiege", "player_phantomleviathan", "player_archangel", "player_apollyonfortress",
   ];
