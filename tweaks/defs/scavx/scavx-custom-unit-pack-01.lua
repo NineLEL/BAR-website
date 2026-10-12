@@ -245,7 +245,7 @@ do
 			-- Both player-mega-air-pack.lua and player-mega-land-pack.lua precede ScavX consumers, including this clone.
 			-- Add the Mega roster here so Everything Experimental always exposes it.
 			local megaUnits = {
-				"player_riftcolossus", "player_riftjump", "player_vortexdominator", "player_vortexwell",
+				"player_riftcolossus", "player_riftjump", "player_vortexwell",
 				"player_aegisbreaker", "player_solardecimator", "player_skyfurnace", "player_stormsovereign",
 				"player_pyroclast", "player_singularity", "player_aethersiege",
 				"player_phantomleviathan", "player_archangel",

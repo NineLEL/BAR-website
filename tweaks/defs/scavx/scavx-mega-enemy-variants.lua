@@ -12,8 +12,6 @@ do
   local specs = {
     { "scavx_mega_riftcolossus", "player_riftcolossus", "Scav Rift Colossus" },
     { "scavx_mega_riftjump", "player_riftcolossus", "Scav Rift Jumper" },
-    { "scavx_mega_vortexdominator", "player_vortexdominator", "Scav Vortex Dominator" },
-    { "scavx_mega_vortexwell", "player_vortexdominator", "Scav Vortex Well" },
     { "scavx_mega_aegisbreaker", "player_aegisbreaker", "Scav Aegis Breaker" },
     { "scavx_mega_solardecimator", "player_solardecimator", "Scav Solar Decimator" },
     { "scavx_mega_skyfurnace", "player_skyfurnace", "Scav Sky Furnace" },

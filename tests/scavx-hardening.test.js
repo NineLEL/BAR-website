@@ -85,8 +85,8 @@ test("extreme final boss covers current and legacy difficulty variants safely", 
 test("all Scav-only Mega squads spawn three units starting at 20 percent anger", () => {
   const lua = fs.readFileSync(path.join(root, "tweaks/units/scavx/scavx-nightmare-hardmode-roster.lua"), "utf8");
   const expected = {
-    riftcolossus: [20, 900], riftjump: [30, 875], vortexdominator: [20, 900],
-    vortexwell: [25, 850], aegisbreaker: [40, 950], solardecimator: [20, 900],
+    riftcolossus: [20, 900], riftjump: [30, 875],
+    aegisbreaker: [40, 950], solardecimator: [20, 900],
     skyfurnace: [40, 950], stormsovereign: [30, 950], pyroclast: [30, 950],
     singularity: [25, 900], aethersiege: [20, 900],
     phantomleviathan: [25, 1000], archangel: [40, 1000],
@@ -115,8 +115,8 @@ test("enemy Mega definitions have existing sources, isolated weapons and no play
     return [...player.matchAll(/^\s*"(player_\w+)",/gm)].map((m) => m[1]);
   }));
   const specs = [...lua.matchAll(/\{ "(scavx_(?:mega|boss)_\w+)", "(player_\w+)"/g)];
-  assert.equal(specs.length, 16);
-  assert.equal(new Set(specs.map(m => m[1])).size, 16);
+  assert.equal(specs.length, 14);
+  assert.equal(new Set(specs.map(m => m[1])).size, 14);
   for (const [, , source] of specs) assert.ok(defined.has(source), `missing source ${source}`);
   assert.match(lua, /local u = copy\(source\)/);
   assert.match(lua, /u\.maxthisunit, u\.buildoptions, u\.builder = nil, nil, false/);
