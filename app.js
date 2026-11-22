@@ -28,12 +28,14 @@ function libFetch() {
   var request = ++libraryRequest;
   var st = $("libStatus");
   st.textContent = "Loading tweak library…";
+  st.className = "status-banner is-loading";
   LibraryApi.fetchLibrary().then(function (data) {
     if (request !== libraryRequest) return;
     renderLib(data);
   }).catch(function () {
     if (request !== libraryRequest) return;
     st.textContent = "Library unavailable. Run node server.js locally, or reload the published site. Manual snippets keep working.";
+    st.className = "status-banner is-error";
     if (!libraryRendered && !window._lib) {
       $("libDefs").textContent = "";
       $("libUnits").textContent = "";
@@ -73,7 +75,9 @@ function renderLib(data) {
   var sourceMessage = LibraryApi.isServerMode()
     ? "Loaded from the local server; file changes reload automatically."
     : "Static published library; your enable/disable choices are saved only in this browser.";
-  $("libStatus").textContent = "Loaded " + nD + " defs (" + eD + " enabled) + " + nU + " units (" + eU + " enabled). " + sourceMessage + " Enabled files flow into the packer automatically.";
+  var st = $("libStatus");
+  st.textContent = "Loaded " + nD + " defs (" + eD + " enabled) + " + nU + " units (" + eU + " enabled). " + sourceMessage + " Enabled files flow into the packer automatically.";
+  st.className = "status-banner is-ready";
   window._lib = data;
   syncLibToPacker();
   if (libraryRendered) renderLibrary();
@@ -115,7 +119,15 @@ function renderLibGroup(el, kind, files) {
     var groupFiles = groups[folder].sort(function (a, b) { return a.name.toLowerCase().localeCompare(b.name.toLowerCase()); });
     var enabled = groupFiles.filter(function (f) { return f.enabled; }).length;
     var details = document.createElement("details"); details.className = "library-group"; details.open = true;
-    var summary = document.createElement("summary"); summary.textContent = (folder || "Root") + " — " + enabled + "/" + groupFiles.length + " enabled";
+    var summary = document.createElement("summary");
+    var summaryTitle = document.createElement("span");
+    summaryTitle.className = "library-group-title";
+    summaryTitle.textContent = folder || "Root";
+    var summaryCount = document.createElement("span");
+    summaryCount.className = "library-group-count";
+    summaryCount.textContent = enabled + "/" + groupFiles.length + " enabled";
+    summary.appendChild(summaryTitle);
+    summary.appendChild(summaryCount);
     var actions = document.createElement("div"); actions.className = "library-group-actions";
     [true, false].forEach(function (enable) {
       var action = document.createElement("button"); action.type = "button"; action.textContent = enable ? "Enable group" : "Disable group";
@@ -156,6 +168,7 @@ function renderLibGroup(el, kind, files) {
     var row = document.createElement("div");
     row.className = "row";
     var pv = document.createElement("button");
+     pv.type = "button";
      pv.textContent = "Preview";
      pv.setAttribute("aria-expanded", "false");
      var pre = document.createElement("pre");
@@ -276,15 +289,17 @@ function renderInputs(g) {
     lock.className = "snippet locked";
     var lh = document.createElement("header");
     var ll = document.createElement("span");
+    ll.className = "snippet-title";
     ll.textContent = f.name + " (server, " + f.text.length + " chars)";
     ll.id = "server-script-label-" + g.kind + "-" + g.inputsEl.children.length;
     lh.appendChild(ll);
-     var lt = document.createElement("textarea");
+    var lt = document.createElement("textarea");
     lt.value = f.text;
     lt.readOnly = true;
     lt.title = "Managed server-side in " + f.name;
-     var lhbtn = document.createElement("button");
-     lhbtn.textContent = "Hide script";
+    var lhbtn = document.createElement("button");
+    lhbtn.type = "button";
+    lhbtn.textContent = "Hide script";
      lhbtn.setAttribute("aria-expanded", "true");
      lhbtn.setAttribute("aria-controls", "server-script-" + g.kind + "-" + g.inputsEl.children.length);
     lt.id = "server-script-" + g.kind + "-" + g.inputsEl.children.length;
@@ -305,9 +320,14 @@ function renderInputs(g) {
     box.className = "snippet";
     var head = document.createElement("header");
     var lab = document.createElement("span");
+    lab.className = "snippet-title";
     lab.textContent = "Snippet " + (i + 1);
     lab.id = "manual-script-label-" + g.kind + "-" + i;
-     var del = document.createElement("button");
+    var controls = document.createElement("div");
+    controls.className = "snippet-controls";
+    var del = document.createElement("button");
+    del.type = "button";
+    del.className = "danger-ghost";
     del.textContent = "Remove";
     del.onclick = function () {
       g.snippets.splice(i, 1);
@@ -315,23 +335,27 @@ function renderInputs(g) {
       g.packed = null; g.packedNames = null;
       g.packNotice = null;
       renderAll();
-     };
-     var ta = document.createElement("textarea");
+    };
+    var ta = document.createElement("textarea");
     ta.value = text;
     ta.placeholder = exampleText(g.kind);
-     ta.oninput = function () { g.snippets[i] = ta.value; g.packed = null; g.packedNames = null; g.packNotice = null; renderSlots(g); };
-     var hide = document.createElement("button");
-     hide.textContent = "Hide script";
+    ta.oninput = function () { g.snippets[i] = ta.value; g.packed = null; g.packedNames = null; g.packNotice = null; renderSlots(g); };
+    var hide = document.createElement("button");
+    hide.type = "button";
+    hide.textContent = "Hide script";
     hide.setAttribute("aria-expanded", "true"); hide.setAttribute("aria-controls", "manual-script-" + g.kind + "-" + i); ta.id = "manual-script-" + g.kind + "-" + i;
     ta.setAttribute("aria-labelledby", lab.id);
-     hide.onclick = function () {
-       var hidden = ta.style.display === "none";
-        ta.style.display = hidden ? "block" : "none";
-        ta.hidden = !hidden;
-        hide.setAttribute("aria-expanded", hidden ? "true" : "false");
-       hide.textContent = hidden ? "Hide script" : "Show script";
-     };
-     head.appendChild(lab); head.appendChild(hide); head.appendChild(del);
+    hide.onclick = function () {
+      var hidden = ta.style.display === "none";
+      ta.style.display = hidden ? "block" : "none";
+      ta.hidden = !hidden;
+      hide.setAttribute("aria-expanded", hidden ? "true" : "false");
+      hide.textContent = hidden ? "Hide script" : "Show script";
+    };
+    controls.appendChild(hide);
+    controls.appendChild(del);
+    head.appendChild(lab);
+    head.appendChild(controls);
     box.appendChild(head); box.appendChild(ta);
     g.inputsEl.appendChild(box);
   });
@@ -349,11 +373,14 @@ function slotSources(g) {
 function renderSlots(g) {
   var limit = getLimit();
   var srcs = slotSources(g);
+  var usedCount = 0;
+  var overCount = 0;
   g.slotsEl.innerHTML = "";
   for (var idx = 0; idx < MAX_SLOTS; idx++) {
     var raw = srcs[idx] || "";
     var div = document.createElement("div");
     var has = raw.trim() !== "";
+    if (has) usedCount++;
     div.className = "slot" + (has ? "" : " empty");
     var head = document.createElement("header");
     var nm = document.createElement("span");
@@ -383,12 +410,17 @@ function renderSlots(g) {
         b64 = r.b64; cmd = r.cmd;
       } catch (e) { err = String(e); }
       if (err) {
+        overCount++;
         st.textContent = "Lua input error: " + err;
+        st.className = "stats bad";
         div.classList.add("over");
       } else {
         var total = cmd.length;
         var over = total > limit;
-        if (over) div.classList.add("over");
+        if (over) {
+          overCount++;
+          div.classList.add("over");
+        }
         st.innerHTML = "";
         var parts = [
           "raw " + raw.length,
@@ -397,7 +429,15 @@ function renderSlots(g) {
           "cmd " + total + "/" + limit
         ];
         st.textContent = parts.join(" · ") + (over ? " — OVER LIMIT" : " — OK");
-         st.className = "stats " + (over ? "bad" : "good");
+        st.className = "stats " + (over ? "bad" : "good");
+        var meter = document.createElement("div");
+        meter.className = "slot-meter";
+        meter.setAttribute("aria-hidden", "true");
+        var meterFill = document.createElement("div");
+        meterFill.className = "slot-meter-fill" + (over ? " is-over" : (total / limit >= 0.85 ? " is-warn" : ""));
+        meterFill.style.width = Math.min(100, Math.round((total / limit) * 1000) / 10) + "%";
+        meter.appendChild(meterFill);
+        div.appendChild(meter);
         if (over) {
           var alert = document.createElement("div");
           alert.className = "limit-alert";
@@ -412,6 +452,8 @@ function renderSlots(g) {
         var row = document.createElement("div");
         row.className = "row";
         var cp = document.createElement("button");
+        cp.type = "button";
+        cp.className = "slot-copy";
         cp.textContent = "Copy";
         cp.disabled = over;
         cp.title = over ? "Blocked: this command exceeds the lobby limit" : "Copy this command";
@@ -419,6 +461,7 @@ function renderSlots(g) {
            cp.onclick = function () { copyText(c); };
         })(cmd);
         var showCmd = document.createElement("button");
+        showCmd.type = "button";
         showCmd.textContent = "Show command";
         showCmd.setAttribute("aria-expanded", "false"); showCmd.setAttribute("aria-controls", "command-" + g.kind + "-" + idx); pre.id = "command-" + g.kind + "-" + idx;
          showCmd.onclick = (function (command, output, button) {
@@ -441,6 +484,7 @@ function renderSlots(g) {
          })(cmd, pre, showCmd);
         row.appendChild(showCmd);
         var pv = document.createElement("button");
+        pv.type = "button";
         pv.textContent = "Show minified";
         pv.setAttribute("aria-expanded", "false"); pv.setAttribute("aria-controls", "minified-" + g.kind + "-" + idx);
         var prev2 = document.createElement("pre");
@@ -471,6 +515,14 @@ function renderSlots(g) {
       }
     }
     g.slotsEl.appendChild(div);
+  }
+  var summaryEl = $(g.kind === "tweakdefs" ? "defsSlotSummary" : "unitsSlotSummary");
+  if (summaryEl) {
+    var summaryText = usedCount + "/" + MAX_SLOTS + " active";
+    if (g.packed) summaryText += " · packed";
+    if (overCount) summaryText += " · " + overCount + " over limit";
+    summaryEl.textContent = summaryText;
+    summaryEl.className = "section-pill" + (overCount ? " is-danger" : (usedCount ? " is-active" : ""));
   }
   if (g.packNotice) {
     var notice = document.createElement("div");
@@ -691,9 +743,18 @@ var toastTimer = null;
 function toast(msg) {
   var el = $("toast");
   if (!el) { el = document.createElement("div"); el.id = "toast"; el.className = "toast"; el.setAttribute("role", "status"); el.setAttribute("aria-live", "polite"); document.body.appendChild(el); }
-  el.textContent = msg; el.hidden = false; el.style.display = "block";
+  el.textContent = msg;
+  el.hidden = false;
+  el.style.display = "flex";
+  el.classList.remove("is-visible");
+  void el.offsetWidth;
+  el.classList.add("is-visible");
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(function () { el.style.display = "none"; el.hidden = true; }, 2200);
+  toastTimer = setTimeout(function () {
+    el.classList.remove("is-visible");
+    el.style.display = "none";
+    el.hidden = true;
+  }, 2400);
 }
 
 /* ---------- wiring ---------- */

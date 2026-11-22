@@ -3,122 +3,142 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
 <title>BAR Tweak Packer — tweakdefs &amp; tweakunits</title>
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 <a class="skip-link" href="#main-content">Skip to main content</a>
+
 <header class="topbar">
-  <div class="brand">
-    <span class="logo">BAR</span>
-    <div>
-      <h1>Tweak Packer</h1>
-      <p>Beyond All Reason &mdash; tweakdefs 0&ndash;29 &amp; tweakunits 0&ndash;29 &rarr; minify &rarr; base64 &rarr; <code>!bset</code> commands</p>
+  <div class="topbar-inner">
+    <div class="brand">
+      <span class="logo" aria-hidden="true">BAR</span>
+      <div class="brand-copy">
+        <h1>Tweak Packer</h1>
+        <p>Beyond All Reason &mdash; tweakdefs 0&ndash;29 &amp; tweakunits 0&ndash;29 &rarr; minify &rarr; base64 &rarr; <code>!bset</code> commands</p>
+      </div>
     </div>
-  </div>
-  <div class="limits">
-    <label>Max chars per <code>!bset</code> message
-      <input id="charLimit" type="number" aria-describedby="charLimitHint" value="16384" min="1000" max="65536" step="1">
-    </label>
-      <span id="charLimitHint" class="hint">Teiserver caps messages at 16,384 chars incl. command.</span>
-      <label for="b64url" title="URL-safe alphabet (-_ instead of +/, no padding). BAR decodes tweaks with its standard decoder, so URL-safe payloads may be rejected in-game.">Base64URL output [advanced]
-        <input id="b64url" type="checkbox" checked>
+
+    <div class="limits" role="region" aria-label="Output settings">
+      <div class="limit-field">
+        <label class="limit-label" for="charLimit">
+          <span>Max chars per <code>!bset</code> message</span>
+          <input id="charLimit" type="number" aria-describedby="charLimitHint" value="16384" min="1000" max="65536" step="1">
+        </label>
+        <span id="charLimitHint" class="hint">Teiserver caps messages at 16,384 chars incl. command.</span>
+      </div>
+      <div class="limit-divider" aria-hidden="true"></div>
+      <label class="limit-toggle" for="b64url" title="URL-safe alphabet (-_ instead of +/, no padding). BAR decodes tweaks with its standard decoder, so URL-safe payloads may be rejected in-game.">
+        <input id="b64url" type="checkbox" checked aria-label="Base64URL output (advanced)">
+        <span>Base64URL output <span class="badge-tag">advanced</span></span>
       </label>
+    </div>
   </div>
 </header>
 
 <main id="main-content" tabindex="-1">
-  <section class="howto card">
+  <section class="howto card" aria-label="Quick start guide">
     <details class="howto-details">
-    <summary class="howto-heading">
-      <div>
-        <span class="howto-kicker">Quick start</span>
-        <h2>Build and send your tweaks</h2>
-      </div>
-      <span class="howto-summary-copy">Add Lua, review slots, then copy commands to BAR chat <span aria-hidden="true">· Expand guide</span></span>
-    </summary>
-    <ol class="howto-steps">
-      <li>
-        <span class="step-number" aria-hidden="true">01</span>
-        <div class="howto-step-copy">
-          <h3>Load a library <span class="step-optional">Optional</span></h3>
+      <summary class="howto-heading">
+        <div class="howto-title-block">
+          <span class="howto-kicker">Quick start</span>
+          <h2>Build and send your tweaks</h2>
+        </div>
+        <div class="howto-summary-meta">
+          <span class="howto-summary-copy">Add Lua, review slots, then copy commands to BAR chat <span aria-hidden="true">&middot; Expand guide</span></span>
+          <span class="howto-chevron" aria-hidden="true"></span>
+        </div>
+      </summary>
+      <ol class="howto-steps">
+        <li>
+          <span class="step-number" aria-hidden="true">01</span>
+          <div class="howto-step-copy">
+            <h3>Load a library <span class="step-optional">Optional</span></h3>
             <p>On the hosted site, choose files from the published library; your enable/disable choices are saved in this browser. For local library editing, run <code>node server.js</code>, add <code>.lua</code> files to <code>tweaks/defs</code> or <code>tweaks/units</code>, then pick them in the library tab.</p>
-        </div>
-      </li>
-      <li>
-        <span class="step-number" aria-hidden="true">02</span>
-        <div class="howto-step-copy">
-          <h3>Add your Lua</h3>
-          <p>Use <strong>tweakdefs</strong> for runnable Lua (with <code>UnitDefs</code> in scope), or <strong>tweakunits</strong> for a Lua unit table. Library files work too.</p>
-        </div>
-      </li>
-      <li>
-        <span class="step-number" aria-hidden="true">03</span>
-        <div class="howto-step-copy">
-          <h3>Check your slots</h3>
-          <p>Your tweaks are minified and encoded for you. A slot turns red if its command is over the character limit.</p>
-        </div>
-      </li>
-      <li>
-        <span class="step-number" aria-hidden="true">04</span>
-        <div class="howto-step-copy">
-          <h3>Pack when ready</h3>
-          <p><strong>Auto-pack</strong> combines snippets in source order into as few slots as possible without exceeding the limit. Unterminated literals/comments or unsafe tweakunits tables stop the pack without partial output.</p>
-        </div>
-      </li>
-      <li>
-        <span class="step-number" aria-hidden="true">05</span>
-        <div class="howto-step-copy">
-          <h3>Copy &amp; send</h3>
-          <p>Copy a slot or all commands, then paste each command into BAR lobby chat.</p>
-        </div>
-      </li>
-      <li>
-        <span class="step-number" aria-hidden="true">06</span>
-        <div class="howto-step-copy">
-          <h3>Reset whenever</h3>
-          <p>Use <strong>Copy reset all</strong> and paste the commands into chat to clear all tweakdefs and tweakunits slots.</p>
-        </div>
-      </li>
-    </ol>
+          </div>
+        </li>
+        <li>
+          <span class="step-number" aria-hidden="true">02</span>
+          <div class="howto-step-copy">
+            <h3>Add your Lua</h3>
+            <p>Use <strong>tweakdefs</strong> for runnable Lua (with <code>UnitDefs</code> in scope), or <strong>tweakunits</strong> for a Lua unit table. Library files work too.</p>
+          </div>
+        </li>
+        <li>
+          <span class="step-number" aria-hidden="true">03</span>
+          <div class="howto-step-copy">
+            <h3>Check your slots</h3>
+            <p>Your tweaks are minified and encoded for you. A slot turns red if its command is over the character limit.</p>
+          </div>
+        </li>
+        <li>
+          <span class="step-number" aria-hidden="true">04</span>
+          <div class="howto-step-copy">
+            <h3>Pack when ready</h3>
+            <p><strong>Auto-pack</strong> combines snippets in source order into as few slots as possible without exceeding the limit. Unterminated literals/comments or unsafe tweakunits tables stop the pack without partial output.</p>
+          </div>
+        </li>
+        <li>
+          <span class="step-number" aria-hidden="true">05</span>
+          <div class="howto-step-copy">
+            <h3>Copy &amp; send</h3>
+            <p>Copy a slot or all commands, then paste each command into BAR lobby chat.</p>
+          </div>
+        </li>
+        <li>
+          <span class="step-number" aria-hidden="true">06</span>
+          <div class="howto-step-copy">
+            <h3>Reset whenever</h3>
+            <p>Use <strong>Copy reset commands</strong> and paste the commands into chat to clear all tweakdefs and tweakunits slots.</p>
+          </div>
+        </li>
+      </ol>
     </details>
   </section>
 
-  <nav class="tabs" role="tablist" aria-label="Tweak tools">
-    <button id="tab-defs" class="tab active" role="tab" aria-selected="true" aria-controls="panel-defs" tabindex="0" data-tab="defs">tweakdefs (code)</button>
-    <button id="tab-units" class="tab" role="tab" aria-selected="false" aria-controls="panel-units" tabindex="-1" data-tab="units">tweakunits (tables)</button>
-    <button id="tab-library" class="tab" role="tab" aria-selected="false" aria-controls="panel-library" tabindex="-1" data-tab="library">tweak library</button>
-    <button id="tab-decode" class="tab" role="tab" aria-selected="false" aria-controls="panel-decode" tabindex="-1" data-tab="decode">decode / inspect</button>
-    <button id="tab-utilities" class="tab" role="tab" aria-selected="false" aria-controls="panel-utilities" tabindex="-1" data-tab="utilities">utilities</button>
-  </nav>
+  <div class="workspace-bar">
+    <nav class="tabs" role="tablist" aria-label="Tweak tools">
+      <button id="tab-defs" class="tab active" role="tab" aria-selected="true" aria-controls="panel-defs" tabindex="0" data-tab="defs">tweakdefs <span class="tab-sub">code</span></button>
+      <button id="tab-units" class="tab" role="tab" aria-selected="false" aria-controls="panel-units" tabindex="-1" data-tab="units">tweakunits <span class="tab-sub">tables</span></button>
+      <button id="tab-library" class="tab" role="tab" aria-selected="false" aria-controls="panel-library" tabindex="-1" data-tab="library">tweak library</button>
+      <button id="tab-decode" class="tab" role="tab" aria-selected="false" aria-controls="panel-decode" tabindex="-1" data-tab="decode">decode / inspect</button>
+      <button id="tab-utilities" class="tab" role="tab" aria-selected="false" aria-controls="panel-utilities" tabindex="-1" data-tab="utilities">utilities</button>
+    </nav>
 
-  <div class="toolbar" role="toolbar" aria-label="Global actions">
-      <button id="resetAll">Copy reset commands (60 slots)</button>
+    <div class="toolbar global-toolbar" role="toolbar" aria-label="Global actions">
+      <button id="resetAll" type="button" class="btn-subtle">Copy reset commands (60 slots)</button>
+    </div>
   </div>
 
   <section id="panel-defs" class="panel active" role="tabpanel" aria-labelledby="tab-defs" tabindex="0">
     <div class="workflow-actions" aria-label="Tweakdefs actions">
       <div class="action-group" role="group" aria-labelledby="defs-edit-label">
         <h2 id="defs-edit-label" class="action-label">Edit</h2>
-        <button id="defsAdd">+ Add snippet</button>
+        <button id="defsAdd" type="button">+ Add snippet</button>
       </div>
       <div class="action-group" role="group" aria-labelledby="defs-pack-label">
         <h2 id="defs-pack-label" class="action-label">Pack</h2>
-        <button id="defsPack" class="primary">Auto-pack snippets</button>
+        <button id="defsPack" type="button" class="primary">Auto-pack snippets</button>
       </div>
       <div class="action-group action-group-copy" role="group" aria-labelledby="defs-copy-label">
         <h2 id="defs-copy-label" class="action-label">Copy</h2>
-        <button id="defsCopyAll" class="copy-primary">Copy all commands</button>
-        <button id="defsCopyCombined">Copy all combined</button>
+        <button id="defsCopyAll" type="button" class="copy-primary">Copy all commands</button>
+        <button id="defsCopyCombined" type="button">Copy all combined</button>
       </div>
       <div class="action-group action-group-manage" role="group" aria-labelledby="defs-manage-label">
         <h2 id="defs-manage-label" class="action-label">Manage</h2>
-          <button id="defsLibReload">Reload library</button>
-        <button id="defsClear">Clear all</button>
+        <button id="defsLibReload" type="button">Reload library</button>
+        <button id="defsClear" type="button" class="danger-ghost">Clear all</button>
       </div>
     </div>
+
     <div id="defsInputs" class="inputs"></div>
-    <h2>Slots &mdash; <code>!bset tweakdefs</code> &hellip; <code>!bset tweakdefs29</code></h2>
+
+    <div class="section-header">
+      <h2>Slots &mdash; <code>!bset tweakdefs</code> &hellip; <code>!bset tweakdefs29</code></h2>
+      <span id="defsSlotSummary" class="section-pill" aria-live="polite"></span>
+    </div>
     <div id="defsSlots" class="slots"></div>
   </section>
 
@@ -126,107 +146,142 @@
     <div class="workflow-actions" aria-label="Tweakunits actions">
       <div class="action-group" role="group" aria-labelledby="units-edit-label">
         <h2 id="units-edit-label" class="action-label">Edit</h2>
-        <button id="unitsAdd">+ Add snippet</button>
+        <button id="unitsAdd" type="button">+ Add snippet</button>
       </div>
       <div class="action-group" role="group" aria-labelledby="units-pack-label">
         <h2 id="units-pack-label" class="action-label">Pack</h2>
-        <button id="unitsPack" class="primary">Auto-pack snippets</button>
+        <button id="unitsPack" type="button" class="primary">Auto-pack snippets</button>
       </div>
       <div class="action-group action-group-copy" role="group" aria-labelledby="units-copy-label">
         <h2 id="units-copy-label" class="action-label">Copy</h2>
-        <button id="unitsCopyAll" class="copy-primary">Copy all commands</button>
-        <button id="unitsCopyCombined">Copy all combined</button>
+        <button id="unitsCopyAll" type="button" class="copy-primary">Copy all commands</button>
+        <button id="unitsCopyCombined" type="button">Copy all combined</button>
       </div>
       <div class="action-group action-group-manage" role="group" aria-labelledby="units-manage-label">
         <h2 id="units-manage-label" class="action-label">Manage</h2>
-          <button id="unitsLibReload">Reload library</button>
-        <button id="unitsClear">Clear all</button>
+        <button id="unitsLibReload" type="button">Reload library</button>
+        <button id="unitsClear" type="button" class="danger-ghost">Clear all</button>
       </div>
     </div>
+
     <div id="unitsInputs" class="inputs"></div>
-    <h2>Slots &mdash; <code>!bset tweakunits</code> &hellip; <code>!bset tweakunits29</code></h2>
+
+    <div class="section-header">
+      <h2>Slots &mdash; <code>!bset tweakunits</code> &hellip; <code>!bset tweakunits29</code></h2>
+      <span id="unitsSlotSummary" class="section-pill" aria-live="polite"></span>
+    </div>
     <div id="unitsSlots" class="slots"></div>
   </section>
 
   <section id="panel-library" class="panel" role="tabpanel" aria-labelledby="tab-library" tabindex="0" hidden>
-    <h2>Tweak library</h2>
-    <div id="libStatus" class="card" role="status" aria-live="polite" aria-atomic="true"><p>Loading tweak library&hellip;</p></div>
-    <label class="library-search-label" for="libSearch">Search library filenames</label>
-    <div class="library-search"><input id="libSearch" type="search" autocomplete="off" placeholder="Search filenames"><button id="libSearchClear" type="button" aria-label="Clear library search">Clear</button></div>
-    <div class="toolbar">
-      <button id="libReload">Reload library</button>
-      <button id="libEnableAll">Enable all</button>
-      <button id="libDisableAll">Disable all</button>
+    <div class="panel-intro">
+      <h2>Tweak library</h2>
+      <div id="libStatus" class="status-banner" role="status" aria-live="polite" aria-atomic="true">Loading tweak library&hellip;</div>
     </div>
-    <h2>tweakdefs &mdash; <code>tweaks/defs/*.lua</code></h2>
-    <div id="libDefs" class="slots"></div>
-    <h2>tweakunits &mdash; <code>tweaks/units/*.lua</code></h2>
-    <div id="libUnits" class="slots"></div>
+
+    <div class="library-controls">
+      <div class="library-search-wrap">
+        <label class="library-search-label" for="libSearch">Search library filenames</label>
+        <div class="library-search">
+          <input id="libSearch" type="search" autocomplete="off" placeholder="Filter by folder or filename (e.g. raptor, economy, boss)...">
+          <button id="libSearchClear" type="button" aria-label="Clear library search">Clear</button>
+        </div>
+      </div>
+      <div class="toolbar library-toolbar" role="toolbar" aria-label="Library bulk actions">
+        <button id="libReload" type="button">Reload library</button>
+        <button id="libEnableAll" type="button">Enable all</button>
+        <button id="libDisableAll" type="button">Disable all</button>
+      </div>
+    </div>
+
+    <div class="library-section">
+      <div class="section-header">
+        <h2>tweakdefs &mdash; <code>tweaks/defs/*.lua</code></h2>
+      </div>
+      <div id="libDefs" class="slots"></div>
+    </div>
+
+    <div class="library-section">
+      <div class="section-header">
+        <h2>tweakunits &mdash; <code>tweaks/units/*.lua</code></h2>
+      </div>
+      <div id="libUnits" class="slots"></div>
+    </div>
   </section>
 
   <section id="panel-decode" class="panel" role="tabpanel" aria-labelledby="tab-decode" tabindex="0" hidden>
-    <div class="card">
-      <h2>Decode an existing command</h2>
-      <p>Paste a <code>!bset tweakdefsN ...</code> or <code>!bset tweakunitsN ...</code> command to inspect its Lua payload.</p>
-      <label class="utility-label" for="decodeInput">Command to decode</label>
-      <textarea id="decodeInput" rows="4" placeholder="!bset tweakdefs  Zm9yIG5hbWUsIHVkIGluIHBhaXJzKFVuaXREZWZzKSBkb..."></textarea>
-      <div class="toolbar">
-        <button id="decodeBtn" class="primary">Decode</button>
+    <div class="panel-surface decode-surface">
+      <div class="panel-intro">
+        <h2>Decode an existing command</h2>
+        <p class="panel-lead">Paste a <code>!bset tweakdefsN &hellip;</code> or <code>!bset tweakunitsN &hellip;</code> command to inspect its Lua payload.</p>
       </div>
-      <pre id="decodeOutput" class="mono output">(nothing decoded yet)</pre>
+      <label class="utility-label" for="decodeInput">Command to decode</label>
+      <textarea id="decodeInput" rows="5" placeholder="!bset tweakdefs Zm9yIG5hbWUsIHVkIGluIHBhaXJzKFVuaXREZWZzKSBkb..."></textarea>
+      <div class="toolbar decode-toolbar">
+        <button id="decodeBtn" type="button" class="primary">Decode command</button>
+      </div>
+      <div class="decode-output-wrap">
+        <span class="utility-label">Decoded Lua payload</span>
+        <pre id="decodeOutput" class="mono output">(nothing decoded yet)</pre>
+      </div>
     </div>
   </section>
 
   <section id="panel-utilities" class="panel" role="tabpanel" aria-labelledby="tab-utilities" tabindex="0" hidden>
-    <div class="card utility-card">
-      <h2>Text utilities</h2>
-      <p>Encode or decode Base64, or format Lua. All operations run in your browser.</p>
-      <label class="utility-label" for="utilityInput">Input text (Lua or Base64)</label>
-      <textarea id="utilityInput" class="utility-input" rows="12" placeholder="Paste Lua source to format or Base64 text to decode..."></textarea>
+    <div class="panel-surface utility-card">
+      <div class="panel-intro">
+        <h2>Text utilities</h2>
+        <p class="panel-lead">Encode or decode Base64, or format Lua. All operations run locally in your browser.</p>
+      </div>
 
-      <section class="utility-group" aria-labelledby="utility-base64-heading">
-        <div class="utility-group-heading">
-          <h3 id="utility-base64-heading">Base64</h3>
-          <p>Encode UTF-8 text or decode a Base64 payload.</p>
-        </div>
-        <div class="utility-toolbar">
-          <button id="utilityEncode" class="primary">Encode</button>
-          <button id="utilityDecode">Decode</button>
+      <label class="utility-label" for="utilityInput">Input text (Lua or Base64)</label>
+      <textarea id="utilityInput" class="utility-input" rows="10" placeholder="Paste Lua source to format or Base64 text to decode..."></textarea>
+
+      <div class="utility-groups-grid">
+        <section class="utility-group" aria-labelledby="utility-base64-heading">
+          <div class="utility-group-heading">
+            <h3 id="utility-base64-heading">Base64</h3>
+            <p>Encode UTF-8 text or decode a Base64 payload.</p>
+          </div>
+          <div class="utility-toolbar">
+            <button id="utilityEncode" type="button" class="primary">Encode</button>
+            <button id="utilityDecode" type="button">Decode</button>
+          </div>
           <label class="utility-option" for="utilityUrlSafe">
             <input id="utilityUrlSafe" type="checkbox">
-            URL-safe alphabet (encode only)
+            <span>URL-safe alphabet (encode only)</span>
           </label>
-        </div>
-        <p class="utility-help">URL-safe encoding uses “-” and “_” without padding. It does not change decoding behavior.</p>
-      </section>
+          <p class="utility-help">URL-safe encoding uses &ldquo;-&rdquo; and &ldquo;_&rdquo; without padding. It does not change decoding behavior.</p>
+        </section>
 
-      <section class="utility-group" aria-labelledby="utility-lua-heading">
-        <div class="utility-group-heading">
-          <h3 id="utility-lua-heading">Lua</h3>
-          <p>Minify Lua for compact output or prettify it for editing.</p>
-        </div>
-        <div class="utility-toolbar">
-          <button id="utilityMinify">Minify</button>
-          <button id="utilityPrettify">Prettify</button>
-        <button id="utilityClear">Clear</button>
-        </div>
-      </section>
+        <section class="utility-group" aria-labelledby="utility-lua-heading">
+          <div class="utility-group-heading">
+            <h3 id="utility-lua-heading">Lua</h3>
+            <p>Minify Lua for compact output or prettify it for editing.</p>
+          </div>
+          <div class="utility-toolbar">
+            <button id="utilityMinify" type="button">Minify</button>
+            <button id="utilityPrettify" type="button">Prettify</button>
+            <button id="utilityClear" type="button" class="danger-ghost">Clear</button>
+          </div>
+        </section>
+      </div>
 
       <div class="utility-output-heading">
         <label class="utility-label" for="utilityOutput">Output (read-only)</label>
         <button id="utilityUseOutput" type="button">Use output as input</button>
       </div>
-      <textarea id="utilityOutput" class="utility-input" rows="12" readonly aria-describedby="utility-output-help" placeholder="Output appears here after you choose an operation..."></textarea>
+      <textarea id="utilityOutput" class="utility-input" rows="10" readonly aria-describedby="utility-output-help" placeholder="Output appears here after you choose an operation..."></textarea>
       <div class="utility-output-actions">
         <p id="utility-output-help" class="utility-help">Output is read-only. You can copy it or send it back to the input.</p>
-        <button id="utilityCopy" type="button" disabled>Copy output</button>
+        <button id="utilityCopy" type="button" class="copy-primary" disabled>Copy output</button>
       </div>
       <p id="utilityStatus" class="utility-status" role="status" aria-live="polite" aria-atomic="true"></p>
     </div>
   </section>
 
   <footer>
-    <p>100% client-side &mdash; nothing leaves your browser. tweakdefs slots run as Lua via <code>loadstring</code> after base64-decode; tweakunits tables are deep-merged into <code>UnitDefs</code>. Order: tweakunits first, then tweakdefs, index 0&rarr;29.</p>
+    <p>100% client-side &mdash; nothing leaves your browser. tweakdefs slots run as Lua via <code>loadstring</code> after base64-decode; tweakunits tables are deep-merged into <code>UnitDefs</code>. Execution order: tweakunits first, then tweakdefs, index 0&rarr;29.</p>
   </footer>
 </main>
 
