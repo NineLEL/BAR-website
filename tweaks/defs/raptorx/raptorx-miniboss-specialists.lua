@@ -72,43 +72,43 @@ do
       local weapons = unit.weapondefs
       unit.weapons[1].onlytargetcategory, unit.weapons[5].onlytargetcategory = "NOTAIR", "NOTAIR"
       if spec[1] == "raptor_matriarch_basic" then
-        tune(weapons.melee, "Ironhide Repulsor Claws", 400, 2.4, 1, 0, 2400, 160)
+        tune(weapons.melee, "Ironhide Repulsor Claws", 400, 2.4, 1, 0, 1600, 160)
         weapons.melee.impulsefactor = 4
-        tune(weapons.goo, "Seismic Shockwave Volley", 1200, 12, 3, 0.4, 1200, 260)
+        tune(weapons.goo, "Seismic Shockwave Volley", 1200, 12, 3, 0.4, 800, 260)
         weapons.goo.impulsefactor, weapons.goo.weaponvelocity = 3, 600
         unit.autoheal = 900
         tune(weapons.yellow_missile, "Ironhide Air Spores", 900, 6, 1, 0, 1, 128)
-        weapons.yellow_missile.damage.vtol = 1200
+        weapons.yellow_missile.damage.vtol = 800
       elseif spec[1] == "raptor_matriarch_acid" then
-        tune(weapons.melee, "Miremaw Claws", 400, 2, 1, 0, 1400, 60)
-        tune(weapons.acidgoo, "Plague Pool Bombardment", 1800, 16, 5, 0.3, 300, 180)
+        tune(weapons.melee, "Miremaw Claws", 400, 2, 1, 0, 900, 60)
+        tune(weapons.acidgoo, "Plague Pool Bombardment", 1800, 16, 5, 0.3, 200, 180)
         weapons.acidgoo.weaponvelocity, weapons.acidgoo.sprayangle = 750, 900
-        weapons.acidgoo.damage.shields = 9000
+        weapons.acidgoo.damage.shields = 6000
         area(weapons.acidgoo, "acid", 18, 220, 150)
-        tune(weapons.spike_acid_blob, "Corrosive Defensive Spikes", 750, 9, 1, 0, 100, 100)
-        weapons.spike_acid_blob.damage.shields = 3000
+        tune(weapons.spike_acid_blob, "Corrosive Defensive Spikes", 750, 9, 1, 0, 70, 100)
+        weapons.spike_acid_blob.damage.shields = 2000
         area(weapons.spike_acid_blob, "acid", 6, 80, 75)
         cp.areadamageresistance = "LuaAreaDamage__RAPTORACID_"
       elseif spec[1] == "raptor_matriarch_electric" then
-        tune(weapons.melee, "Stormlock Lightning Burst", 500, 8, 6, 0.12, 700, 50)
+        tune(weapons.melee, "Stormlock Lightning Burst", 500, 8, 6, 0.12, 450, 50)
         weapons.melee.paralyzer, weapons.melee.paralyzetime = true, 5
-        tune(weapons.goo, "Lockdown EMP Volley", 1400, 20, 3, 0.5, 6000, 280)
+        tune(weapons.goo, "Lockdown EMP Volley", 1400, 20, 3, 0.5, 4000, 280)
         weapons.goo.paralyzer, weapons.goo.paralyzetime = true, 8
         weapons.goo.weaponvelocity, weapons.goo.sprayangle = 650, 600
         unit.explodeas, unit.selfdestructas = "raptor_empdeath_big", "raptor_empdeath_big"
       elseif spec[1] == "raptor_matriarch_fire" then
-        tune(weapons.flamethrowerspike, "Cindermaw Flame Jets", 350, 3, 8, 0.1, 90, 64)
-        tune(weapons.flamethrowermain, "Scorched Earth Breath", 700, 9, 10, 0.12, 160, 100)
+        tune(weapons.flamethrowerspike, "Cindermaw Flame Jets", 350, 3, 8, 0.1, 60, 64)
+        tune(weapons.flamethrowermain, "Scorched Earth Breath", 700, 9, 10, 0.12, 110, 100)
         weapons.flamethrowermain.weaponvelocity = 500
         area(weapons.flamethrowermain, "fire", 8, 140, 100)
         cp.areadamageresistance = "LuaAreaDamage__RAPTORFIRE_"
         for _, slot in ipairs(unit.weapons) do slot.onlytargetcategory = "NOTAIR" end
       else
-        tune(weapons.melee, "Veilfang Ambush Claws", 350, 5, 1, 0, 8000, 60)
-        tune(weapons.goo, "Veilfang Precision Spit", 1000, 14, 1, 0, 2200, 80)
+        tune(weapons.melee, "Veilfang Ambush Claws", 350, 5, 1, 0, 5200, 60)
+        tune(weapons.goo, "Veilfang Precision Spit", 1000, 14, 1, 0, 1500, 80)
         weapons.goo.sprayangle, weapons.goo.weaponvelocity = 0, 650
         tune(weapons.yellow_missile, "Veilfang Air Spores", 900, 8, 1, 0, 1, 128)
-        weapons.yellow_missile.damage.vtol = 1800
+        weapons.yellow_missile.damage.vtol = 1200
         unit.cancloak, unit.initcloak, unit.stealth = true, true, true
         unit.cloakcost, unit.cloakcostmoving, unit.mincloakdistance = 0, 0, 250
         unit.decloakonfire, unit.cloaktimeout = true, 180
