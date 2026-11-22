@@ -60,6 +60,7 @@
   "defs/raptorx/raptorx-custom-unit-core.lua": false,
   "defs/raptorx/raptorx-miniboss-specialists.lua": true,
   "defs/raptorx/raptorx-siege-artillery.lua": false,
+  "defs/raptorx/raptorx-unique-enemies.lua": true,
   "defs/raptorx/raptorx-unit-hardening.lua": false,
   "units/scavx/scavx-nightmare-support-roster.lua": false,
   "units/scavx/scavx-nightmare-hardmode-roster.lua": false
