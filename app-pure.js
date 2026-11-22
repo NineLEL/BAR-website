@@ -8,7 +8,7 @@
   if (typeof module === "object" && module.exports) module.exports = api;
   else root.BARAppPure = api;
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
-  var MAX_SLOTS = 10;
+  var MAX_SLOTS = 30;
 
   function getLimit(value) {
     var v = parseInt(value, 10);
@@ -302,8 +302,8 @@
     }
     function sizeOf(luaSrc) {
       var b = b64encode(luaSrc, urlSafe);
-      // worst-case prefix: numbered slots (1-9) are 1 char longer than bare slot 0
-      return cmdPrefix(kind, 1).length + b.length;
+      // worst-case prefix: two-digit numbered slots (10-29) are 2 chars longer than bare slot 0
+      return cmdPrefix(kind, MAX_SLOTS - 1).length + b.length;
     }
     var best = new Array(n + 1);
     best[n] = { count: 0, waste: 0, next: n };
@@ -391,7 +391,7 @@
     });
     function tableOf(parts) { return "{ " + parts.join(", ") + " }"; }
     function fits(parts) {
-      return buildCommand("tweakunits", 1, tableOf(parts), urlSafe).cmd.length <= limit;
+      return buildCommand("tweakunits", MAX_SLOTS - 1, tableOf(parts), urlSafe).cmd.length <= limit;
     }
     var result = [], current = [];
     fields.forEach(function (field) {

@@ -13,7 +13,7 @@
     <span class="logo">BAR</span>
     <div>
       <h1>Tweak Packer</h1>
-      <p>Beyond All Reason &mdash; tweakdefs 0&ndash;9 &amp; tweakunits 0&ndash;9 &rarr; minify &rarr; base64 &rarr; <code>!bset</code> commands</p>
+      <p>Beyond All Reason &mdash; tweakdefs 0&ndash;29 &amp; tweakunits 0&ndash;29 &rarr; minify &rarr; base64 &rarr; <code>!bset</code> commands</p>
     </div>
   </div>
   <div class="limits">
@@ -93,7 +93,7 @@
   </nav>
 
   <div class="toolbar" role="toolbar" aria-label="Global actions">
-      <button id="resetAll">Copy reset commands (20 slots)</button>
+      <button id="resetAll">Copy reset commands (60 slots)</button>
   </div>
 
   <section id="panel-defs" class="panel active" role="tabpanel" aria-labelledby="tab-defs" tabindex="0">
@@ -118,7 +118,7 @@
       </div>
     </div>
     <div id="defsInputs" class="inputs"></div>
-    <h2>Slots &mdash; <code>!bset tweakdefs</code> &hellip; <code>!bset tweakdefs9</code></h2>
+    <h2>Slots &mdash; <code>!bset tweakdefs</code> &hellip; <code>!bset tweakdefs29</code></h2>
     <div id="defsSlots" class="slots"></div>
   </section>
 
@@ -144,7 +144,7 @@
       </div>
     </div>
     <div id="unitsInputs" class="inputs"></div>
-    <h2>Slots &mdash; <code>!bset tweakunits</code> &hellip; <code>!bset tweakunits9</code></h2>
+    <h2>Slots &mdash; <code>!bset tweakunits</code> &hellip; <code>!bset tweakunits29</code></h2>
     <div id="unitsSlots" class="slots"></div>
   </section>
 
@@ -226,7 +226,7 @@
   </section>
 
   <footer>
-    <p>100% client-side &mdash; nothing leaves your browser. tweakdefs slots run as Lua via <code>loadstring</code> after base64-decode; tweakunits tables are deep-merged into <code>UnitDefs</code>. Order: tweakunits first, then tweakdefs, index 0&rarr;9.</p>
+    <p>100% client-side &mdash; nothing leaves your browser. tweakdefs slots run as Lua via <code>loadstring</code> after base64-decode; tweakunits tables are deep-merged into <code>UnitDefs</code>. Order: tweakunits first, then tweakdefs, index 0&rarr;29.</p>
   </footer>
 </main>
 

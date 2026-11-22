@@ -2,7 +2,7 @@
 /* BAR Tweak Packer — 100% client-side.
  * tweakdefs: arbitrary Lua run via loadstring after base64-decode.
  * tweakunits: Lua table deep-merged into UnitDefs.
- * Slots 0..9 each. Per-message cap 16384 chars incl. command. */
+ * Slots 0..29 each. Per-message cap 16384 chars incl. command. */
 
 var Pure = BARAppPure;
 var LibraryApi = BARLibraryApi;
@@ -518,7 +518,7 @@ function autoPack(g) {
       return;
     }
     if (minified) {
-      if (g.kind === "tweakunits" && buildCommand(g.kind, 1, minified, useUrlSafe()).cmd.length > limit) {
+      if (g.kind === "tweakunits" && buildCommand(g.kind, MAX_SLOTS - 1, minified, useUrlSafe()).cmd.length > limit) {
         try {
           var internalDuplicates = findDuplicateTweakUnitKeyDetails([minified]);
           if (internalDuplicates.length) {
@@ -582,7 +582,7 @@ function autoPack(g) {
       return blockersBySource[key];
     }
     plan.oversized.forEach(function (i) {
-      var cmd = buildCommand(g.kind, 1, minis[i], useUrlSafe()).cmd;
+      var cmd = buildCommand(g.kind, MAX_SLOTS - 1, minis[i], useUrlSafe()).cmd;
       var blocker = sourceBlocker(i);
       blocker.oversized = Math.max(blocker.oversized, cmd.length - limit);
     });
@@ -605,7 +605,7 @@ function autoPack(g) {
       var key = item.sourceIndex;
       if (!sourceGroups[key]) sourceGroups[key] = { name: item.sourceName || item.name, indexes: [], size: 0 };
       sourceGroups[key].indexes.push(index);
-      sourceGroups[key].size += buildCommand(g.kind, 1, minis[index], useUrlSafe()).cmd.length;
+      sourceGroups[key].size += buildCommand(g.kind, MAX_SLOTS - 1, minis[index], useUrlSafe()).cmd.length;
     });
     var candidates = Object.keys(sourceGroups).map(function (key) { return sourceGroups[key]; })
       .sort(function (a, b) { return b.size - a.size; });
