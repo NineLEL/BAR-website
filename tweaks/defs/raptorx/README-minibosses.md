@@ -34,8 +34,7 @@ or overwrite an already registered boss. Missing/incompatible bases are skipped.
 
 ## Verification
 
-- `node --test tests/raptor-minibosses.test.js`: sources, squad progression,
-  mechanics, library discovery, Base64 round-trip and the 16,384-character limit.
+- `npm run test:tweaks`: packability, BAR sources, squad metadata, and Lua runtime checks.
 - With Lua 5.1+ installed: `lua tests/raptor-minibosses.lua`. Also run automatically
   by the Node test when `lua` is available; set `LUA` to another executable path.
   Checks deep-copy isolation, actual registration, weapon slots, cooldowns,
