@@ -310,6 +310,44 @@ function useUrlSafe() {
 }
 function getLimit() { return Pure.getLimit($("charLimit").value); }
 
+var EDITOR_STORAGE_KEY = "bar-tweak-packer-editor-state-v1";
+
+function editorStorage() {
+  try { return typeof globalThis !== "undefined" ? globalThis.localStorage : null; } catch (error) { return null; }
+}
+
+function saveEditorState() {
+  var store = editorStorage();
+  if (!store) return;
+  try {
+    store.setItem(EDITOR_STORAGE_KEY, JSON.stringify({
+      defs: defs.snippets,
+      units: units.snippets,
+      charLimit: $("charLimit") ? $("charLimit").value : "16384",
+      b64url: useUrlSafe()
+    }));
+  } catch (error) {}
+}
+
+function loadEditorState() {
+  var store = editorStorage();
+  if (!store) return;
+  try {
+    var raw = store.getItem(EDITOR_STORAGE_KEY);
+    if (!raw) return;
+    var saved = JSON.parse(raw);
+    if (!saved || typeof saved !== "object") return;
+    if (Array.isArray(saved.defs) && saved.defs.length) {
+      defs.snippets = saved.defs.map(function (s) { return typeof s === "string" ? s : String(s || ""); });
+    }
+    if (Array.isArray(saved.units) && saved.units.length) {
+      units.snippets = saved.units.map(function (s) { return typeof s === "string" ? s : String(s || ""); });
+    }
+    if (saved.charLimit !== undefined && $("charLimit")) $("charLimit").value = String(saved.charLimit);
+    if (typeof saved.b64url === "boolean" && $("b64url")) $("b64url").checked = saved.b64url;
+  } catch (error) {}
+}
+
 /* ---------- state ---------- */
 function makeGroup(kind, inputsEl, slotsEl) {
   return {
@@ -320,7 +358,8 @@ function makeGroup(kind, inputsEl, slotsEl) {
     serverSnippets: [],
     // packed lua per slot after Auto-pack; null = 1:1 mapping snippet[i] -> slot[i]
     packed: null,
-    packNotice: null
+    packNotice: null,
+    slotRenderTimer: null
   };
 }
 var defs = makeGroup("tweakdefs", $("defsInputs"), $("defsSlots"));
@@ -403,6 +442,7 @@ function renderInputs(g) {
       if (!g.snippets.length) g.snippets.push("");
       g.packed = null; g.packedNames = null;
       g.packNotice = null;
+      saveEditorState();
       renderAll();
     };
     var ta = document.createElement("textarea");
@@ -412,7 +452,8 @@ function renderInputs(g) {
       g.snippets[i] = ta.value;
       charBadge.textContent = ta.value.length + " chars";
       g.packed = null; g.packedNames = null; g.packNotice = null;
-      renderSlots(g);
+      saveEditorState();
+      scheduleRenderSlots(g, 80);
     };
     var hide = document.createElement("button");
     hide.type = "button";
@@ -466,7 +507,19 @@ function compileSlot(kind, idx, raw, urlSafe) {
   return entry;
 }
 
+function scheduleRenderSlots(g, delayMs) {
+  clearTimeout(g.slotRenderTimer);
+  g.slotRenderTimer = setTimeout(function () {
+    g.slotRenderTimer = null;
+    renderSlots(g);
+  }, delayMs || 80);
+}
+
 function renderSlots(g) {
+  if (g.slotRenderTimer) {
+    clearTimeout(g.slotRenderTimer);
+    g.slotRenderTimer = null;
+  }
   var limit = getLimit();
   var urlSafe = useUrlSafe();
   var srcs = slotSources(g);
@@ -474,11 +527,23 @@ function renderSlots(g) {
   var overCount = 0;
   var existingDetails = g.slotsEl.querySelector ? g.slotsEl.querySelector(".empty-slots-group") : null;
   var keepEmptyOpen = !!(existingDetails && existingDetails.open);
+  var openCmdSlots = Object.create(null);
+  var openMinSlots = Object.create(null);
+  if (g.slotsEl.querySelectorAll) {
+    g.slotsEl.querySelectorAll(".slot[data-slot-index]").forEach(function (slotEl) {
+      var slotIdx = slotEl.getAttribute("data-slot-index");
+      var cmdEl = $("command-" + g.kind + "-" + slotIdx);
+      var minEl = $("minified-" + g.kind + "-" + slotIdx);
+      if (cmdEl && cmdEl.style.display !== "none") openCmdSlots[slotIdx] = true;
+      if (minEl && minEl.style.display !== "none") openMinSlots[slotIdx] = true;
+    });
+  }
   var fragment = document.createDocumentFragment();
   var emptyNodes = [];
   for (var idx = 0; idx < MAX_SLOTS; idx++) {
     var raw = srcs[idx] || "";
     var div = document.createElement("div");
+    div.setAttribute("data-slot-index", String(idx));
     var has = raw.trim() !== "";
     if (has) usedCount++;
     div.className = "slot" + (has ? "" : " empty");
@@ -542,7 +607,10 @@ function renderSlots(g) {
         }
         var pre = document.createElement("div");
         pre.className = "cmd";
-        pre.style.display = "none";
+        var isCmdOpen = !!openCmdSlots[String(idx)];
+        pre.hidden = !isCmdOpen;
+        pre.style.display = isCmdOpen ? "block" : "none";
+        if (isCmdOpen) pre.textContent = cmd;
         div.appendChild(pre);
         var row = document.createElement("div");
         row.className = "row";
@@ -557,8 +625,8 @@ function renderSlots(g) {
         })(cmd);
         var showCmd = document.createElement("button");
         showCmd.type = "button";
-        showCmd.textContent = "Show command";
-        showCmd.setAttribute("aria-expanded", "false"); showCmd.setAttribute("aria-controls", "command-" + g.kind + "-" + idx); pre.id = "command-" + g.kind + "-" + idx;
+        showCmd.textContent = isCmdOpen ? "Hide command" : "Show command";
+        showCmd.setAttribute("aria-expanded", isCmdOpen ? "true" : "false"); showCmd.setAttribute("aria-controls", "command-" + g.kind + "-" + idx); pre.id = "command-" + g.kind + "-" + idx;
          showCmd.onclick = (function (command, output, button) {
            return function () {
              var opening = output.style.display === "none";
@@ -580,12 +648,15 @@ function renderSlots(g) {
         row.appendChild(showCmd);
         var pv = document.createElement("button");
         pv.type = "button";
-        pv.textContent = "Show minified";
-        pv.setAttribute("aria-expanded", "false"); pv.setAttribute("aria-controls", "minified-" + g.kind + "-" + idx);
+        var isMinOpen = !!openMinSlots[String(idx)];
+        pv.textContent = isMinOpen ? "Hide minified" : "Show minified";
+        pv.setAttribute("aria-expanded", isMinOpen ? "true" : "false"); pv.setAttribute("aria-controls", "minified-" + g.kind + "-" + idx);
         var prev2 = document.createElement("pre");
         prev2.className = "mono output";
         prev2.id = "minified-" + g.kind + "-" + idx;
-        prev2.style.display = "none";
+        prev2.hidden = !isMinOpen;
+        prev2.style.display = isMinOpen ? "block" : "none";
+        if (isMinOpen) prev2.textContent = min;
          pv.onclick = (function (source, output, button) {
            return function () {
              var opening = output.style.display === "none";
@@ -907,12 +978,12 @@ document.querySelectorAll(".tab").forEach(function (btn) {
   };
 });
 
-$("defsAdd").onclick = function () { defs.snippets.push(""); defs.packed = null; defs.packedNames = null; renderInputs(defs); };
-$("unitsAdd").onclick = function () { units.snippets.push(""); units.packed = null; units.packedNames = null; renderInputs(units); };
+$("defsAdd").onclick = function () { defs.snippets.push(""); defs.packed = null; defs.packedNames = null; saveEditorState(); renderInputs(defs); };
+$("unitsAdd").onclick = function () { units.snippets.push(""); units.packed = null; units.packedNames = null; saveEditorState(); renderInputs(units); };
 $("defsPack").onclick = function () { autoPack(defs); };
 $("unitsPack").onclick = function () { autoPack(units); };
-$("defsClear").onclick = function () { defs.snippets = [""]; defs.packed = null; defs.packedNames = null; renderAll(); };
-$("unitsClear").onclick = function () { units.snippets = [""]; units.packed = null; units.packedNames = null; renderAll(); };
+$("defsClear").onclick = function () { defs.snippets = [""]; defs.packed = null; defs.packedNames = null; saveEditorState(); renderAll(); };
+$("unitsClear").onclick = function () { units.snippets = [""]; units.packed = null; units.packedNames = null; saveEditorState(); renderAll(); };
 $("defsCopyAll").onclick = function () {
   copyCommandSet(function () { return collectCommands(defs); }, "No tweakdefs to copy");
 };
@@ -925,8 +996,13 @@ $("unitsCopyAll").onclick = function () {
   copyCommandSet(function () { return collectCommands(units); }, "No tweakunits to copy");
 };
 $("unitsCopyCombined").onclick = copyCombined;
-$("charLimit").oninput = function () { renderSlots(defs); renderSlots(units); };
-$("b64url").onchange = function () { renderAll(); };
+var charLimitTimer = null;
+$("charLimit").oninput = function () {
+  saveEditorState();
+  clearTimeout(charLimitTimer);
+  charLimitTimer = setTimeout(function () { renderSlots(defs); renderSlots(units); }, 120);
+};
+$("b64url").onchange = function () { saveEditorState(); renderAll(); };
 
 $("decodeBtn").onclick = function () {
   var parsed = Pure.parseDecodeInput($("decodeInput").value);
@@ -1014,4 +1090,5 @@ $("utilityCopy").onclick = function () {
   } else fallbackCopy();
 };
 
+loadEditorState();
 renderAll();
