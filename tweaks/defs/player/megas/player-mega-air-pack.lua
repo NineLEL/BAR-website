@@ -137,9 +137,9 @@ do
 	end
 
 	local WP = {
-		emp = W("Atmospheric EMP", "Cannon", 2600, 5.5, 1600, 750, 60e3, 24e3, 52e3, 8e3, nil, {
+		emp = W("Atmospheric EMP", "Cannon", 2600, 4.5, 1600, 750, 50e3, 140e3, 180e3, 20e3, nil, {
 			paralyzer = true,
-			paralyzetime = 10,
+			paralyzetime = 12,
 			accuracy = 200,
 			size = 26,
 			stages = 36,
@@ -151,7 +151,7 @@ do
 			soundhitdry = "weapons/xplomed2.wav",
 			onlytargetcategory = TSV,
 		}),
-		a_m = W("Siege Mortar", "Cannon", 3100, 3.8, 2000, 580, 40e3, 24e3, 55e3, 6500, nil, {
+		a_m = W("Siege Mortar", "Cannon", 3100, 3.4, 2000, 580, 40e3, 38e3, 72e3, 8500, nil, {
 			accuracy = 220,
 			sprayangle = 500,
 			size = 18,
@@ -169,7 +169,7 @@ do
 			firestarter = 100,
 			onlytargetcategory = TS,
 		}),
-		a_s = W("Deck Cannon", "Cannon", 2000, 0.6, 2600, 180, 600, 1800, 4200, 400, nil, {
+		a_s = W("Deck Cannon", "Cannon", 2000, 0.6, 2600, 180, 600, 2100, 4800, 450, nil, {
 			canattackground = true,
 			accuracy = 250,
 			sprayangle = 550,
@@ -182,7 +182,7 @@ do
 			soundhitdry = "weapons/xplomed2.wav",
 			onlytargetcategory = TS,
 		}),
-		a_a = W("SAM Array", "MissileLauncher", 2200, 1.4, 3600, 90, 1400, 800, 2200, nil, 6800, {
+		a_a = W("SAM Array", "MissileLauncher", 2200, 1.4, 3600, 90, 1400, 900, 2400, nil, 7400, {
 			burst = 10,
 			burstrate = 0.05,
 			sprayangle = 450,
@@ -199,7 +199,7 @@ do
 			soundhitdry = "weapons/xplomed2.wav",
 			onlytargetcategory = TV,
 		}),
-		torp = W("Torpedo Launcher", "MissileLauncher", 2600, 4.2, 1100, 0, 32e3, 22e3, 58e3, 5200, nil, {
+		torp = W("Torpedo Launcher", "MissileLauncher", 2600, 4.0, 1100, 0, 32e3, 26e3, 64e3, 6200, nil, {
 			burst = 4,
 			burstrate = 0.25,
 			weaponacceleration = 500,
@@ -229,7 +229,7 @@ do
 			rgbcolor = "0.15 0.8 1",
 			visibleshield = true,
 		},
-		pbr = W("Rift Barrage", "Cannon", 2300, 1.6, 4200, 180, 6800, 4200, 9500, nil, nil, {
+		pbr = W("Rift Barrage", "Cannon", 2300, 1.5, 4200, 180, 6800, 5600, 12e3, nil, nil, {
 			canattackground = true,
 			burst = 5,
 			burstrate = 0.1,
@@ -242,7 +242,7 @@ do
 			soundhitdry = "weapons/xplomed2.wav",
 			onlytargetcategory = TS,
 		}),
-		vulc = W("Rotary Vulcan", "Cannon", 1800, 2.4, 3800, 0, 220, 1200, 1600, 350, 3600, {
+		vulc = W("Rotary Vulcan", "Cannon", 1800, 2.0, 3800, 0, 220, 1250, 2400, 350, 3600, {
 			burst = 60,
 			burstrate = 0.02,
 			sprayangle = 900,
@@ -285,7 +285,7 @@ do
 			{ is_suite = true, slots = { [1] = WP.torp, [2] = WP.pshield, [3] = WP.pbr } },
 			"Phantom Leviathan",
 			"Cloaked dreadnought",
-			{ 220e3, 48e5, 42e4, 72, 4, 3200, 0, 420, 0, true },
+			{ 220e3, 48e5, 42e4, 72, 2, 3200, 0, 420, 0, true },
 		},
 		{
 			"player_archangel",
