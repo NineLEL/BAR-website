@@ -5,6 +5,7 @@
   "defs/player/megas/buff-default-units.lua": true,
   "defs/player/megas/player-mega-air-pack.lua": false,
   "defs/player/megas/player-mega-land-pack.lua": false,
+  "defs/player/turrets/player-turrets-exotic.lua": true,
   "defs/player/turrets/player-turrets-ultra.lua": true,
   "defs/player/turrets/player-turrets-ultra-advanced.lua": true,
   "defs/raptorx/raptorx-custom-unit-core.lua": false,

@@ -140,6 +140,18 @@ describe("Lua runtime checks", { skip: skipLua }, () => {
     assert.match(runLua("tests/player-mega-land-pack.lua", srcPath), /mega land runtime checks passed/);
   });
 
+  it("player exotic turrets pack executes cleanly (raw and minified)", (t) => {
+    const srcPath = path.join(DEFS_DIR, "player", "turrets", "player-turrets-exotic.lua");
+    assert.match(runLua("tests/player-turrets-exotic.lua", srcPath), /exotic turrets runtime checks passed/);
+
+    const os = require("node:os");
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "bar-exotic-turrets-"));
+    t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+    const minPath = path.join(dir, "min.lua");
+    fs.writeFileSync(minPath, pure.luaMinify(fs.readFileSync(srcPath, "utf8")));
+    assert.match(runLua("tests/player-turrets-exotic.lua", minPath), /exotic turrets runtime checks passed/);
+  });
+
   it("raptor unique enemies execute cleanly (raw and minified)", (t) => {
     const srcPath = path.join(DEFS_DIR, "raptorx", "raptorx-unique-enemies.lua");
     assert.match(runLua("tests/raptor-unique-enemies.lua", srcPath), /unique enemies runtime checks passed/);
