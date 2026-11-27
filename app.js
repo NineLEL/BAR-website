@@ -421,7 +421,10 @@ function renderSlots(g) {
   var srcs = slotSources(g);
   var usedCount = 0;
   var overCount = 0;
+  var existingDetails = g.slotsEl.querySelector ? g.slotsEl.querySelector(".empty-slots-group") : null;
+  var keepEmptyOpen = !!(existingDetails && existingDetails.open);
   var fragment = document.createDocumentFragment();
+  var emptyNodes = [];
   for (var idx = 0; idx < MAX_SLOTS; idx++) {
     var raw = srcs[idx] || "";
     var div = document.createElement("div");
@@ -555,7 +558,31 @@ function renderSlots(g) {
         div.appendChild(prev2);
       }
     }
-    fragment.appendChild(div);
+    if (has) fragment.appendChild(div);
+    else emptyNodes.push(div);
+  }
+  if (emptyNodes.length) {
+    var emptyDetails = document.createElement("details");
+    emptyDetails.className = "empty-slots-group";
+    if (keepEmptyOpen) emptyDetails.open = true;
+    var emptySummary = document.createElement("summary");
+    emptySummary.className = "empty-slots-summary";
+    var emptyTitle = document.createElement("span");
+    emptyTitle.textContent = "Unused slots (" + emptyNodes.length + " of " + MAX_SLOTS + ")";
+    var emptyPill = document.createElement("span");
+    emptyPill.className = "empty-slots-pill";
+    emptyPill.textContent = keepEmptyOpen ? "Hide empty slots" : "Show empty slots";
+    emptySummary.appendChild(emptyTitle);
+    emptySummary.appendChild(emptyPill);
+    emptyDetails.ontoggle = function () {
+      emptyPill.textContent = emptyDetails.open ? "Hide empty slots" : "Show empty slots";
+    };
+    var emptyGrid = document.createElement("div");
+    emptyGrid.className = "empty-slots-grid";
+    emptyNodes.forEach(function (node) { emptyGrid.appendChild(node); });
+    emptyDetails.appendChild(emptySummary);
+    emptyDetails.appendChild(emptyGrid);
+    fragment.appendChild(emptyDetails);
   }
   var summaryEl = $(g.kind === "tweakdefs" ? "defsSlotSummary" : "unitsSlotSummary");
   if (summaryEl) {
@@ -565,12 +592,15 @@ function renderSlots(g) {
     summaryEl.textContent = summaryText;
     summaryEl.className = "section-pill" + (overCount ? " is-danger" : (usedCount ? " is-active" : ""));
   }
+  var noticeHost = $(g.kind === "tweakdefs" ? "defsPackNotice" : "unitsPackNotice");
+  if (noticeHost) noticeHost.replaceChildren();
   if (g.packNotice) {
     var notice = document.createElement("div");
     notice.className = "pack-notice";
     notice.setAttribute("role", "status");
     notice.textContent = g.packNotice;
-    fragment.appendChild(notice);
+    if (noticeHost) noticeHost.appendChild(notice);
+    else fragment.insertBefore(notice, fragment.firstChild);
   }
   g.slotsEl.replaceChildren(fragment);
 }
@@ -594,7 +624,7 @@ function autoPack(g) {
 
   function showFailure(message) {
     g.packNotice = "Auto-pack not applied — " + message + ". " + (g.packed ? "Current packed output was retained" : "Existing slot mapping was left unchanged") + "; no partial pack was applied.";
-    toast("Auto-pack not applied. See the packing status below the slots.");
+    toast("Auto-pack not applied. See the packing status above the slots.");
     renderSlots(g);
   }
   function describeError(error) {
