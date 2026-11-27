@@ -285,44 +285,62 @@ function exampleText(kind) {
 function renderInputs(g) {
   g.inputsEl.innerHTML = "";
   (g.serverSnippets || []).forEach(function (f) {
+    var index = g.inputsEl.children.length;
     var lock = document.createElement("div");
-    lock.className = "snippet locked";
+    lock.className = "snippet locked is-collapsed";
     var lh = document.createElement("header");
+    var titleGroup = document.createElement("div");
+    titleGroup.className = "snippet-title-group";
     var ll = document.createElement("span");
     ll.className = "snippet-title";
-    ll.textContent = f.name + " (server, " + f.text.length + " chars)";
-    ll.id = "server-script-label-" + g.kind + "-" + g.inputsEl.children.length;
-    lh.appendChild(ll);
+    ll.textContent = f.name;
+    ll.id = "server-script-label-" + g.kind + "-" + index;
+    var badge = document.createElement("span");
+    badge.className = "snippet-badge snippet-badge-lib";
+    badge.textContent = "Library \u00b7 " + f.text.length + " chars";
+    titleGroup.appendChild(ll);
+    titleGroup.appendChild(badge);
+    lh.appendChild(titleGroup);
     var lt = document.createElement("textarea");
     lt.value = f.text;
     lt.readOnly = true;
+    lt.hidden = true;
+    lt.style.display = "none";
     lt.title = "Managed server-side in " + f.name;
     var lhbtn = document.createElement("button");
     lhbtn.type = "button";
-    lhbtn.textContent = "Hide script";
-     lhbtn.setAttribute("aria-expanded", "true");
-     lhbtn.setAttribute("aria-controls", "server-script-" + g.kind + "-" + g.inputsEl.children.length);
-    lt.id = "server-script-" + g.kind + "-" + g.inputsEl.children.length;
+    lhbtn.textContent = "Show script";
+    lhbtn.setAttribute("aria-expanded", "false");
+    lhbtn.setAttribute("aria-controls", "server-script-" + g.kind + "-" + index);
+    lt.id = "server-script-" + g.kind + "-" + index;
     lt.setAttribute("aria-labelledby", ll.id);
-     lhbtn.onclick = function () {
-       var hidden = lt.style.display === "none";
-        lt.style.display = hidden ? "block" : "none";
-        lt.hidden = !hidden;
-        lhbtn.setAttribute("aria-expanded", hidden ? "true" : "false");
-       lhbtn.textContent = hidden ? "Hide script" : "Show script";
-     };
-     lh.appendChild(lhbtn);
-     lock.appendChild(lh); lock.appendChild(lt);
+    lhbtn.onclick = function () {
+      var hidden = lt.style.display === "none";
+      lt.style.display = hidden ? "block" : "none";
+      lt.hidden = !hidden;
+      lock.classList.toggle("is-collapsed", !hidden);
+      lhbtn.setAttribute("aria-expanded", hidden ? "true" : "false");
+      lhbtn.textContent = hidden ? "Hide script" : "Show script";
+    };
+    lh.appendChild(lhbtn);
+    lock.appendChild(lh); lock.appendChild(lt);
     g.inputsEl.appendChild(lock);
   });
   g.snippets.forEach(function (text, i) {
     var box = document.createElement("div");
     box.className = "snippet";
     var head = document.createElement("header");
+    var titleGroup = document.createElement("div");
+    titleGroup.className = "snippet-title-group";
     var lab = document.createElement("span");
     lab.className = "snippet-title";
     lab.textContent = "Snippet " + (i + 1);
     lab.id = "manual-script-label-" + g.kind + "-" + i;
+    var charBadge = document.createElement("span");
+    charBadge.className = "snippet-badge snippet-chars";
+    charBadge.textContent = text.length + " chars";
+    titleGroup.appendChild(lab);
+    titleGroup.appendChild(charBadge);
     var controls = document.createElement("div");
     controls.className = "snippet-controls";
     var del = document.createElement("button");
@@ -339,7 +357,12 @@ function renderInputs(g) {
     var ta = document.createElement("textarea");
     ta.value = text;
     ta.placeholder = exampleText(g.kind);
-    ta.oninput = function () { g.snippets[i] = ta.value; g.packed = null; g.packedNames = null; g.packNotice = null; renderSlots(g); };
+    ta.oninput = function () {
+      g.snippets[i] = ta.value;
+      charBadge.textContent = ta.value.length + " chars";
+      g.packed = null; g.packedNames = null; g.packNotice = null;
+      renderSlots(g);
+    };
     var hide = document.createElement("button");
     hide.type = "button";
     hide.textContent = "Hide script";
@@ -349,12 +372,13 @@ function renderInputs(g) {
       var hidden = ta.style.display === "none";
       ta.style.display = hidden ? "block" : "none";
       ta.hidden = !hidden;
+      box.classList.toggle("is-collapsed", !hidden);
       hide.setAttribute("aria-expanded", hidden ? "true" : "false");
       hide.textContent = hidden ? "Hide script" : "Show script";
     };
     controls.appendChild(hide);
     controls.appendChild(del);
-    head.appendChild(lab);
+    head.appendChild(titleGroup);
     head.appendChild(controls);
     box.appendChild(head); box.appendChild(ta);
     g.inputsEl.appendChild(box);
@@ -370,12 +394,34 @@ function slotSources(g) {
   return fromServer.concat(manual).slice(0, MAX_SLOTS);
 }
 
+var slotCompileCache = Object.create(null);
+
+function compileSlot(kind, idx, raw, urlSafe) {
+  var cacheKey = kind + ":" + idx + ":" + (urlSafe ? "1" : "0");
+  var cached = slotCompileCache[cacheKey];
+  if (cached && cached.raw === raw) return cached;
+  var entry = { raw: raw, min: null, b64: null, cmd: null, err: null };
+  try {
+    var min = luaMinify(raw);
+    if (kind === "tweakunits") mergeTweakUnits([min]);
+    var r = buildCommand(kind, idx, min, urlSafe);
+    entry.min = min;
+    entry.b64 = r.b64;
+    entry.cmd = r.cmd;
+  } catch (e) {
+    entry.err = String(e);
+  }
+  slotCompileCache[cacheKey] = entry;
+  return entry;
+}
+
 function renderSlots(g) {
   var limit = getLimit();
+  var urlSafe = useUrlSafe();
   var srcs = slotSources(g);
   var usedCount = 0;
   var overCount = 0;
-  g.slotsEl.innerHTML = "";
+  var fragment = document.createDocumentFragment();
   for (var idx = 0; idx < MAX_SLOTS; idx++) {
     var raw = srcs[idx] || "";
     var div = document.createElement("div");
@@ -402,13 +448,8 @@ function renderSlots(g) {
       clr.textContent = "—";
       div.appendChild(clr);
     } else {
-      var min, b64, cmd, err = null;
-      try {
-        min = luaMinify(raw);
-        if (g.kind === "tweakunits") mergeTweakUnits([min]);
-        var r = buildCommand(g.kind, idx, min, useUrlSafe());
-        b64 = r.b64; cmd = r.cmd;
-      } catch (e) { err = String(e); }
+      var compiled = compileSlot(g.kind, idx, raw, urlSafe);
+      var min = compiled.min, b64 = compiled.b64, cmd = compiled.cmd, err = compiled.err;
       if (err) {
         overCount++;
         st.textContent = "Lua input error: " + err;
@@ -514,7 +555,7 @@ function renderSlots(g) {
         div.appendChild(prev2);
       }
     }
-    g.slotsEl.appendChild(div);
+    fragment.appendChild(div);
   }
   var summaryEl = $(g.kind === "tweakdefs" ? "defsSlotSummary" : "unitsSlotSummary");
   if (summaryEl) {
@@ -529,8 +570,9 @@ function renderSlots(g) {
     notice.className = "pack-notice";
     notice.setAttribute("role", "status");
     notice.textContent = g.packNotice;
-    g.slotsEl.appendChild(notice);
+    fragment.appendChild(notice);
   }
+  g.slotsEl.replaceChildren(fragment);
 }
 
 function renderAll() { renderInputs(defs); renderInputs(units); renderSlots(defs); renderSlots(units); }
