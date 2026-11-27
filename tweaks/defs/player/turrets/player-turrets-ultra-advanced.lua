@@ -97,12 +97,13 @@ do
 
 	local function sanitize(u)
 		for k in
-			("maxacc maxdec maxvelocity turnrate cloakcost cloakcostmoving energymake energyuse energyupkeep"):gmatch(
+			("speed maxacc maxdec maxvelocity turnrate cloakcost cloakcostmoving energymake energyuse energyupkeep"):gmatch(
 				"%S+"
 			)
 		do
 			u[k] = 0
 		end
+		u.movementclass = nil
 		for k in
 			("canmove canpatrol canfight canrepeat canassist canrepair canreclaim canresurrect cancapture turninplace cloakable cancloak initcloaked builder"):gmatch(
 				"%S+"
@@ -219,14 +220,14 @@ do
 			{ "corhllllt" },
 			{ 620e3, 1600e4, 1600e4, 780e3, 3, 38000, 1400, 3800 },
 			"Aegis Starspire",
-			"Four-channel continuous laser spires. Locks 4 targets at 4400 range to disintegrate air raids.",
+			"Four-channel continuous laser spires. Locks 4 targets at 3600 range to disintegrate air raids.",
 			function(u, src)
 				local beamHues = { "0.0 0.95 1.0", "0.4 0.25 1.0", "0.0 0.75 1.0", "0.25 0.55 1.0" }
 				for slot = 1, 4 do
 					installWeapon(u, src, slot, "AEGIS_STARBEAM_" .. slot, {
 						weapontype = "BeamLaser",
 						largebeamlaser = true,
-						range = 4200,
+						range = 3600,
 						reloadtime = 0.04,
                         beamtime = 0.034,
 						beamttl = 3,
@@ -240,7 +241,7 @@ do
 						rgbcolor2 = "0.7 0.1 1.0",
 						texture3 = "largebeam",
 						tilelength = 120,
-						damage = { default = 1800, vtol = 22000, shields = 8000, commandertoo = 400 },
+						damage = { default = 1200, vtol = 6800, shields = 4000, commandertoo = 300 },
 						explosiongenerator = "custom:laserhit-large-blue",
 						soundstart = "beamlaserfire",
 						soundtrigger = 1,
@@ -257,7 +258,7 @@ do
 		{
 			"player_thornnest",
 			{ "corpun", "armguard", "corflak" },
-			{ 280e3, 620e4, 620e4, 450e3, 4, 18000, 850, 1800 },
+			{ 360e3, 780e4, 780e4, 380e3, 4, 18000, 850, 1800 },
 			"Tempest Storm",
 			"Electrified napalm chain-arc array. Vaporizes massed ground swarms and air raids.",
 			function(u, src)
@@ -281,7 +282,7 @@ do
 					soundstart = "weapons/tecl_fire.wav",
 					soundhitdry = "weapons/lashit.wav",
 					soundhit = "xplomed1",
-					damage = { default = 2400, vtol = 6800, shields = 3600, commandertoo = 600 },
+					damage = { default = 1650, vtol = 4200, shields = 2800, commandertoo = 400 },
 					onlytargetcategory = "SURFACE VTOL",
 				})
 			end,
@@ -293,7 +294,7 @@ do
 			{ "armmercury", "corscreamer" },
 			{ 320e3, 700e4, 780e4, 380e3, 4, 16000, 950, 1800 },
 			"Prism Disruptor",
-			"Long-range prism beam that damages and briefly paralyzes heavy targets",
+			"Long-range prism beam that briefly paralyzes heavy ground and air targets",
 			function(u, src)
 				installWeapon(u, src, 1, "MIRROR_INTERCEPT", {
 					weapontype = "BeamLaser",
@@ -305,9 +306,9 @@ do
 					corethickness = 0.55,
 					thickness = 7,
 					energypershot = 6000,
-					paralyzetime = 5,
+					paralyzetime = 8,
 					paralyzer = true,
-					damage = { default = 24000, vtol = 40000, shields = 16000, commandertoo = 5000 },
+					damage = { default = 42000, vtol = 72000, shields = 24000, commandertoo = 8000 },
 					rgbcolor = "0.35 0.9 1",
 					explosiongenerator = "custom:laserhit-large-blue",
 					soundhit = "xplomed1",
@@ -348,7 +349,7 @@ do
 					explosiongenerator = "custom:exp_emp_large",
 					soundhit = "weapons/xplonuk4.wav",
 					soundstart = "weapons/cannon_heavy.wav",
-					damage = { default = 96000, shields = 160000, commandertoo = 18000 },
+					damage = { default = 155000, shields = 210000, commandertoo = 24000 },
 					onlytargetcategory = "SURFACE VTOL",
 				})
 			end,
@@ -357,7 +358,7 @@ do
 		-- 7. INFERNO CRUCIBLE: Heavy Napalm Torrent Flamethrower
 		{
 			"player_infernocrucible",
-			{ "corgol", "corkrog", "corpun", "armguard" },
+			{ "corpun", "armguard", "corpyro" },
 			{ 450e3, 980e4, 980e4, 620e3, 4, 24000, 950, 2000 },
 			"Inferno Crucible",
 			"Heavy multi-barrel chemical flamethrower. Envelops chokepoints in an inescapable sea of liquid fire.",
@@ -387,7 +388,7 @@ do
 					explosiongenerator = "custom:napalm_fire",
 					soundstart = "weapons/flamfir1.wav",
 					soundhit = "weapons/burn02.wav",
-					damage = { default = 3600, shields = 10000, commandertoo = 800 },
+					damage = { default = 3200, shields = 9000, commandertoo = 700 },
 					onlytargetcategory = "SURFACE",
 				})
 			end,
@@ -399,7 +400,7 @@ do
 			{ "legcluster", "corpun", "armguard" },
 			{ 1100e3, 2400e4, 2400e4, 1200e3, 2, 80000, 1100, 3600 },
 			"Cascade Mortar",
-			"Apocalyptic orbital plasma geyser. Rains devastating apocalyptic cataclysms across entire map sectors.",
+			"Apocalyptic orbital plasma geyser. Rains devastating cataclysms across map sectors.",
 			function(u, src)
 				u.hightrajectorytype = 1
 				installWeapon(u, src, 1, "CASCADE_FOUNTAIN", {
@@ -431,7 +432,7 @@ do
 					impulsefactor = 18.0,
 					impulseboost = 12.0,
 					camerashake = 240,
-					damage = { default = 24000, shields = 80000, commandertoo = 5000 },
+					damage = { default = 20000, shields = 65000, commandertoo = 4000 },
 					onlytargetcategory = "SURFACE",
 				})
 			end,

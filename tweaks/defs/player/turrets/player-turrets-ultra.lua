@@ -97,7 +97,7 @@ do
 
 	local function sanitize(u)
 		for k in
-			("maxacc maxdec maxvelocity turnrate cloakcost cloakcostmoving energymake energyuse energyupkeep"):gmatch(
+			("speed maxacc maxdec maxvelocity turnrate cloakcost cloakcostmoving energymake energyuse energyupkeep"):gmatch(
 				"%S+"
 			)
 		do
@@ -255,10 +255,10 @@ do
 					accuracy = 260,
 					areaofeffect = 700,
 					weaponvelocity = 2600,
-					energypershot = 14000,
+					energypershot = 14e3,
 					paralyzer = true,
-					paralyzetime = 25,
-					damage = D(400, 3e5, nil, 400),
+					paralyzetime = 18,
+					damage = D(400, 140e3, nil, 400),
 					explosiongenerator = "custom:emp_m_preventable",
 					soundhit = "emparm",
 					soundstart = S_CAN2,
@@ -305,7 +305,7 @@ do
 				installWeapon(u, src, 1, "QUAKE_DOOM", {
 					weapontype = C_CAN,
 					range = 5400,
-					reloadtime = 3.2,
+					reloadtime = 2.8,
 					energypershot = 110e3,
 					accuracy = 420,
 					areaofeffect = 1400,
@@ -316,7 +316,7 @@ do
 					cratermult = 12.0,
 					camerashake = 160,
 					size = 16.0,
-					damage = D(220000, nil, 180000, 35000),
+					damage = D(310e3, nil, 240e3, 48e3),
 					cegtag = "arty-huge",
 					explosiongenerator = "custom:genericshellexplosion-huge",
 					soundhit = "lrpcexplo",
@@ -342,11 +342,11 @@ do
 					areaofeffect = 1500,
 					weaponvelocity = 2400,
 					paralyzer = true,
-					paralyzetime = 45,
+					paralyzetime = 28,
 					camerashake = 140,
 					size = 15.0,
 					rgbcolor = "0.2 0.6 1",
-					damage = D(1200, nil, nil, 1200),
+					damage = D(180e3, nil, nil, 180e3),
 					explosiongenerator = "custom:emp_l_preventable",
 					soundhit = "emparm",
 					onlytargetcategory = T_S,
@@ -379,7 +379,7 @@ do
 					wobble = 60,
 					areaofeffect = 200,
 					energypershot = 4200,
-					damage = D(5800, 32000, 14000),
+					damage = D(7200, 32000, 18000),
 					soundstart = "rocklit1",
 					onlytargetcategory = T_SV,
 				})
@@ -408,7 +408,7 @@ do
 					energypershot = 18000,
 					size = 9.0,
 					rgbcolor = "0.1 0.9 1",
-					damage = D(14000, nil, 240e3),
+					damage = D(7500, nil, 180e3, 3500),
 					explosiongenerator = "custom:genericshellexplosion-medium",
 					soundhit = "xplomed2",
 					soundstart = S_CAN1,
@@ -428,7 +428,7 @@ do
 					weapontype = C_BLAS,
 					largebeamlaser = true,
 					range = 3600,
-					reloadtime = 1.8,
+					reloadtime = 1.6,
 					beamtime = 1.0,
 					beamttl = 170,
 					energypershot = 180e3,
@@ -436,7 +436,7 @@ do
 					corethickness = 0.80,
 					laserflaresize = 5,
 					firestarter = 100,
-					damage = D(220000, nil, 140000, 40000),
+					damage = D(280e3, nil, 180e3, 50e3),
 					texture3 = "largebeam",
 					tilelength = 150,
 					explosiongenerator = "custom:laserhit-large-red",
@@ -473,7 +473,7 @@ do
 						corethickness = cfg[3] * 0.8,
 						laserflaresize = 5,
 						firestarter = 100,
-						damage = D(64000, nil, 160000, 15000),
+						damage = D(76e3, nil, 175e3, 18e3),
 						texture3 = "largebeam",
 						tilelength = 150,
 						explosiongenerator = "custom:laserhit-large-blue",
@@ -504,7 +504,7 @@ do
 					corethickness = 0.90,
 					laserflaresize = 6,
 					firestarter = 100,
-					damage = D(1100000, nil, 720000, 160000),
+					damage = D(1100e3, nil, 600e3, 160e3),
 					texture3 = "largebeam",
 					tilelength = 150,
 					explosiongenerator = "custom:laserhit-large-sparks",
@@ -527,8 +527,8 @@ do
 					weapontype = C_CAN,
 					range = 8400,
 
-					-- Rapid cyclic cadence: ~5 rounds every second without manual firing
-					reloadtime = 0.2,
+					-- Rapid cyclic cadence: ~4 rounds every second without manual firing
+					reloadtime = 0.25,
 					burst = 1,
 					projectiles = 1,
 
@@ -551,8 +551,8 @@ do
 					impulseboost = 4.0,
 					size = 9.5,
 
-					-- 42,000 baseline / 110,000 shield damage per round (210k DPS sustained)
-					damage = D(42000, nil, 110000, 14000),
+					-- 36,000 baseline / 85,000 shield damage per round (144k DPS sustained)
+					damage = D(36e3, nil, 85e3, 11e3),
 					cegtag = "railgun-trail-blue",
 					explosiongenerator = "custom:genericshellexplosion-medium",
 					soundstart = S_CAN1,
