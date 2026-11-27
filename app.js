@@ -468,6 +468,50 @@ function renderInputs(g) {
       hide.setAttribute("aria-expanded", hidden ? "true" : "false");
       hide.textContent = hidden ? "Hide script" : "Show script";
     };
+    var fmt = document.createElement("button");
+    fmt.type = "button";
+    fmt.textContent = "Prettify";
+    fmt.title = "Format Lua indentation in this snippet";
+    fmt.onclick = function () {
+      if (!ta.value.trim()) { toast("Nothing to format"); return; }
+      try {
+        ta.value = luaPrettify(ta.value);
+        g.snippets[i] = ta.value;
+        charBadge.textContent = ta.value.length + " chars";
+        g.packed = null; g.packedNames = null; g.packNotice = null;
+        saveEditorState();
+        renderSlots(g);
+        toast("Snippet formatted");
+      } catch (e) {
+        toast("Format failed: " + (e && e.message ? e.message : String(e)));
+      }
+    };
+    var ex = document.createElement("button");
+    ex.type = "button";
+    ex.textContent = "Load example";
+    ex.title = "Insert the starter example into an empty snippet";
+    ex.onclick = function () {
+      if (ta.value.trim() !== "") {
+        toast("Clear this snippet first to load the example");
+        return;
+      }
+      ta.value = exampleText(g.kind);
+      g.snippets[i] = ta.value;
+      charBadge.textContent = ta.value.length + " chars";
+      g.packed = null; g.packedNames = null; g.packNotice = null;
+      if (ta.style.display === "none") {
+        ta.style.display = "block";
+        ta.hidden = false;
+        box.classList.remove("is-collapsed");
+        hide.setAttribute("aria-expanded", "true");
+        hide.textContent = "Hide script";
+      }
+      saveEditorState();
+      renderSlots(g);
+      ta.focus();
+    };
+    controls.appendChild(fmt);
+    controls.appendChild(ex);
     controls.appendChild(hide);
     controls.appendChild(del);
     head.appendChild(titleGroup);
