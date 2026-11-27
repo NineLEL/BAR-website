@@ -9,7 +9,7 @@ do
 		leg = { "legack", "legacv", "legaca" },
 	}
 	local VIS = { arm = "armrespawn", cor = "correspawn", leg = "legnanotcbase" }
-	local SUB = { arm = "armacsub", cor = "coracsub", leg = "legacsub" }
+	local SUB = { arm = "armacsub", cor = "coracsub", leg = "leganavyconsub" }
 	local LANG = { "en", "de", "fr", "es", "it", "ru", "zh", "cs", "hr", "lt" }
 
 	local function cp(v)
@@ -214,7 +214,14 @@ do
 		"player_executioner",
 		"player_prismcathedral",
 		"player_hyperionlance",
-		"player_starfallcataclysm",
+		"player_orbitfall",
+		"player_sunsplitter",
+		"player_skewerspike",
+		"player_arcpylon",
+		"player_chronosweep",
+		"player_blightmortar",
+		"player_diskricochet",
+		"player_vlsbastion",
 		"player_streamarty",
 		"player_holybeam",
 		"player_aegisstarspire",

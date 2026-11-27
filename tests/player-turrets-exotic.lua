@@ -61,6 +61,8 @@ assert(UnitDefs.player_chronosweep.weapondefs.SOLARIS_SWEEP.customparams.sweepfi
 assert(UnitDefs.player_blightmortar.weapondefs.VIPER_CAULDRON.customparams.area_onhit_time == 16)
 assert(UnitDefs.player_diskricochet.weapondefs.VALKYRIE_GLAIVE.groundbounce == true and UnitDefs.player_diskricochet.weapondefs.VALKYRIE_GLAIVE.numbounce == 4)
 assert(UnitDefs.player_vlsbastion.radardistancejam == 950 and UnitDefs.player_vlsbastion.customparams.geothermal == nil)
+assert(UnitDefs.player_vlsbastion.weapondefs.AEGIS_VLS_CRUISE.interceptor == 0 and UnitDefs.player_vlsbastion.weapondefs.AEGIS_VLS_CRUISE.collideenemy == true)
+assert(UnitDefs.player_diskricochet.weapons[1].maindir == nil and UnitDefs.player_diskricochet.weapons[1].maxangledif == nil)
 assert(UnitDefs.player_abyssalkraken.sonardistance == 2200 and UnitDefs.player_abyssalkraken.weapondefs.KRAKEN_TORPEDO.weapontype == "TorpedoLauncher")
 
 for _, b in ipairs({"armack", "armacsub", "armbehem"}) do

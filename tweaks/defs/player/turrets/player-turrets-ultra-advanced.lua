@@ -129,6 +129,8 @@ do
 			return false
 		end
 		local w = copy(sDef)
+		w.stockpile, w.stockpiletime, w.commandfire, w.metalpershot, w.interceptor, w.coverage, w.impactonly, w.model, w.customparams =
+			false, nil, false, 0, 0, nil, nil, "", {}
 		for k, v in pairs(overrides or {}) do
 			w[k] = copy(v)
 		end
@@ -136,7 +138,7 @@ do
 		u.weapondefs[newName] = w
 
 		local s = copy(sSlot)
-		s.def = newName
+		s.def, s.maindir, s.maxangledif = newName, nil, nil
 		slotOverrides = slotOverrides or {}
 		if w.onlytargetcategory and not slotOverrides.onlytargetcategory then
 			slotOverrides.onlytargetcategory = w.onlytargetcategory
@@ -304,6 +306,7 @@ do
 			function(u, src)
 				installWeapon(u, src, 1, "MIRROR_INTERCEPT", {
 					weapontype = "BeamLaser",
+					canattackground = true,
 					range = 2400,
 					reloadtime = 1.2,
 					beamtime = 0.20,

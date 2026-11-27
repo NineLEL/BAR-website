@@ -115,6 +115,9 @@ do
 			return false
 		end
 		local w = C(sDef)
+		w.stockpile, w.stockpiletime, w.commandfire, w.metalpershot, w.interceptor, w.coverage, w.impactonly, w.model, w.customparams =
+			false, nil, false, 0, 0, nil, nil, "", {}
+		w.collideenemy, w.collidefeature = true, true
 		for k, v in pairs(ov or {}) do
 			w[k] = C(v)
 		end
@@ -122,7 +125,7 @@ do
 		u.weapondefs[nn] = w
 
 		local s = C(sSlot)
-		s.def = nn
+		s.def, s.maindir, s.maxangledif = nn, nil, nil
 		sov = sov or {}
 		if w.onlytargetcategory and not sov.onlytargetcategory then
 			sov.onlytargetcategory = w.onlytargetcategory

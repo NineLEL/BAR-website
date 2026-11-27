@@ -74,7 +74,8 @@ do
                         pk ~= "def"
                         and m[pk] == nil
                         and pk ~= "onlytargetcategory"
-                        and (w.is_suite or (pk ~= "maindir" and pk ~= "maxangledif"))
+                        and pk ~= "maindir"
+                        and pk ~= "maxangledif"
                     then
                         m[pk] = C(pv)
                     end

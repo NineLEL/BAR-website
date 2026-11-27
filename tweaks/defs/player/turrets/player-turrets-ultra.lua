@@ -120,6 +120,8 @@ do
 			return false
 		end
 		local w = C(sDef)
+		w.stockpile, w.stockpiletime, w.commandfire, w.metalpershot, w.interceptor, w.coverage, w.impactonly, w.model, w.customparams =
+			false, nil, false, 0, 0, nil, nil, "", {}
 		for k, v in pairs(ov or {}) do
 			w[k] = C(v)
 		end
@@ -127,7 +129,7 @@ do
 		u.weapondefs[nn] = w
 
 		local s = C(sSlot)
-		s.def = nn
+		s.def, s.maindir, s.maxangledif = nn, nil, nil
 		sov = sov or {}
 		if w.onlytargetcategory and not sov.onlytargetcategory then
 			sov.onlytargetcategory = w.onlytargetcategory
@@ -369,7 +371,7 @@ do
 		-- 7. HIVE ARRAY
 		{
 			"player_hivearray",
-			{ "legstarfall", "corint" },
+			{ "legcluster", "corint" },
 			{ 840e3, 1800e4, 780e3, 2, 58000, nil, 3200 },
 			"Hive Array",
 			"Guided missile barrage fortress",
@@ -531,7 +533,7 @@ do
 -- 12. AEGIS ORBITFALL: Autonomous Kinetic Rail Battery
 		{
 			"player_orbitfall",
-			{ "legstarfall", "armbrtha", "corint" },
+			{ "armbrtha", "corint" },
 			{ 1200e3, 2600e4, 1050e3, 2, 84000, 950, 4800 },
 			"Aegis Orbitfall",
 			"Fully automatic continuous kinetic battery. Rains rapid precision hyper-velocity rods across strategic ranges.",
