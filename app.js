@@ -78,6 +78,11 @@ function renderLib(data) {
   var st = $("libStatus");
   st.textContent = "Loaded " + nD + " defs (" + eD + " enabled) + " + nU + " units (" + eU + " enabled). " + sourceMessage + " Enabled files flow into the packer automatically.";
   st.className = "status-banner is-ready";
+  var libCountEl = $("tab-library-count");
+  if (libCountEl) {
+    var totalEnabled = eD + eU;
+    libCountEl.textContent = totalEnabled ? totalEnabled + " on" : "";
+  }
   window._lib = data;
   syncLibToPacker();
   if (libraryRendered) renderLibrary();
@@ -591,6 +596,11 @@ function renderSlots(g) {
     if (overCount) summaryText += " · " + overCount + " over limit";
     summaryEl.textContent = summaryText;
     summaryEl.className = "section-pill" + (overCount ? " is-danger" : (usedCount ? " is-active" : ""));
+  }
+  var tabCountEl = $(g.kind === "tweakdefs" ? "tab-defs-count" : "tab-units-count");
+  if (tabCountEl) {
+    tabCountEl.textContent = usedCount ? usedCount + "/" + MAX_SLOTS : "";
+    tabCountEl.className = "tab-count" + (overCount ? " is-danger" : "");
   }
   var noticeHost = $(g.kind === "tweakdefs" ? "defsPackNotice" : "unitsPackNotice");
   if (noticeHost) noticeHost.replaceChildren();
