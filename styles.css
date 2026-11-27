@@ -1477,6 +1477,19 @@ button:disabled {
   margin-bottom: 0;
 }
 
+.library-filter-toggle {
+  min-height: 42px;
+  padding: 0 13px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+
+.library-filter-toggle:hover {
+  border-color: var(--line-strong);
+}
+
 .library-toolbar button,
 .library-search button {
   min-height: 42px;

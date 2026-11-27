@@ -68,7 +68,7 @@ function toggleLibraryFiles(files, enabled) {
   }));
 }
 
-function renderLib(data) {
+function updateLibHeader(data) {
   var nD = data.defs.length, nU = data.units.length;
   var eD = data.defs.filter(function (f) { return f.enabled; }).length;
   var eU = data.units.filter(function (f) { return f.enabled; }).length;
@@ -83,6 +83,10 @@ function renderLib(data) {
     var totalEnabled = eD + eU;
     libCountEl.textContent = totalEnabled ? totalEnabled + " on" : "";
   }
+}
+
+function renderLib(data) {
+  updateLibHeader(data);
   window._lib = data;
   syncLibToPacker();
   if (libraryRendered) renderLibrary();
@@ -106,11 +110,22 @@ function renderLibGroup(el, kind, files) {
     fragment.appendChild(none); el.replaceChildren(fragment);
     return;
   }
+  var openByFolder = Object.create(null);
+  if (el.querySelectorAll) {
+    el.querySelectorAll(".library-group").forEach(function (groupEl) {
+      var folderKey = groupEl.getAttribute("data-folder");
+      if (folderKey !== null) openByFolder[folderKey] = !!groupEl.open;
+    });
+  }
   var query = ($("libSearch") ? $("libSearch").value : "").toLowerCase();
-  var filtered = files.filter(function (f) { return f.name.toLowerCase().indexOf(query) !== -1; });
+  var enabledOnly = !!($("libEnabledOnly") && $("libEnabledOnly").checked);
+  var filtered = files.filter(function (f) {
+    if (enabledOnly && !f.enabled) return false;
+    return f.name.toLowerCase().indexOf(query) !== -1;
+  });
   if (!filtered.length) {
     var none = document.createElement("div"); none.className = "slot empty";
-    none.textContent = files.length ? "No filenames match your search." : "No .lua files yet.";
+    none.textContent = files.length ? (enabledOnly ? "No enabled filenames match your filter." : "No filenames match your search.") : "No .lua files yet.";
     fragment.appendChild(none); el.replaceChildren(fragment); return;
   }
   var groups = {};
@@ -123,7 +138,10 @@ function renderLibGroup(el, kind, files) {
   names.forEach(function (folder) {
     var groupFiles = groups[folder].sort(function (a, b) { return a.name.toLowerCase().localeCompare(b.name.toLowerCase()); });
     var enabled = groupFiles.filter(function (f) { return f.enabled; }).length;
-    var details = document.createElement("details"); details.className = "library-group"; details.open = true;
+    var details = document.createElement("details");
+    details.className = "library-group";
+    details.setAttribute("data-folder", folder);
+    details.open = Object.prototype.hasOwnProperty.call(openByFolder, folder) ? openByFolder[folder] : true;
     var summary = document.createElement("summary");
     var summaryTitle = document.createElement("span");
     summaryTitle.className = "library-group-title";
@@ -136,7 +154,14 @@ function renderLibGroup(el, kind, files) {
     var actions = document.createElement("div"); actions.className = "library-group-actions";
     [true, false].forEach(function (enable) {
       var action = document.createElement("button"); action.type = "button"; action.textContent = enable ? "Enable group" : "Disable group";
-      action.onclick = function () { toggleLibraryFiles(groupFiles.map(function (f) { return { kind: kind, name: f.name }; }), enable).then(libFetch, function () { toast("Group toggle failed."); libFetch(); }); };
+      action.onclick = function () {
+        groupFiles.forEach(function (f) { f.enabled = enable; });
+        if (window._lib) updateLibHeader(window._lib);
+        syncLibToPacker();
+        renderLibrary();
+        toggleLibraryFiles(groupFiles.map(function (f) { return { kind: kind, name: f.name }; }), enable)
+          .catch(function () { toast("Group toggle failed."); libFetch(); });
+      };
       actions.appendChild(action);
     });
     details.appendChild(summary); details.appendChild(actions);
@@ -152,17 +177,35 @@ function renderLibGroup(el, kind, files) {
     var checkboxLabel = document.createElement("label");
     checkboxLabel.className = "library-file-toggle";
     checkboxLabel.appendChild(cb);
-    cb.onchange = function () {
-      toggleLibraryFile(kind, f.name, cb.checked).then(function (r) {
-        if (!r || !r.ok) throw new Error("Toggle failed");
-        libFetch();
-      }, function () { toast("Toggle failed; browser storage may be unavailable."); });
-    };
     var nm = document.createElement("span");
     nm.className = "name";
     nm.textContent = f.name;
     checkboxLabel.appendChild(nm);
     checkboxLabel.setAttribute("aria-label", (f.enabled ? "Disable " : "Enable ") + f.name);
+    cb.onchange = function () {
+      var nextEnabled = !!cb.checked;
+      var prevEnabled = !!f.enabled;
+      f.enabled = nextEnabled;
+      div.className = "slot" + (nextEnabled ? "" : " empty");
+      checkboxLabel.setAttribute("aria-label", (nextEnabled ? "Disable " : "Enable ") + f.name);
+      summaryCount.textContent = groupFiles.filter(function (gf) { return gf.enabled; }).length + "/" + groupFiles.length + " enabled";
+      if (window._lib) updateLibHeader(window._lib);
+      syncLibToPacker();
+      if ($("libEnabledOnly") && $("libEnabledOnly").checked) renderLibrary();
+      toggleLibraryFile(kind, f.name, nextEnabled).then(function (r) {
+        if (!r || !r.ok) throw new Error("Toggle failed");
+      }, function () {
+        f.enabled = prevEnabled;
+        cb.checked = prevEnabled;
+        div.className = "slot" + (prevEnabled ? "" : " empty");
+        checkboxLabel.setAttribute("aria-label", (prevEnabled ? "Disable " : "Enable ") + f.name);
+        summaryCount.textContent = groupFiles.filter(function (gf) { return gf.enabled; }).length + "/" + groupFiles.length + " enabled";
+        if (window._lib) updateLibHeader(window._lib);
+        syncLibToPacker();
+        if (libraryRendered) renderLibrary();
+        toast("Toggle failed; browser storage may be unavailable.");
+      });
+    };
     left.appendChild(checkboxLabel);
     var st = document.createElement("span");
     st.className = "stats";
@@ -233,10 +276,13 @@ function setAllLib(enabled, onlyKind) {
   var data = window._lib;
   if (!data) { toast("Library not loaded yet."); return; }
   var files = [];
-  if (!onlyKind || onlyKind === "defs") data.defs.forEach(function (f) { files.push({ kind: "defs", name: f.name }); });
-  if (!onlyKind || onlyKind === "units") data.units.forEach(function (f) { files.push({ kind: "units", name: f.name }); });
+  if (!onlyKind || onlyKind === "defs") data.defs.forEach(function (f) { f.enabled = enabled; files.push({ kind: "defs", name: f.name }); });
+  if (!onlyKind || onlyKind === "units") data.units.forEach(function (f) { f.enabled = enabled; files.push({ kind: "units", name: f.name }); });
   if (!files.length) { toast("No library files."); return; }
-  toggleLibraryFiles(files, enabled).then(function () { libFetch(); }, function () { toast("Bulk toggle failed \u2014 is the server running?"); libFetch(); });
+  updateLibHeader(data);
+  syncLibToPacker();
+  if (libraryRendered) renderLibrary();
+  toggleLibraryFiles(files, enabled).catch(function () { toast("Bulk toggle failed \u2014 is the server running?"); libFetch(); });
 }
 $("libReload").onclick = libFetch;
 $("defsLibReload").onclick = libFetch;
@@ -246,7 +292,7 @@ $("libDisableAll").onclick = function () { setAllLib(false); };
 $("libDefs").setAttribute("data-kind", "defs"); $("libUnits").setAttribute("data-kind", "units");
 $("libSearch").oninput = function () { clearTimeout(librarySearchTimer); librarySearchTimer = setTimeout(function () { if (libraryRendered) renderLibrary(); }, 180); };
 $("libSearchClear").onclick = function () { $("libSearch").value = ""; clearTimeout(librarySearchTimer); if (libraryRendered) renderLibrary(); $("libSearch").focus(); };
-$("libDefs").setAttribute("data-kind", "defs"); $("libUnits").setAttribute("data-kind", "units");
+if ($("libEnabledOnly")) $("libEnabledOnly").onchange = function () { if (libraryRendered) renderLibrary(); };
 var libVersion = null;
 function watchLibrary() {
   if (!LibraryApi.isServerMode()) return;
