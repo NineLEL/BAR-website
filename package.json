@@ -15,7 +15,7 @@
     "test:client": "node --test tests/library-client.test.js",
     "test:server": "node --test tests/server.test.js",
     "test:tweaks": "node --test tests/tweaks.test.js",
-    "check": "node --check app.js && node --check app-pure.js && node --check app-library.js && node --check server.js && node --check scripts/build-pages.js && node --check tests/library-client.test.js && node --check tests/pages-build.test.js && node --check tests/pure.test.js && node --check tests/server.test.js && node --check tests/tweaks.test.js",
+    "check": "node --check app.js && node --check app-pure.js && node --check app-library.js && node --check server.js && node --check scripts/build-pages.js && node --check tests/library-client.test.js && node --check tests/pages-build.test.js && node --check tests/pure.test.js && node --check tests/server.test.js && node --check tests/tweaks.test.js && node --check tests/ui-dom.test.js",
     "verify": "npm run check && npm test"
   }
 }
