@@ -41,13 +41,13 @@ local COR_BUILDERS = { "corack", "coracv", "coraca", "coracsub", "corcs", "corch
 local LEG_BUILDERS = { "legack", "legacv", "legaca", "legch", "legspcon", "legnavyconship", "leganavyconsub" }
 local ALL_BUILDERS = { "armack", "armacv", "armaca", "armacsub", "armcs", "armch", "armcsa", "corack", "coracv", "coraca", "coracsub", "corcs", "corch", "corgantuw", "legack", "legacv", "legaca", "legch", "legspcon", "legnavyconship", "leganavyconsub" }
 local AA = {
-  missile = { name = "Spear Interceptor", weapontype = "MissileLauncher", accuracy = 35, areaofeffect = 200, burst = 6, burstrate = 0.1, range = 2000, reloadtime = 1.6, tracks = true, turnrate = 68000, dance = 3, wobble = 40, weaponacceleration = 800, weaponvelocity = 3200, flighttime = 7, cegtag = "missiletrailaa", texture1 = "null", texture2 = "smoketrailaa", explosiongenerator = "custom:genericshellexplosion-medium-aa", soundhit = "packaahit", soundstart = "packaamissiles", damage = { default = 900, vtol = 3800, shields = 1400 } },
-  emp = { name = "Silence Ray", weapontype = "Cannon", accuracy = 60, areaofeffect = 420, burst = 4, burstrate = 0.12, sprayangle = 1000, range = 1800, reloadtime = 1.4, paralyzer = true, paralyzetime = 16, weaponvelocity = 2600, cegtag = "railguntrail", customparams = { speceffect = "sector_fire", spread_angle = 24 }, explosiongenerator = "custom:emp_m_preventable", soundhit = "emparm", edgeeffectiveness = 0.7, damage = { default = 800, vtol = 18000, commandertoo = 800 } },
-  beam = { name = "Prism Interceptor", weapontype = "BeamLaser", beamtime = 0.06, largebeamlaser = true, corethickness = 0.5, laserflaresize = 3, explosiongenerator = "custom:laserhit-small-blue", range = 1900, reloadtime = 0.25, beamttl = 3, rgbcolor = "0.2 0.9 1.0", thickness = 4, soundstart = "beamlaserfire", soundtrigger = 1, damage = { default = 1800, vtol = 8500, shields = 2500 } },
+  missile = { name = "Spear Interceptor", weapontype = "MissileLauncher", accuracy = 35, areaofeffect = 200, burst = 6, burstrate = 0.1, range = 2000, reloadtime = 1.6, tracks = true, turnrate = 68000, dance = 3, wobble = 40, weaponacceleration = 800, weaponvelocity = 3200, flighttime = 7, cegtag = "missiletrailaa-large", texture1 = "null", texture2 = "smoketrailaa", explosiongenerator = "custom:genericshellexplosion-medium-aa", soundhit = "packohit", soundstart = "packolau", damage = { default = 900, vtol = 3800, shields = 1400 } },
+  emp = { name = "Silence Ray", weapontype = "Cannon", accuracy = 60, areaofeffect = 420, burst = 4, burstrate = 0.12, sprayangle = 1000, range = 1800, reloadtime = 1.4, paralyzer = true, paralyzetime = 16, weaponvelocity = 2600, size = 8, stages = 16, rgbcolor = "0.3 0.75 1", cegtag = "lightning_stormbolt_small", customparams = { speceffect = "sector_fire", spread_angle = 24 }, explosiongenerator = "custom:lightning_storm_emp", soundhit = "mismed1emp", soundstart = "lghthvy1", edgeeffectiveness = 0.7, damage = { default = 800, vtol = 18000, commandertoo = 800 } },
+  beam = { name = "Prism Interceptor", weapontype = "BeamLaser", beamtime = 0.06, largebeamlaser = true, corethickness = 0.5, laserflaresize = 7, scrollspeed = 8, pulsespeed = 8, explosiongenerator = "custom:laserhit-medium-aqua", range = 1900, reloadtime = 0.25, beamttl = 3, rgbcolor = "0.2 0.9 1.0", rgbcolor2 = "0.9 1 1", thickness = 4, soundstart = "beamershot", soundtrigger = 1, damage = { default = 1800, vtol = 8500, shields = 2500 } },
 }
 local SHIELDS = {
-  { dst = "player_aegisdome", src = "armgate", nm = "Aegis Dome", tip = "T2 heavy shield. 9000 power, 520 radius, holds a forward line.", m = 45000, e = 900000, bt = 900000, hp = 190000, cap = 4, radius = 720, power = 42000, regen = 2600, regenE = 1600, start = 34000 },
-  { dst = "player_citadelumbrella", src = "armgatet3", nm = "Citadel Umbrella", tip = "T3 mega shield. 36000+ power, 950 radius, covers a whole base.", m = 190000, e = 3800000, bt = 3800000, hp = 620000, cap = 2, radius = 1400, power = 180000, regen = 9000, regenE = 5600, start = 155000 },
+  { dst = "player_aegisdome", src = "armgate", nm = "Aegis Dome", tip = "T2 heavy shield. 9000 power, 520 radius, holds a forward line.", m = 45000, e = 900000, bt = 900000, hp = 190000, cap = 4, radius = 720, power = 42000, regen = 2600, regenE = 1600, start = 34000, col = "0.15 0.8 1 0.85" },
+  { dst = "player_citadelumbrella", src = "armgatet3", nm = "Citadel Umbrella", tip = "T3 mega shield. 36000+ power, 950 radius, covers a whole base.", m = 190000, e = 3800000, bt = 3800000, hp = 620000, cap = 2, radius = 1400, power = 180000, regen = 9000, regenE = 5600, start = 155000, col = "0.45 0.65 1 0.9" },
 }
 for _, p in ipairs(SHIELDS) do
   local s = UnitDefs[p.src]
@@ -64,6 +64,11 @@ for _, p in ipairs(SHIELDS) do
     u.customparams.shield_powerregen = p.regen
     u.customparams.shield_powerregenenergy = p.regenE
     u.customparams.shield_startingpower = p.start
+    if u.weapondefs and u.weapondefs.repulsor then
+      u.weapondefs.repulsor.shieldalpha = 0.34
+      u.weapondefs.repulsor.shieldgoodcolor = p.col
+      u.weapondefs.repulsor.shieldbadcolor = "1 0.25 0.2 0.9"
+    end
     name(u, p.nm, p.tip)
     UnitDefs[p.dst] = u
     if UnitDefNames ~= nil then UnitDefNames[p.dst] = u end
@@ -73,7 +78,7 @@ end
 local AA_SPECS = {
   { dst = "player_silencearray", src = "armemp", builders = ARM_BUILDERS, key = "player_silenceray", def = AA.emp, nm = "Silence Array", tip = "Arm T2 EMP AA monument. 16-second air paralysis, 420 area, zero flak.", m = 12000, e = 220000, bt = 220000, hp = 90000, cap = 6, upkeep = 900 },
   { dst = "player_prismwall", src = "corflak", builders = COR_BUILDERS, key = "player_prisminterceptor", def = AA.beam, nm = "Prism Wall", tip = "Core T2 beam AA monument. Sustained cyan lance, 34k VTOL DPS.", m = 13000, e = 240000, bt = 240000, hp = 95000, cap = 6, upkeep = 1000 },
-  { dst = "player_legionstormguard", src = "legflak", builders = LEG_BUILDERS, key = "player_legionstormguard", def = { name = "Legion Storm Guard", weapontype = "Cannon", accuracy = 40, areaofeffect = 300, burst = 8, burstrate = 0.05, range = 1800, reloadtime = 0.8, weaponvelocity = 3200, paralyzer = true, paralyzetime = 14, cegtag = "railguntrail", explosiongenerator = "custom:laserhit-large-sparks", soundstart = "beamlaserfire", soundtrigger = 1, customparams = { speceffect = "sector_fire", spread_angle = 20 }, damage = { default = 1000, vtol = 6500, shields = 1500 } }, nm = "Storm Guard", tip = "Legion T2 rapid EMP needle monument. Eight-round bursts, 14-second stun.", m = 12500, e = 230000, bt = 230000, hp = 90000, cap = 6, upkeep = 950 },
+  { dst = "player_legionstormguard", src = "legflak", builders = LEG_BUILDERS, key = "player_legionstormguard", def = { name = "Legion Storm Guard", weapontype = "Cannon", accuracy = 40, areaofeffect = 300, burst = 8, burstrate = 0.05, range = 1800, reloadtime = 0.8, weaponvelocity = 3200, size = 7, stages = 16, rgbcolor = "0.4 0.88 1", paralyzer = true, paralyzetime = 14, cegtag = "railgun", explosiongenerator = "custom:genericshellexplosion-small-lightning", soundstart = "electric2", soundhit = "xploelc1", soundtrigger = 1, customparams = { speceffect = "sector_fire", spread_angle = 20 }, damage = { default = 1000, vtol = 6500, shields = 1500 } }, nm = "Storm Guard", tip = "Legion T2 rapid EMP needle monument. Eight-round bursts, 14-second stun.", m = 12500, e = 230000, bt = 230000, hp = 90000, cap = 6, upkeep = 950 },
 }
 for _, p in ipairs(AA_SPECS) do
   local s = UnitDefs[p.src]

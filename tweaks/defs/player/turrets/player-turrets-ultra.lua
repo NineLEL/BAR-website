@@ -1,60 +1,60 @@
 do
-	local U, lower = UnitDefs, string.lower
+	local U, L = UnitDefs, string.lower
 
-	local function copy(v)
+	local function C(v)
 		if type(v) ~= "table" then
 			return v
 		end
 		local r = {}
 		for k, x in pairs(v) do
-			r[copy(k)] = copy(x)
+			r[C(k)] = C(x)
 		end
 		return r
 	end
 
-	local function findUnit(n)
-		return n and (U[n] or U[lower(n)])
+	local function FU(n)
+		return n and (U[n] or U[L(n)])
 	end
 
-	local function findSource(c)
+	local function FS(c)
 		for i = 1, #c do
-			local s = findUnit(c[i])
+			local s = FU(c[i])
 			if s then
 				return s, c[i]
 			end
 		end
 	end
 
-	local function findWDef(u, defName)
+	local function FW(u, d)
 		if not (u and u.weapondefs) then
 			return
 		end
-		if u.weapondefs[defName] then
-			return u.weapondefs[defName]
+		if u.weapondefs[d] then
+			return u.weapondefs[d]
 		end
-		local w = lower(defName)
-		for n, d in pairs(u.weapondefs) do
-			if lower(n) == w then
-				return d
+		local w = L(d)
+		for n, x in pairs(u.weapondefs) do
+			if L(n) == w then
+				return x
 			end
 		end
 	end
 
-	local function getSlot(u, idx)
-		if not (u and u.weapons and u.weapons[idx] and u.weapons[idx].def) then
+	local function GS(u, i)
+		if not (u and u.weapons and u.weapons[i] and u.weapons[i].def) then
 			return
 		end
-		local d = findWDef(u, u.weapons[idx].def)
-		return d and u.weapons[idx], d
+		local d = FW(u, u.weapons[i].def)
+		return d and u.weapons[i], d
 	end
 
-	local function getSlotCount(u)
+	local function GSC(u)
 		if not (u and u.weapons) then
 			return 0
 		end
 		local c = 0
 		for i = 1, 32 do
-			local s, d = getSlot(u, i)
+			local s, d = GS(u, i)
 			if not (s and d) then
 				break
 			end
@@ -63,85 +63,77 @@ do
 		return c
 	end
 
-	local function teach(builders, dest)
+	local function TH(builders, dst)
 		for b in builders:gmatch("%S+") do
 			local bd = U[b]
 			if bd then
 				bd.buildoptions = bd.buildoptions or {}
-				local exists = false
+				local ex = false
 				for _, opt in ipairs(bd.buildoptions) do
-					if opt == dest then
-						exists = true
+					if opt == dst then
+						ex = true
 						break
 					end
 				end
-				if not exists then
-					bd.buildoptions[#bd.buildoptions + 1] = dest
+				if not ex then
+					bd.buildoptions[#bd.buildoptions + 1] = dst
 				end
 			end
 		end
 	end
 
-	local function createUnit(name, c)
-		if U[name] then
-			return U[name], U[name], name
+	local function CU(nm, c)
+		if U[nm] then
+			return U[nm], U[nm], nm
 		end
-		local src, srcName = findSource(c)
+		local src, sn = FS(c)
 		if not src then
 			return
 		end
-		local u = copy(src)
-		U[name] = u
-		return u, src, srcName
+		local u = C(src)
+		U[nm] = u
+		return u, src, sn
 	end
 
-	local function sanitize(u)
-		for k in
-			("speed maxacc maxdec maxvelocity turnrate cloakcost cloakcostmoving energymake energyuse energyupkeep"):gmatch(
-				"%S+"
-			)
-		do
+	local function SN(u)
+		for k in ("speed maxacc maxdec maxvelocity turnrate cloakcost cloakcostmoving energymake energyuse energyupkeep"):gmatch("%S+") do
 			u[k] = 0
 		end
-		for k in
-			("canmove canpatrol canfight canrepeat canassist canrepair canreclaim canresurrect cancapture turninplace cloakable cancloak initcloaked builder"):gmatch(
-				"%S+"
-			)
-		do
+		for k in ("canmove canpatrol canfight canrepeat canassist canrepair canreclaim canresurrect cancapture turninplace cloakable cancloak initcloaked builder"):gmatch("%S+") do
 			u[k] = false
 		end
 		u.buildoptions, u.weapons, u.weapondefs = nil, {}, {}
 		u.activatewhenbuilt, u.onoffable = true, true
 	end
 
-	local function label(u, name, tip)
+	local function LB(u, nm, tip)
 		u.customparams = u.customparams or {}
 		u.customparams.techlevel = 4
 		for l in ("en de fr es it ru zh cs hr lt"):gmatch("%S+") do
-			u.customparams["i18n_" .. l .. "_humanname"], u.customparams["i18n_" .. l .. "_tooltip"] = name, tip
+			u.customparams["i18n_" .. l .. "_humanname"], u.customparams["i18n_" .. l .. "_tooltip"] = nm, tip
 		end
 	end
 
-	local function installWeapon(u, src, srcSlot, newName, overrides, slotOverrides)
-		local sSlot, sDef = getSlot(src, srcSlot)
+	local function I(u, src, ss, nn, ov, sov)
+		local sSlot, sDef = GS(src, ss)
 		if not (sSlot and sDef) then
 			return false
 		end
-		local w = copy(sDef)
-		for k, v in pairs(overrides or {}) do
-			w[k] = copy(v)
+		local w = C(sDef)
+		for k, v in pairs(ov or {}) do
+			w[k] = C(v)
 		end
 		w.noselfdamage, w.turret = true, true
-		u.weapondefs[newName] = w
+		u.weapondefs[nn] = w
 
-		local s = copy(sSlot)
-		s.def = newName
-		slotOverrides = slotOverrides or {}
-		if w.onlytargetcategory and not slotOverrides.onlytargetcategory then
-			slotOverrides.onlytargetcategory = w.onlytargetcategory
+		local s = C(sSlot)
+		s.def = nn
+		sov = sov or {}
+		if w.onlytargetcategory and not sov.onlytargetcategory then
+			sov.onlytargetcategory = w.onlytargetcategory
 		end
-		for k, v in pairs(slotOverrides) do
-			s[k] = copy(v)
+		for k, v in pairs(sov) do
+			s[k] = C(v)
 		end
 		u.weapons[#u.weapons + 1] = s
 		return true
@@ -161,18 +153,24 @@ do
 		return t
 	end
 
-	local function setMissileVis(w, heavy)
-		w.cegtag, w.smoketrail, w.smoketrailcastshadow = "missiletrailaa", true, false
+	local G, LH, PH, HR = "custom:genericshellexplosion-", "custom:laserhit-", "custom:plasmahit-huge", "custom:heatray-"
+
+	local function MV(w, heavy, ceg, exp)
+		w.cegtag, w.smoketrail, w.smoketrailcastshadow = ceg or "missiletrailaa", true, false
 		w.smokeperiod, w.smoketime, w.smokesize, w.smokecolor =
 			heavy and 2 or 1, heavy and 12 or 24, heavy and 3.8 or 7.0, 1
 		w.texture1, w.texture2 = "null", "smoketrailaa"
-		w.explosiongenerator = heavy and "custom:genericshellexplosion-small"
-			or "custom:genericshellexplosion-medium-aa"
+		w.explosiongenerator = exp or (heavy and (G .. "small") or (G .. "medium-aa"))
 	end
 
 	local C_CAN, C_MSL, C_BLAS, T_V, T_S, T_SV =
 		"Cannon", "MissileLauncher", "BeamLaser", "VTOL", "SURFACE", "SURFACE VTOL"
-	local S_CAN1, S_CAN2, S_BLAS, S_ANNI = "cannhvy1", "cannhvy2", "beamlaserfire", "annigun1"
+	local S_CAN1, S_BLAS, S_ANNI = "cannhvy1", "lasrmas2", "annigun1"
+
+	local function BV(t)
+		t.weapontype, t.largebeamlaser, t.texture3, t.tilelength = C_BLAS, true, "largebeam", 150
+		return t
+	end
 
 	local SPECS = {
 		-- 1. HAILSTORM
@@ -183,7 +181,7 @@ do
 			"Hailstorm",
 			"Short-range saturation flak battery",
 			function(u, src)
-				installWeapon(u, src, 1, "HAILSTORM_FLAK", {
+				I(u, src, 1, "HAILSTORM_FLAK", {
 					weapontype = C_CAN,
 					range = 1550,
 					reloadtime = 1.0,
@@ -196,6 +194,8 @@ do
 					energypershot = 1200,
 					onlytargetcategory = T_V,
 					damage = D(1200, 16000, 4800),
+					size = 6,
+					rgbcolor = "1 0.8 0.35",
 					cegtag = "flaktrailaamg",
 					explosiongenerator = "custom:flakshard",
 					texture1 = "null",
@@ -213,7 +213,7 @@ do
 			"Needle Swarm",
 			"Fast-tracking long-range AA missiles",
 			function(u, src)
-				installWeapon(u, src, 1, "NEEDLE_SWARM", {
+				I(u, src, 1, "NEEDLE_SWARM", {
 					weapontype = C_MSL,
 					range = 3200,
 					reloadtime = 1.8,
@@ -230,11 +230,11 @@ do
 					areaofeffect = 220,
 					energypershot = 12000,
 					damage = D(3000, 96000, 20000),
-					soundhit = "packaahit",
-					soundstart = "packaamissiles",
+					soundhit = "packohit",
+					soundstart = "packolau",
 					onlytargetcategory = T_V,
 				})
-				setMissileVis(u.weapondefs.NEEDLE_SWARM, false)
+				MV(u.weapondefs.NEEDLE_SWARM, false, "missiletrailaa-large", G .. "large-aa")
 			end,
 		},
 		-- 3. BLACKOUT CASCADE
@@ -245,7 +245,7 @@ do
 			"Blackout Cascade",
 			"Wide-area AA EMP battery",
 			function(u, src)
-				installWeapon(u, src, 1, "BLACKOUT_CASCADE", {
+				I(u, src, 1, "BLACKOUT_CASCADE", {
 					weapontype = C_CAN,
 					range = 1900,
 					reloadtime = 3.5,
@@ -258,10 +258,14 @@ do
 					energypershot = 14e3,
 					paralyzer = true,
 					paralyzetime = 18,
+					size = 8,
+					stages = 16,
+					rgbcolor = "0.3 0.75 1",
 					damage = D(400, 140e3, nil, 400),
-					explosiongenerator = "custom:emp_m_preventable",
-					soundhit = "emparm",
-					soundstart = S_CAN2,
+					cegtag = "lightning_stormbolt_small",
+					explosiongenerator = "custom:lightning_storm_emp",
+					soundhit = "mismed1emp",
+					soundstart = "lghthvy2",
 					onlytargetcategory = T_V,
 				})
 			end,
@@ -274,9 +278,7 @@ do
 			"Phalanx Skybeam",
 			"Rapid close-range anti-air point defense beam",
 			function(u, src)
-				installWeapon(u, src, 1, "PHALANX_SKYBEAM", {
-					weapontype = C_BLAS,
-					largebeamlaser = true,
+				I(u, src, 1, "PHALANX_SKYBEAM", BV {
 					range = 1600,
 					reloadtime = 0.04,
 					beamtime = 0.034,
@@ -284,11 +286,14 @@ do
 					thickness = 4.0,
 					corethickness = 0.40,
 					energypershot = 2400,
-					laserflaresize = 3,
+					laserflaresize = 7,
+					scrollspeed = 8,
+					pulsespeed = 10,
 					damage = D(450, 18000, 6000),
-					explosiongenerator = "custom:laserhit-small-blue",
-					rgbcolor = "0.2 0.9 1",
-					soundstart = S_BLAS,
+					explosiongenerator = LH .. "medium-aqua",
+					rgbcolor = "0.15 0.95 1",
+					rgbcolor2 = "0.9 1 1",
+					soundstart = "beamershot2",
 					soundtrigger = 1,
 					onlytargetcategory = T_V,
 				})
@@ -302,7 +307,7 @@ do
 			"Quake Doom",
 			"Cratering siege artillery",
 			function(u, src)
-				installWeapon(u, src, 1, "QUAKE_DOOM", {
+				I(u, src, 1, "QUAKE_DOOM", {
 					weapontype = C_CAN,
 					range = 5400,
 					reloadtime = 2.8,
@@ -316,10 +321,14 @@ do
 					cratermult = 12.0,
 					camerashake = 160,
 					size = 16.0,
+					stages = 24,
+					intensity = 2.4,
+					rgbcolor = "1 0.65 0.2",
 					damage = D(310e3, nil, 240e3, 48e3),
 					cegtag = "arty-huge",
-					explosiongenerator = "custom:genericshellexplosion-huge",
-					soundhit = "lrpcexplo",
+					explosiongenerator = G .. "huge",
+					soundstart = "bertha6",
+					soundhit = "xplonuk3",
 					soundhitwet = "splshbig",
 					onlytargetcategory = T_S,
 				})
@@ -333,7 +342,7 @@ do
 			"Null Cathedral",
 			"Strategic long-range ground EMP artillery",
 			function(u, src)
-				installWeapon(u, src, 1, "NULL_CATHEDRAL", {
+				I(u, src, 1, "NULL_CATHEDRAL", {
 					weapontype = C_CAN,
 					range = 3800,
 					reloadtime = 3.5,
@@ -345,10 +354,14 @@ do
 					paralyzetime = 28,
 					camerashake = 140,
 					size = 15.0,
-					rgbcolor = "0.2 0.6 1",
+					stages = 24,
+					intensity = 2.5,
+					rgbcolor = "0.35 0.65 1",
 					damage = D(180e3, nil, nil, 180e3),
-					explosiongenerator = "custom:emp_l_preventable",
-					soundhit = "emparm",
+					cegtag = "juno_sphere_emit",
+					explosiongenerator = "custom:juno-explo",
+					soundstart = "junofir2",
+					soundhit = "junohit2",
 					onlytargetcategory = T_S,
 				})
 			end,
@@ -361,7 +374,7 @@ do
 			"Hive Array",
 			"Guided missile barrage fortress",
 			function(u, src)
-				installWeapon(u, src, 1, "HIVE_ARRAY", {
+				I(u, src, 1, "HIVE_ARRAY", {
 					weapontype = C_MSL,
 					range = 4000,
 					reloadtime = 0.06,
@@ -381,9 +394,10 @@ do
 					energypershot = 4200,
 					damage = D(7200, 32000, 18000),
 					soundstart = "rocklit1",
+					soundhit = "xplomed2",
 					onlytargetcategory = T_SV,
 				})
-				setMissileVis(u.weapondefs.HIVE_ARRAY, true)
+				MV(u.weapondefs.HIVE_ARRAY, true, "cruisemissiletrail-starburst", G .. "medium")
 			end,
 		},
 		-- 8. AEGIS ERASER
@@ -394,7 +408,7 @@ do
 			"Aegis Eraser",
 			"Dedicated multi-round shield-breaking battery",
 			function(u, src)
-				installWeapon(u, src, 1, "AEGIS_ERASER", {
+				I(u, src, 1, "AEGIS_ERASER", {
 					weapontype = C_CAN,
 					range = 3400,
 					reloadtime = 1.6,
@@ -407,9 +421,12 @@ do
 					weaponvelocity = 3600,
 					energypershot = 18000,
 					size = 9.0,
+					stages = 18,
+					intensity = 2.0,
 					rgbcolor = "0.1 0.9 1",
 					damage = D(7500, nil, 180e3, 3500),
-					explosiongenerator = "custom:genericshellexplosion-medium",
+					cegtag = "gausscannonprojectile",
+					explosiongenerator = PH,
 					soundhit = "xplomed2",
 					soundstart = S_CAN1,
 					onlytargetcategory = T_S,
@@ -424,9 +441,7 @@ do
 			"Executioner",
 			"Heavy single-target continuous thermal beam",
 			function(u, src)
-				installWeapon(u, src, 1, "EXECUTIONER", {
-					weapontype = C_BLAS,
-					largebeamlaser = true,
+				I(u, src, 1, "EXECUTIONER", BV {
 					range = 3600,
 					reloadtime = 1.6,
 					beamtime = 1.0,
@@ -434,14 +449,15 @@ do
 					energypershot = 180e3,
 					thickness = 8,
 					corethickness = 0.80,
-					laserflaresize = 5,
+					laserflaresize = 9,
+					scrollspeed = 12,
+					pulsespeed = 8,
 					firestarter = 100,
 					damage = D(280e3, nil, 180e3, 50e3),
-					texture3 = "largebeam",
-					tilelength = 150,
-					explosiongenerator = "custom:laserhit-large-red",
+					explosiongenerator = HR .. "large",
 					rgbcolor = "1 0.12 0.02",
-					soundstart = S_ANNI,
+					rgbcolor2 = "1 0.85 0.4",
+					soundstart = "laserroar",
 					onlytargetcategory = T_S,
 				})
 			end,
@@ -461,9 +477,7 @@ do
 				}
 				for slot = 1, 3 do
 					local cfg = cfgs[slot]
-					installWeapon(u, src, slot, "PRISM_BEAM_" .. slot, {
-						weapontype = C_BLAS,
-						largebeamlaser = true,
+					I(u, src, slot, "PRISM_BEAM_" .. slot, BV {
 						range = 3400,
 						reloadtime = 1.2,
 						beamtime = 0.55,
@@ -471,14 +485,15 @@ do
 						energypershot = 44000,
 						thickness = cfg[2] * 0.8,
 						corethickness = cfg[3] * 0.8,
-						laserflaresize = 5,
+						laserflaresize = 8,
+						scrollspeed = 10,
+						pulsespeed = 9,
 						firestarter = 100,
 						damage = D(76e3, nil, 175e3, 18e3),
-						texture3 = "largebeam",
-						tilelength = 150,
-						explosiongenerator = "custom:laserhit-large-blue",
+						explosiongenerator = LH .. "large-purple",
 						rgbcolor = cfg[1],
-						soundstart = S_ANNI,
+						rgbcolor2 = "0.95 0.85 1",
+						soundstart = S_BLAS,
 						onlytargetcategory = T_S,
 					})
 				end
@@ -492,9 +507,7 @@ do
 			"Hyperion Lance",
 			"Experimental super-heavy obliteration beam",
 			function(u, src)
-				installWeapon(u, src, 1, "HYPERION_LANCE", {
-					weapontype = C_BLAS,
-					largebeamlaser = true,
+				I(u, src, 1, "HYPERION_LANCE", BV {
 					range = 4000,
 					reloadtime = 4.0,
 					beamtime = 1.5,
@@ -502,13 +515,14 @@ do
 					energypershot = 540e3,
 					thickness = 10,
 					corethickness = 0.90,
-					laserflaresize = 6,
+					laserflaresize = 12,
+					scrollspeed = 14,
+					pulsespeed = 10,
 					firestarter = 100,
 					damage = D(1100e3, nil, 600e3, 160e3),
-					texture3 = "largebeam",
-					tilelength = 150,
-					explosiongenerator = "custom:laserhit-large-sparks",
+					explosiongenerator = HR .. "huge",
 					rgbcolor = "1 0.65 0.05",
+					rgbcolor2 = "1 0.96 0.78",
 					soundstart = S_ANNI,
 					onlytargetcategory = T_S,
 				})
@@ -522,41 +536,34 @@ do
 			"Aegis Orbitfall",
 			"Fully automatic continuous kinetic battery. Rains rapid precision hyper-velocity rods across strategic ranges.",
 			function(u, src)
-				u.hightrajectorytype = 2 -- Auto-calculate ballistic trajectory per target distance
-				installWeapon(u, src, 1, "AEGIS_ORBITFALL", {
+				u.hightrajectorytype = 2
+				I(u, src, 1, "AEGIS_ORBITFALL", {
 					weapontype = C_CAN,
 					range = 8400,
-
-					-- Rapid cyclic cadence: ~4 rounds every second without manual firing
 					reloadtime = 0.25,
 					burst = 1,
 					projectiles = 1,
-
-					-- Tight dispersion with slight natural scatter for self-sweeping barrages
 					sprayangle = 240,
 					accuracy = 85,
-
-					-- Extreme muzzle velocity eliminates excessive shell travel delay
 					weaponvelocity = 6400,
 					mygravity = 0.35,
-
 					areaofeffect = 360,
 					edgeeffectiveness = 0.6,
 					camerashake = 45,
 					energypershot = 22000,
-
 					craterboost = 3.0,
 					cratermult = 2.0,
 					impulsefactor = 6.0,
 					impulseboost = 4.0,
 					size = 9.5,
-
-					-- 36,000 baseline / 85,000 shield damage per round (144k DPS sustained)
+					stages = 22,
+					intensity = 2.2,
+					rgbcolor = "0.25 0.85 1",
 					damage = D(36e3, nil, 85e3, 11e3),
-					cegtag = "railgun-trail-blue",
-					explosiongenerator = "custom:genericshellexplosion-medium",
-					soundstart = S_CAN1,
-					soundhit = "rflrpcexplo",
+					cegtag = "tachyonshot",
+					explosiongenerator = PH,
+					soundstart = "heavyrailgun",
+					soundhit = "xplolrg4",
 					soundhitwet = "splshbig",
 					onlytargetcategory = T_S,
 				})
@@ -566,21 +573,20 @@ do
 
 	local BUILDERS =
 		"armack corack legack armacv coracv legacv armaca coraca legaca armacsub coracsub armcsa corcsa legnavyconship leganavyconsub legspcon armbehem corcrabe"
-	local created = {}
-	local TURRET_ENERGY_FACTOR = 0.25
+	local created, EF = {}, 0.25
 
 	for _, spec in ipairs(SPECS) do
-		local u, source, sourceName = createUnit(spec[1], spec[2])
+		local u, source, sourceName = CU(spec[1], spec[2])
 		if u and source then
-			local slots = getSlotCount(source)
-			sanitize(u)
+			local slots = GSC(source)
+			SN(u)
 
 			local st = spec[3]
 			st[1], st[2] = st[1] * 0.20, st[2] * 0.20
 			u.unitname, u.name = spec[1], spec[1]
 			u.health, u.maxdamage = st[3], st[3]
 			u.metalcost, u.energycost, u.buildtime = st[1], st[2], st[2]
-			u.energyupkeep, u.energyuse = st[5] * TURRET_ENERGY_FACTOR, st[5] * TURRET_ENERGY_FACTOR
+			u.energyupkeep, u.energyuse = st[5] * EF, st[5] * EF
 			if st[6] then
 				u.sightdistance = st[6]
 			end
@@ -600,14 +606,14 @@ do
 			u.customparams.t4_source_weapon_slots = slots
 			u.maxthisunit = st[4]
 
-			label(u, spec[4], spec[5])
+			LB(u, spec[4], spec[5])
 			spec[6](u, source)
 			for _, weapon in pairs(u.weapondefs) do
 				if weapon.energypershot then
-					weapon.energypershot = weapon.energypershot * TURRET_ENERGY_FACTOR
+					weapon.energypershot = weapon.energypershot * EF
 				end
 			end
-			u.customparams.turret_energy_factor = TURRET_ENERGY_FACTOR
+			u.customparams.turret_energy_factor = EF
 
 			if source.weapons and #u.weapons < #source.weapons then
 				local dName = spec[1] .. "_dummy"
@@ -619,7 +625,7 @@ do
 					damage = { default = 0 },
 					noselfdamage = true,
 					turret = true,
-					explosiongenerator = mainW and mainW.explosiongenerator or "custom:genericshellexplosion-tiny-aa",
+					explosiongenerator = mainW and mainW.explosiongenerator or (G .. "tiny-aa"),
 				}
 				for sIdx = #u.weapons + 1, #source.weapons do
 					local sSlot = source.weapons[sIdx]
@@ -635,6 +641,6 @@ do
 	end
 
 	for _, unitName in ipairs(created) do
-		teach(BUILDERS, unitName)
+		TH(BUILDERS, unitName)
 	end
 end
