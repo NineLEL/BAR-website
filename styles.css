@@ -78,20 +78,15 @@ body {
   font-size: 15px;
   line-height: 1.55;
   background-color: var(--bg);
-  background-image:
-    radial-gradient(960px 420px at 10% 0%, rgba(240, 171, 60, 0.09), transparent 65%),
-    radial-gradient(840px 380px at 90% 0%, rgba(96, 165, 250, 0.07), transparent 65%);
-  background-repeat: no-repeat;
 }
 
 code {
   font-family: var(--mono);
-  font-size: 0.85em;
-  color: var(--code-fg);
-  background: rgba(147, 205, 252, 0.08);
-  border: 1px solid rgba(147, 205, 252, 0.15);
-  padding: 0.08em 0.42em;
-  border-radius: 5px;
+  font-size: 0.87em;
+  color: var(--fg);
+  background: rgba(255, 255, 255, 0.055);
+  padding: 0.08em 0.34em;
+  border-radius: 4px;
 }
 
 ::selection {
@@ -164,22 +159,7 @@ pre,
   top: 0;
   z-index: 20;
   background: #0b0f16;
-  border-bottom: 1px solid var(--line);
-}
-
-.topbar::after {
-  content: "";
-  position: absolute;
-  inset: auto 0 0 0;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(240, 171, 60, 0.55) 16%,
-    rgba(96, 165, 250, 0.22) 55%,
-    transparent
-  );
-  pointer-events: none;
+  border-bottom: 1px solid var(--line-subtle);
 }
 
 .topbar-inner {
@@ -196,20 +176,24 @@ pre,
 .brand {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 11px;
   min-width: 0;
 }
 
 .logo {
   display: grid;
   place-items: center;
-  flex: 0 0 38px;
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
-  background: linear-gradient(145deg, var(--accent-bright), #d38216);
-  color: var(--accent-ink);
-  box-shadow: 0 2px 10px -4px rgba(240, 171, 60, 0.55);
+  flex: 0 0 auto;
+  padding: 0 9px;
+  height: 30px;
+  border-radius: 6px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
 }
 
 .brand-copy {
@@ -376,13 +360,7 @@ main {
    Quick Start Guide
    ========================================================================== */
 .howto {
-  margin-bottom: 18px;
-  overflow: hidden;
-  transition: border-color var(--fast) var(--ease);
-}
-
-.howto:hover {
-  border-color: var(--line);
+  margin-bottom: 14px;
 }
 
 .howto-details {
@@ -390,45 +368,44 @@ main {
 }
 
 .howto-heading {
-  display: flex;
+  display: inline-flex;
+  flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 11px 16px;
+  gap: 6px 10px;
+  padding: 4px 2px;
   cursor: pointer;
   list-style: none;
   user-select: none;
-  transition: background var(--fast) var(--ease);
+  color: var(--fg-dim);
+  font-size: 0.82rem;
 }
 
-.howto-heading:hover {
-  background: rgba(255, 255, 255, 0.02);
+.howto-heading:hover .howto-title {
+  color: var(--fg);
 }
 
 .howto-heading::-webkit-details-marker {
   display: none;
 }
 
-.howto-title-block {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 4px 12px;
-  min-width: 0;
+.howto-caret {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  border-left: 5px solid var(--fg-dim);
+  transition: transform var(--fast) var(--ease);
 }
 
-.howto-heading h2 {
-  margin: 0;
-  font-size: 0.88rem;
-  font-weight: 700;
-  color: var(--fg);
+.howto-details[open] .howto-caret {
+  transform: rotate(90deg);
+  border-left-color: var(--accent);
 }
 
-.howto-summary-meta {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-shrink: 0;
+.howto-title {
+  font-weight: 650;
+  color: var(--fg-secondary);
 }
 
 .howto-summary-copy {
@@ -436,75 +413,27 @@ main {
   font-size: 0.8rem;
 }
 
-.howto-guide-cta {
-  color: var(--accent);
-  font-size: 0.78rem;
-  font-weight: 600;
-}
-
-.howto-chevron {
-  position: relative;
-  flex: 0 0 28px;
-  width: 28px;
-  height: 28px;
-  border-radius: 999px;
-  border: 1px solid var(--line);
-  background: var(--surface-2);
-  transition: transform var(--fast) var(--ease), border-color var(--fast) var(--ease), background var(--fast) var(--ease);
-}
-
-.howto-chevron::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 7px;
-  height: 7px;
-  border-right: 2px solid var(--accent);
-  border-bottom: 2px solid var(--accent);
-  transform: translate(-50%, -62%) rotate(45deg);
-  transition: transform var(--fast) var(--ease);
-}
-
-.howto-details[open] .howto-heading {
-  border-bottom: 1px solid var(--line-subtle);
-}
-
-.howto-details[open] .howto-chevron {
-  background: var(--accent-soft);
-  border-color: var(--accent-border);
-}
-
-.howto-details[open] .howto-chevron::before {
-  transform: translate(-50%, -35%) rotate(-135deg);
-}
-
 .howto-steps {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-  margin: 0;
-  padding: 18px 20px 20px 22px;
+  gap: 10px;
+  margin: 10px 0 6px;
+  padding: 14px;
   list-style: none;
-  background: rgba(8, 11, 16, 0.42);
+  background: var(--surface);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius);
 }
 
 .howto-steps li {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
+  gap: 10px;
   min-width: 0;
-  padding: 14px;
-  background: var(--surface-2);
+  padding: 12px;
+  background: var(--bg-elevated);
   border: 1px solid var(--line-subtle);
-  border-radius: var(--radius);
-  transition: border-color var(--fast) var(--ease), transform var(--fast) var(--ease), background var(--fast) var(--ease);
-}
-
-.howto-steps li:hover {
-  border-color: var(--line-strong);
-  background: rgba(31, 42, 58, 0.72);
-  transform: translateY(-1px);
+  border-radius: var(--radius-sm);
 }
 
 .step-number {
@@ -1699,16 +1628,22 @@ button:disabled {
    Footer & Toast
    ========================================================================== */
 footer {
-  margin-top: 6px;
-  padding: 8px 4px;
-  text-align: center;
+  margin-top: 8px;
+  padding: 14px 2px 0;
+  border-top: 1px solid var(--line-subtle);
 }
 
 .footer-note {
   margin: 0;
   color: var(--fg-dim);
-  font-size: 0.78rem;
+  font-size: 0.79rem;
   line-height: 1.5;
+}
+
+.footer-note code {
+  background: transparent;
+  padding: 0;
+  color: var(--fg-secondary);
 }
 
 .toast {
@@ -1789,8 +1724,8 @@ footer {
   }
 
   .howto-heading {
-    padding: 11px 14px;
-    gap: 12px;
+    padding: 4px 0;
+    gap: 6px 8px;
   }
 
   .howto-summary-copy {

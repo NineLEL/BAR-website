@@ -14,15 +14,10 @@
 <header class="topbar">
   <div class="topbar-inner">
     <div class="brand">
-      <span class="logo" aria-hidden="true">
-        <svg viewBox="0 0 32 32" width="22" height="22" fill="none">
-          <path d="M16 3.5L27 9.75v12.5L16 28.5 5 22.25V9.75L16 3.5Z" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/>
-          <path d="M16 9.5L21.75 12.8v6.4L16 22.5l-5.75-3.3v-6.4L16 9.5Z" fill="currentColor"/>
-        </svg>
-      </span>
+      <span class="logo" aria-hidden="true">BAR</span>
       <div class="brand-copy">
-        <h1>BAR Tweak Packer</h1>
-        <p class="brand-subtitle">Beyond All Reason &middot; tweakdefs &amp; tweakunits 0&ndash;29</p>
+        <h1>Tweak Packer</h1>
+        <p class="brand-subtitle">tweakdefs &amp; tweakunits (slots 0&ndash;29)</p>
       </div>
     </div>
 
@@ -43,17 +38,12 @@
 </header>
 
 <main id="main-content" tabindex="-1">
-  <section class="howto card" aria-label="Quick start guide">
+  <section class="howto" aria-label="Quick start guide">
     <details class="howto-details">
       <summary class="howto-heading">
-        <div class="howto-title-block">
-          <h2>Quick start</h2>
-          <span class="howto-summary-copy">Add Lua, auto-pack into 0&ndash;29 slots, and paste <code>!bset</code> commands into BAR chat</span>
-        </div>
-        <div class="howto-summary-meta">
-          <span class="howto-guide-cta">Guide</span>
-          <span class="howto-chevron" aria-hidden="true"></span>
-        </div>
+        <span class="howto-caret" aria-hidden="true"></span>
+        <span class="howto-title">How to use</span>
+        <span class="howto-summary-copy">Add Lua, auto-pack into slots 0&ndash;29, and paste <code>!bset</code> commands into lobby chat.</span>
       </summary>
       <ol class="howto-steps">
         <li>
@@ -367,7 +357,7 @@
   </section>
 
   <footer>
-    <p class="footer-note">100% client-side &mdash; nothing leaves your browser. Execution order: <code>tweakunits</code> first, then <code>tweakdefs</code>, slots <code>0&rarr;29</code>.</p>
+    <p class="footer-note">Runs locally in your browser. Order: <code>tweakunits</code> first, then <code>tweakdefs</code> (slots 0&ndash;29).</p>
   </footer>
 </main>
 
