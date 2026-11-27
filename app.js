@@ -386,7 +386,7 @@ function renderInputs(g) {
     ll.textContent = f.name;
     ll.id = "server-script-label-" + g.kind + "-" + index;
     var badge = document.createElement("span");
-    badge.className = "snippet-badge snippet-badge-lib";
+    badge.className = "snippet-meta";
     badge.textContent = "Library \u00b7 " + f.text.length + " chars";
     titleGroup.appendChild(ll);
     titleGroup.appendChild(badge);
@@ -399,6 +399,7 @@ function renderInputs(g) {
     lt.title = "Managed server-side in " + f.name;
     var lhbtn = document.createElement("button");
     lhbtn.type = "button";
+    lhbtn.className = "btn-ghost";
     lhbtn.textContent = "Show script";
     lhbtn.setAttribute("aria-expanded", "false");
     lhbtn.setAttribute("aria-controls", "server-script-" + g.kind + "-" + index);
@@ -427,7 +428,7 @@ function renderInputs(g) {
     lab.textContent = "Snippet " + (i + 1);
     lab.id = "manual-script-label-" + g.kind + "-" + i;
     var charBadge = document.createElement("span");
-    charBadge.className = "snippet-badge snippet-chars";
+    charBadge.className = "snippet-meta snippet-chars";
     charBadge.textContent = text.length + " chars";
     titleGroup.appendChild(lab);
     titleGroup.appendChild(charBadge);
@@ -457,6 +458,7 @@ function renderInputs(g) {
     };
     var hide = document.createElement("button");
     hide.type = "button";
+    hide.className = "btn-ghost";
     hide.textContent = "Hide script";
     hide.setAttribute("aria-expanded", "true"); hide.setAttribute("aria-controls", "manual-script-" + g.kind + "-" + i); ta.id = "manual-script-" + g.kind + "-" + i;
     ta.setAttribute("aria-labelledby", lab.id);
@@ -470,6 +472,7 @@ function renderInputs(g) {
     };
     var fmt = document.createElement("button");
     fmt.type = "button";
+    fmt.className = "btn-ghost";
     fmt.textContent = "Prettify";
     fmt.title = "Format Lua indentation in this snippet";
     fmt.onclick = function () {
@@ -488,6 +491,7 @@ function renderInputs(g) {
     };
     var ex = document.createElement("button");
     ex.type = "button";
+    ex.className = "btn-ghost";
     ex.textContent = "Load example";
     ex.title = "Insert the starter example into an empty snippet";
     ex.onclick = function () {
@@ -632,7 +636,7 @@ function renderSlots(g) {
           "b64 " + b64.length,
           "cmd " + total + "/" + limit
         ];
-        st.textContent = parts.join(" · ") + (over ? " — OVER LIMIT" : " — OK");
+        st.textContent = parts.join(" · ") + (over ? " — OVER LIMIT" : "");
         st.className = "stats " + (over ? "bad" : "good");
         var meter = document.createElement("div");
         meter.className = "slot-meter";
@@ -669,6 +673,7 @@ function renderSlots(g) {
         })(cmd);
         var showCmd = document.createElement("button");
         showCmd.type = "button";
+        showCmd.className = "btn-ghost";
         showCmd.textContent = isCmdOpen ? "Hide command" : "Show command";
         showCmd.setAttribute("aria-expanded", isCmdOpen ? "true" : "false"); showCmd.setAttribute("aria-controls", "command-" + g.kind + "-" + idx); pre.id = "command-" + g.kind + "-" + idx;
          showCmd.onclick = (function (command, output, button) {
@@ -692,6 +697,7 @@ function renderSlots(g) {
         row.appendChild(showCmd);
         var pv = document.createElement("button");
         pv.type = "button";
+        pv.className = "btn-ghost";
         var isMinOpen = !!openMinSlots[String(idx)];
         pv.textContent = isMinOpen ? "Hide minified" : "Show minified";
         pv.setAttribute("aria-expanded", isMinOpen ? "true" : "false"); pv.setAttribute("aria-controls", "minified-" + g.kind + "-" + idx);

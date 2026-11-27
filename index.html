@@ -15,43 +15,28 @@
   <div class="topbar-inner">
     <div class="brand">
       <span class="logo" aria-hidden="true">
-        <svg viewBox="0 0 32 32" width="24" height="24" fill="none">
+        <svg viewBox="0 0 32 32" width="22" height="22" fill="none">
           <path d="M16 3.5L27 9.75v12.5L16 28.5 5 22.25V9.75L16 3.5Z" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/>
           <path d="M16 9.5L21.75 12.8v6.4L16 22.5l-5.75-3.3v-6.4L16 9.5Z" fill="currentColor"/>
         </svg>
       </span>
       <div class="brand-copy">
-        <div class="brand-title-row">
-          <h1>BAR Tweak Packer</h1>
-          <span class="brand-badge">Beyond All Reason</span>
-        </div>
-        <p class="brand-pipeline">
-          <span>tweakdefs &amp; tweakunits <code>0&ndash;29</code></span>
-          <span class="pipe-sep" aria-hidden="true">&rarr;</span>
-          <span>minify</span>
-          <span class="pipe-sep" aria-hidden="true">&rarr;</span>
-          <span>base64</span>
-          <span class="pipe-sep" aria-hidden="true">&rarr;</span>
-          <code>!bset</code>
-        </p>
+        <h1>BAR Tweak Packer</h1>
+        <p class="brand-subtitle">Beyond All Reason &middot; tweakdefs &amp; tweakunits 0&ndash;29</p>
       </div>
     </div>
 
     <div class="limits" role="region" aria-label="Output settings">
-      <div class="limit-field">
-        <label class="limit-label" for="charLimit">
-          <span>Max chars per <code>!bset</code></span>
-          <span class="limit-input-wrap">
-            <input id="charLimit" type="number" aria-describedby="charLimitHint" value="16384" min="1000" max="65536" step="1">
-          </span>
-        </label>
-        <span id="charLimitHint" class="hint">Teiserver cap: 16,384 chars incl. command</span>
-      </div>
+      <label class="limit-label" for="charLimit" title="Teiserver caps lobby messages at 16,384 chars incl. command">
+        <span>Max chars</span>
+        <input id="charLimit" type="number" aria-describedby="charLimitHint" value="16384" min="1000" max="65536" step="1">
+      </label>
+      <span id="charLimitHint" class="sr-only">Teiserver caps messages at 16,384 chars including command prefix.</span>
       <div class="limit-divider" aria-hidden="true"></div>
       <label class="limit-toggle switch-control" for="b64url" title="URL-safe Base64 (-_ instead of +/, no = padding), required by BAR's lobby !bset tweak decoder. Uncheck only for legacy standard Base64 tools.">
         <input id="b64url" type="checkbox" checked aria-label="Base64URL output (BAR default)">
         <span class="switch-track" aria-hidden="true"></span>
-        <span class="switch-label">Base64URL <span class="badge-tag">BAR default</span></span>
+        <span class="switch-label">Base64URL</span>
       </label>
     </div>
   </div>
@@ -62,16 +47,11 @@
     <details class="howto-details">
       <summary class="howto-heading">
         <div class="howto-title-block">
-          <span class="howto-kicker">
-            <svg viewBox="0 0 16 16" width="13" height="13" fill="none" aria-hidden="true">
-              <path d="M8 1.75L9.85 5.65l4.3.6-3.12 3.02.75 4.28L8 11.5l-3.78 2.05.75-4.28L1.85 6.25l4.3-.6L8 1.75Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
-            </svg>
-            Quick start
-          </span>
-          <h2>Build, pack, and ship tweaks to BAR lobby chat</h2>
+          <h2>Quick start</h2>
+          <span class="howto-summary-copy">Add Lua, auto-pack into 0&ndash;29 slots, and paste <code>!bset</code> commands into BAR chat</span>
         </div>
         <div class="howto-summary-meta">
-          <span class="howto-summary-copy">Add Lua, review 30 slots, then copy commands <span>&middot; Expand guide</span></span>
+          <span class="howto-guide-cta">Guide</span>
           <span class="howto-chevron" aria-hidden="true"></span>
         </div>
       </summary>
@@ -128,26 +108,26 @@
         <svg class="tab-icon" viewBox="0 0 16 16" width="15" height="15" fill="none" aria-hidden="true">
           <path d="M5.5 4.25L2 8l3.5 3.75M10.5 4.25L14 8l-3.5 3.75M9 2.75l-2 10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        <span>tweakdefs</span> <span class="tab-sub">code</span> <span id="tab-defs-count" class="tab-count"></span>
+        <span>tweakdefs</span> <span id="tab-defs-count" class="tab-count"></span>
       </button>
       <button id="tab-units" class="tab" role="tab" aria-selected="false" aria-controls="panel-units" tabindex="-1" data-tab="units">
         <svg class="tab-icon" viewBox="0 0 16 16" width="15" height="15" fill="none" aria-hidden="true">
           <path d="M2.5 5.25L8 2.25l5.5 3L8 8.25l-5.5-3ZM2.5 8l5.5 3 5.5-3M2.5 10.75L8 13.75l5.5-3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        <span>tweakunits</span> <span class="tab-sub">tables</span> <span id="tab-units-count" class="tab-count"></span>
+        <span>tweakunits</span> <span id="tab-units-count" class="tab-count"></span>
       </button>
       <button id="tab-library" class="tab" role="tab" aria-selected="false" aria-controls="panel-library" tabindex="-1" data-tab="library">
         <svg class="tab-icon" viewBox="0 0 16 16" width="15" height="15" fill="none" aria-hidden="true">
           <path d="M2 4.25A1.25 1.25 0 0 1 3.25 3h3l1.35 1.5h5.15A1.25 1.25 0 0 1 14 5.75v6A1.25 1.25 0 0 1 12.75 13h-9.5A1.25 1.25 0 0 1 2 11.75v-7.5Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
         </svg>
-        <span>tweak library</span> <span id="tab-library-count" class="tab-count"></span>
+        <span>Library</span> <span id="tab-library-count" class="tab-count"></span>
       </button>
       <button id="tab-decode" class="tab" role="tab" aria-selected="false" aria-controls="panel-decode" tabindex="-1" data-tab="decode">
         <svg class="tab-icon" viewBox="0 0 16 16" width="15" height="15" fill="none" aria-hidden="true">
           <circle cx="7" cy="7" r="4.25" stroke="currentColor" stroke-width="1.4"/>
           <path d="M10.25 10.25L13.75 13.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
         </svg>
-        <span>decode / inspect</span>
+        <span>Decode</span>
       </button>
       <button id="tab-utilities" class="tab" role="tab" aria-selected="false" aria-controls="panel-utilities" tabindex="-1" data-tab="utilities">
         <svg class="tab-icon" viewBox="0 0 16 16" width="15" height="15" fill="none" aria-hidden="true">
@@ -156,16 +136,16 @@
           <circle cx="10.5" cy="8" r="1.4" fill="var(--surface)" stroke="currentColor" stroke-width="1.4"/>
           <circle cx="5.5" cy="11.5" r="1.4" fill="var(--surface)" stroke="currentColor" stroke-width="1.4"/>
         </svg>
-        <span>utilities</span>
+        <span>Utilities</span>
       </button>
     </nav>
 
     <div class="toolbar global-toolbar" role="toolbar" aria-label="Global actions">
-      <button id="resetAll" type="button" class="btn-subtle">
+      <button id="resetAll" type="button" class="btn-subtle" title="Copy 60 reset commands covering tweakunits 0-29 and tweakdefs 0-29">
         <svg viewBox="0 0 16 16" width="14" height="14" fill="none" aria-hidden="true">
           <path d="M3.25 7.5A4.75 4.75 0 1 1 4.6 11.1M2.5 4.5v3h3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        Copy reset commands (60 slots)
+        Reset all (60)
       </button>
     </div>
   </div>
@@ -173,7 +153,7 @@
   <section id="panel-defs" class="panel active" role="tabpanel" aria-labelledby="tab-defs" tabindex="0">
     <div class="workflow-actions" aria-label="Tweakdefs actions">
       <div class="action-group" role="group" aria-labelledby="defs-edit-label">
-        <h2 id="defs-edit-label" class="action-label">Edit</h2>
+        <h2 id="defs-edit-label" class="action-label sr-only">Edit</h2>
         <button id="defsAdd" type="button">
           <svg viewBox="0 0 16 16" width="14" height="14" fill="none" aria-hidden="true">
             <path d="M8 3.25v9.5M3.25 8h9.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
@@ -182,46 +162,40 @@
         </button>
       </div>
       <div class="action-group" role="group" aria-labelledby="defs-pack-label">
-        <h2 id="defs-pack-label" class="action-label">Pack</h2>
+        <h2 id="defs-pack-label" class="action-label sr-only">Pack</h2>
         <button id="defsPack" type="button" class="primary">
           <svg viewBox="0 0 16 16" width="14" height="14" fill="none" aria-hidden="true">
             <path d="M2.5 5L8 2l5.5 3v6L8 14l-5.5-3V5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
             <path d="M8 8v6M2.5 5L8 8l5.5-3" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
           </svg>
-          Auto-pack snippets
+          Auto-pack
         </button>
       </div>
       <div class="action-group action-group-copy" role="group" aria-labelledby="defs-copy-label">
-        <h2 id="defs-copy-label" class="action-label">Copy</h2>
+        <h2 id="defs-copy-label" class="action-label sr-only">Copy</h2>
         <button id="defsCopyAll" type="button" class="copy-primary">
           <svg viewBox="0 0 16 16" width="14" height="14" fill="none" aria-hidden="true">
             <rect x="5.5" y="5.5" width="8" height="8.5" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
             <path d="M10.5 5.5V3.75A1.25 1.25 0 0 0 9.25 2.5H3.75A1.25 1.25 0 0 0 2.5 3.75v6.5a1.25 1.25 0 0 0 1.25 1.25H5.5" stroke="currentColor" stroke-width="1.5"/>
           </svg>
-          Copy all commands
+          Copy all
         </button>
-        <button id="defsCopyCombined" type="button">Copy all combined</button>
+        <button id="defsCopyCombined" type="button">Copy combined</button>
       </div>
       <div class="action-group action-group-manage" role="group" aria-labelledby="defs-manage-label">
-        <h2 id="defs-manage-label" class="action-label">Manage</h2>
-        <button id="defsLibReload" type="button">Reload library</button>
-        <button id="defsClear" type="button" class="danger-ghost">Clear all</button>
+        <h2 id="defs-manage-label" class="action-label sr-only">Manage</h2>
+        <button id="defsLibReload" type="button" class="btn-ghost">Reload library</button>
+        <button id="defsClear" type="button" class="danger-ghost">Clear</button>
       </div>
     </div>
 
     <div class="section-header section-header-first">
-      <div>
-        <h2>Source inputs</h2>
-        <p class="section-sub">Active library modules feed in automatically, followed by your manual Lua snippets.</p>
-      </div>
+      <h2>Inputs</h2>
     </div>
     <div id="defsInputs" class="inputs"></div>
 
     <div class="section-header">
-      <div>
-        <h2>Slots &mdash; <code>!bset tweakdefs</code> &hellip; <code>!bset tweakdefs29</code></h2>
-        <p class="section-sub">Encoded BAR lobby commands, live-checked against your character limit.</p>
-      </div>
+      <h2>Slots &mdash; <code>!bset tweakdefs0&ndash;29</code></h2>
       <span id="defsSlotSummary" class="section-pill" aria-live="polite"></span>
     </div>
     <div id="defsPackNotice" class="pack-notice-host" aria-live="polite"></div>
@@ -231,7 +205,7 @@
   <section id="panel-units" class="panel" role="tabpanel" aria-labelledby="tab-units" tabindex="0" hidden>
     <div class="workflow-actions" aria-label="Tweakunits actions">
       <div class="action-group" role="group" aria-labelledby="units-edit-label">
-        <h2 id="units-edit-label" class="action-label">Edit</h2>
+        <h2 id="units-edit-label" class="action-label sr-only">Edit</h2>
         <button id="unitsAdd" type="button">
           <svg viewBox="0 0 16 16" width="14" height="14" fill="none" aria-hidden="true">
             <path d="M8 3.25v9.5M3.25 8h9.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
@@ -240,46 +214,40 @@
         </button>
       </div>
       <div class="action-group" role="group" aria-labelledby="units-pack-label">
-        <h2 id="units-pack-label" class="action-label">Pack</h2>
+        <h2 id="units-pack-label" class="action-label sr-only">Pack</h2>
         <button id="unitsPack" type="button" class="primary">
           <svg viewBox="0 0 16 16" width="14" height="14" fill="none" aria-hidden="true">
             <path d="M2.5 5L8 2l5.5 3v6L8 14l-5.5-3V5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
             <path d="M8 8v6M2.5 5L8 8l5.5-3" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
           </svg>
-          Auto-pack snippets
+          Auto-pack
         </button>
       </div>
       <div class="action-group action-group-copy" role="group" aria-labelledby="units-copy-label">
-        <h2 id="units-copy-label" class="action-label">Copy</h2>
+        <h2 id="units-copy-label" class="action-label sr-only">Copy</h2>
         <button id="unitsCopyAll" type="button" class="copy-primary">
           <svg viewBox="0 0 16 16" width="14" height="14" fill="none" aria-hidden="true">
             <rect x="5.5" y="5.5" width="8" height="8.5" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
             <path d="M10.5 5.5V3.75A1.25 1.25 0 0 0 9.25 2.5H3.75A1.25 1.25 0 0 0 2.5 3.75v6.5a1.25 1.25 0 0 0 1.25 1.25H5.5" stroke="currentColor" stroke-width="1.5"/>
           </svg>
-          Copy all commands
+          Copy all
         </button>
-        <button id="unitsCopyCombined" type="button">Copy all combined</button>
+        <button id="unitsCopyCombined" type="button">Copy combined</button>
       </div>
       <div class="action-group action-group-manage" role="group" aria-labelledby="units-manage-label">
-        <h2 id="units-manage-label" class="action-label">Manage</h2>
-        <button id="unitsLibReload" type="button">Reload library</button>
-        <button id="unitsClear" type="button" class="danger-ghost">Clear all</button>
+        <h2 id="units-manage-label" class="action-label sr-only">Manage</h2>
+        <button id="unitsLibReload" type="button" class="btn-ghost">Reload library</button>
+        <button id="unitsClear" type="button" class="danger-ghost">Clear</button>
       </div>
     </div>
 
     <div class="section-header section-header-first">
-      <div>
-        <h2>Source inputs</h2>
-        <p class="section-sub">Active library unit tables feed in automatically, followed by your manual Lua tables.</p>
-      </div>
+      <h2>Inputs</h2>
     </div>
     <div id="unitsInputs" class="inputs"></div>
 
     <div class="section-header">
-      <div>
-        <h2>Slots &mdash; <code>!bset tweakunits</code> &hellip; <code>!bset tweakunits29</code></h2>
-        <p class="section-sub">Encoded BAR lobby commands, deep-merged into <code>UnitDefs</code> before tweakdefs.</p>
-      </div>
+      <h2>Slots &mdash; <code>!bset tweakunits0&ndash;29</code></h2>
       <span id="unitsSlotSummary" class="section-pill" aria-live="polite"></span>
     </div>
     <div id="unitsPackNotice" class="pack-notice-host" aria-live="polite"></div>
@@ -399,16 +367,7 @@
   </section>
 
   <footer>
-    <div class="footer-card">
-      <span class="footer-badge">
-        <svg viewBox="0 0 16 16" width="13" height="13" fill="none" aria-hidden="true">
-          <path d="M8 1.75L13 3.8v3.9c0 3.2-2.1 5.85-5 6.8-2.9-.95-5-3.6-5-6.8V3.8L8 1.75Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
-          <path d="M5.75 8.15l1.5 1.5 3-3.25" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        100% client-side
-      </span>
-      <p>Nothing leaves your browser. <code>tweakdefs</code> slots run as Lua via <code>loadstring</code> after base64-decode; <code>tweakunits</code> tables are deep-merged into <code>UnitDefs</code>. Execution order: <code>tweakunits</code> first, then <code>tweakdefs</code>, index <code>0&rarr;29</code>.</p>
-    </div>
+    <p class="footer-note">100% client-side &mdash; nothing leaves your browser. Execution order: <code>tweakunits</code> first, then <code>tweakdefs</code>, slots <code>0&rarr;29</code>.</p>
   </footer>
 </main>
 
