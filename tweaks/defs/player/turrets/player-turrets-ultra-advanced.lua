@@ -191,26 +191,36 @@ do
 			"Holy Beam",
 			"Continuous precision white-gold lance beam",
 			function(u, src)
+				-- Annihilator emits this CEG from its muzzle; Doomsday uses the beam's flare.
+				local muzzleEffects = u.sfxtypes and u.sfxtypes.explosiongenerators
+				if muzzleEffects and muzzleEffects[1] == "custom:tachyonshot" then
+					muzzleEffects[1] = "custom:barrelshot-medium"
+				end
 				installWeapon(u, src, 1, "HOLY_BEAM", {
 					weapontype = "BeamLaser",
 					largebeamlaser = true,
 					range = 3600,
 					reloadtime = 0.25,
-                    beamtime = 0.034,
-					beamttl = 2,
-                    thickness = 3.5,
-                    corethickness = 0.50,
-                    laserflaresize = 10,
-					scrollspeed = 10,
-					pulsespeed = 12,
+					beamtime = 0.034,
+					-- Extend the drawn beam without spreading damage over more frames.
+					beamttl = 7,
+					beamdecay = 0.83,
+					thickness = 9,
+					corethickness = 0.32,
+					laserflaresize = 8,
+					scrollspeed = 5,
+					pulsespeed = 4,
 					energypershot = 2000,
-					rgbcolor = "1 0.96 0.82",
-					rgbcolor2 = "1 1 0.98",
+					rgbcolor = "1 0.69 0.42",
+					rgbcolor2 = "1 1 0.91",
 					damage = { default = 2300, shields = 2400, vtol = 1200, commanders = 550 },
-					texture3 = "largebeam",
-					tilelength = 150,
-					explosiongenerator = "custom:laserhit-large-yellow",
-					soundstart = "beamershot2",
+					texture3 = "muzzleside",
+					texture4 = "flare2",
+					tilelength = 240,
+					explosiongenerator = "custom:plasmahit-huge",
+					soundstart = "lasrhvy3",
+					soundhitdry = "xploelc1",
+					customparams = { soundstart_volume_multiplier = 0.65, soundhit_volume_multiplier = 0.25 },
 					soundtrigger = 1,
 					onlytargetcategory = "SURFACE VTOL",
 				}, { badtargetcategory = "GROUNDSCOUT" })
