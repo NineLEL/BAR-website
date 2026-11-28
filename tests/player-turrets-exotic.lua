@@ -27,7 +27,7 @@ end
 
 for _, spec in ipairs({
   {"legcluster", 3}, {"armpb", 1}, {"corscavdtl", 1}, {"legbastion", 1},
-  {"legacluster", 3}, {"armamb", 3}, {"legrampart", 2}, {"armanavaldefturret", 2}, {"corfdoom", 2},
+  {"legacluster", 3}, {"armamb", 3}, {"legrampart", 2}, {"armanavaldefturret", 2}, {"corfdoom", 3},
 }) do
   makeBase(spec[1], spec[2])
 end
