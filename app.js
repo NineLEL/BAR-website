@@ -21,7 +21,28 @@ var findDuplicateTweakUnitKeyDetails = Pure.findDuplicateTweakUnitKeyDetails;
 var splitTweakUnitsSource = Pure.splitTweakUnitsSource;
 var resetAllCommands = Pure.resetAllCommands;
 
-function $(id) { return document.getElementById(id); }
+var originalGetId = function (id) { return document.getElementById(id); };
+var elementCache = {
+  libStatus: null,
+  libSearch: null,
+  libEnabledOnly: null,
+  libDefs: null,
+  libUnits: null,
+  charLimit: null,
+  b64url: null,
+  defsInputs: null,
+  defsSlots: null,
+  unitsInputs: null,
+  unitsSlots: null,
+  toast: null
+};
+function $(id) {
+  if (Object.prototype.hasOwnProperty.call(elementCache, id)) {
+    if (!elementCache[id]) elementCache[id] = originalGetId(id);
+    return elementCache[id];
+  }
+  return originalGetId(id);
+}
 
 /* ---------- reusable DOM helpers ---------- */
 function createToggleHandler(output, button, showText, hideText) {
