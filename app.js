@@ -247,10 +247,8 @@ function syncLibToPacker() {
     .map(function (f) { return { name: "tweaks/defs/" + f.name, text: f.content }; });
   units.serverSnippets = data.units.filter(function (f) { return f.enabled; })
     .map(function (f) { return { name: "tweaks/units/" + f.name, text: f.content }; });
-  defs.packed = null; defs.packedNames = null;
-  units.packed = null; units.packedNames = null;
-  defs.packNotice = null;
-  units.packNotice = null;
+  clearGroupPacked(defs);
+  clearGroupPacked(units);
   renderAll();
 }
 
@@ -347,6 +345,23 @@ function makeGroup(kind, inputsEl, slotsEl) {
 var defs = makeGroup("tweakdefs", $("defsInputs"), $("defsSlots"));
 var units = makeGroup("tweakunits", $("unitsInputs"), $("unitsSlots"));
 
+/* Centralized state mutation API */
+function updateGroupState(g, updates) {
+  Object.keys(updates).forEach(function (key) {
+    if (Object.prototype.hasOwnProperty.call(g, key)) {
+      g[key] = updates[key];
+    }
+  });
+}
+
+function clearGroupSnippets(g) {
+  updateGroupState(g, { snippets: [""], packed: null, packNotice: null });
+}
+
+function clearGroupPacked(g) {
+  updateGroupState(g, { packed: null, packNotice: null });
+}
+
 function exampleText(kind) {
   if (kind === "tweakdefs") {
     return "-- example: double metal cost of all T2 units\nfor name,ud in pairs(UnitDefs) do\n  local tech = ud.customparams and ud.customparams.techlevel or 1\n  if tech >= 2 then ud.metalcost = (ud.metalcost or 0) * 2 end\nend";
@@ -423,8 +438,7 @@ function renderInputs(g) {
     del.onclick = function () {
       g.snippets.splice(i, 1);
       if (!g.snippets.length) g.snippets.push("");
-      g.packed = null; g.packedNames = null;
-      g.packNotice = null;
+      clearGroupPacked(g);
       saveEditorState();
       renderAll();
     };
@@ -434,7 +448,7 @@ function renderInputs(g) {
     ta.oninput = function () {
       g.snippets[i] = ta.value;
       charBadge.textContent = ta.value.length + " chars";
-      g.packed = null; g.packedNames = null; g.packNotice = null;
+      clearGroupPacked(g);
       saveEditorState();
       scheduleRenderSlots(g, 80);
     };
@@ -463,7 +477,7 @@ function renderInputs(g) {
         ta.value = luaPrettify(ta.value);
         g.snippets[i] = ta.value;
         charBadge.textContent = ta.value.length + " chars";
-        g.packed = null; g.packedNames = null; g.packNotice = null;
+        clearGroupPacked(g);
         saveEditorState();
         renderSlots(g);
         toast("Snippet formatted");
@@ -484,7 +498,7 @@ function renderInputs(g) {
       ta.value = exampleText(g.kind);
       g.snippets[i] = ta.value;
       charBadge.textContent = ta.value.length + " chars";
-      g.packed = null; g.packedNames = null; g.packNotice = null;
+      clearGroupPacked(g);
       if (ta.style.display === "none") {
         ta.style.display = "block";
         ta.hidden = false;
