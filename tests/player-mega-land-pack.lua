@@ -19,12 +19,17 @@ end
 for _, name in ipairs({"armshltx", "corgant", "leggant", "everyexpe", "armapt3", "corapt3", "legapt3", "armrattet4", "corjugg", "corkarganetht4", "corkarg", "armraz", "armmar", "legapollyon", "corpun", "corint"}) do
   table.insert(UnitDefs[name].buildoptions, "existing_option")
 end
+UnitDefs.armmar.customparams = {maxrange = "350"}
+UnitDefs.legapollyon.weapons[1] = {def = "stock"}
+for i = 2, 10 do UnitDefs.legapollyon.weapons[i] = {def = "stock", slaveto = 1} end
+UnitDefs.corjugg.weapondefs.footstep = {damage = {default = 0}}
+for i = 1, 5 do UnitDefs.corjugg.weapons[i] = {def = "footstep"} end
 local originals = copy(UnitDefs)
 assert(loadfile(pack))()
 local units = {
-  {"player_riftcolossus", 1}, {"player_aegisbreaker", 1}, {"player_solardecimator", 1},
+  {"player_riftcolossus", 1}, {"player_aegisbreaker", 1}, {"player_solardecimator", 5},
   {"player_skyfurnace", 1}, {"player_stormsovereign", 1}, {"player_pyroclast", 1},
-  {"player_apollyonfortress", 6},
+  {"player_apollyonfortress", 11},
 }
 for _, spec in ipairs(units) do
   local name, slots = spec[1], spec[2]
@@ -37,8 +42,15 @@ for _, spec in ipairs(units) do
   end
 end
 local fortress = UnitDefs.player_apollyonfortress
-assert(fortress.weapons[6].def == "apollyon_6")
-assert(fortress.weapondefs.apollyon_6.weapontype == "Shield")
+assert(fortress.weapons[1].def == "apollyon_siege")
+assert(fortress.weapons[7].onlytargetcategory == "VTOL" and not fortress.weapons[7].slaveto)
+assert(fortress.weapons[9].def == "apollyon_rockets")
+assert(fortress.weapondefs[fortress.weapons[11].def].shield.power == 65000)
+local magma = UnitDefs.player_pyroclast
+assert(not magma.customparams.maxrange and magma.weapondefs.pyro.groundbounce and magma.weapondefs.pyro.numbounce == 1)
+local thunderlord = UnitDefs.player_stormsovereign
+assert(thunderlord.weapons[1].onlytargetcategory == "SURFACE")
+assert(thunderlord.weapondefs.tesla.customparams.spark_maxunits == 2)
 for _, name in ipairs({"armshltx", "corgant", "leggant", "everyexpe"}) do
   local found = false
   for _, option in ipairs(UnitDefs[name].buildoptions) do if option == "player_riftcolossus" then found = true end end
@@ -49,4 +61,11 @@ for name, def in pairs(originals) do
 end
 assert(loadfile(pack))()
 for _, spec in ipairs(units) do assert(UnitDefs[spec[1]], spec[1] .. " lost on repeat application") end
+UnitDefs, UnitDefNames = copy(originals), {}
+UnitDefs.legapollyon = nil
+assert(loadfile(pack))()
+fortress = assert(UnitDefs.player_apollyonfortress)
+assert(fortress.weapons[4].onlytargetcategory == "VTOL")
+assert(fortress.weapons[5].def == "footstep")
+assert(fortress.weapondefs[fortress.weapons[6].def].weapontype == "Shield")
 print("mega land runtime checks passed")

@@ -305,15 +305,14 @@ do
             4200,
             90,
             500,
-            320,
+            1600,
             450,
             120,
-            150,
+            nil,
             {
-                projectiles = 4,
-                burst = 8,
-                burstrate = 0.08,
-                sprayangle = 2000,
+                burst = 4,
+                burstrate = 0.1,
+                customparams = { spark_forkdamage = 0.35, spark_range = 135, spark_maxunits = 2 },
                 thickness = 14,
                 laserflaresize = 8,
                 rgbcolor = "0.22 0.88 1",
@@ -323,30 +322,29 @@ do
                 soundhit = "xploelc2",
                 soundhitdry = "lashit",
                 edgeeffectiveness = 0.85,
-                onlytargetcategory = TSV,
+                onlytargetcategory = TS,
             }
         ),
         pyro = W(
             "Carpet Mortar",
             "Cannon",
-            1350,
-            4,
+            1300,
+            3.2,
             1100,
             140,
             600,
-            1000,
-            1400,
+            1800,
+            2200,
             350,
             nil,
             {
-                burst = 20,
-                burstrate = 0.05,
-                sprayangle = 1600,
-                accuracy = 400,
+                burst = 8,
+                burstrate = 0.1,
+                sprayangle = 900,
+                accuracy = 250,
                 groundbounce = true,
                 bouncerebound = 0.65,
-                bounceminspeed = 200,
-                numsubcatches = 3,
+                numbounce = 1,
                 firestarter = 100,
                 size = 8.5,
                 stages = 22,
@@ -459,176 +457,62 @@ do
                 onlytargetcategory = TSV,
             }
         ),
-        apol_suite = {
-            is_suite = true,
-            slots = {
-                [1] = W(
-                    "Apollyon Siege Driver",
-                    "Cannon",
-                    2350,
-                    4,
-                    1900,
-                    240,
-                    3500,
-                    6500,
-                    8000,
-                    2300,
-                    nil,
-                    {
-                        accuracy = 180,
-                        size = 16,
-                        stages = 24,
-                        intensity = 2.2,
-                        rgbcolor = "1 0.38 0.08",
-                        cegtag = "arty-extraheavy",
-                        explosiongenerator = ES,
-                        soundstart = "cannhvy6",
-                        soundhit = "xplolrg4",
-                        craterboost = 4,
-                        cratermult = 2.5,
-                        camerashake = 80,
-                        onlytargetcategory = TS,
-                    }
-                ),
-                [2] = W(
-                    "Apollyon Siege Driver",
-                    "Cannon",
-                    2350,
-                    4,
-                    1900,
-                    240,
-                    3500,
-                    6500,
-                    8000,
-                    2300,
-                    nil,
-                    {
-                        accuracy = 180,
-                        size = 16,
-                        stages = 24,
-                        intensity = 2.2,
-                        rgbcolor = "1 0.38 0.08",
-                        cegtag = "arty-extraheavy",
-                        explosiongenerator = ES,
-                        soundstart = "cannhvy6",
-                        soundhit = "xplolrg4",
-                        craterboost = 4,
-                        cratermult = 2.5,
-                        camerashake = 80,
-                        onlytargetcategory = TS,
-                    }
-                ),
-                [3] = W(
-                    "Apollyon Shredder Array",
-                    "Cannon",
-                    1250,
-                    1.8,
-                    3400,
-                    80,
-                    300,
-                    190,
-                    280,
-                    80,
-                    100,
-                    {
-                        burst = 30,
-                        burstrate = 0.025,
-                        sprayangle = 750,
-                        accuracy = 280,
-                        size = 5.5,
-                        stages = 16,
-                        intensity = 1.6,
-                        rgbcolor = "1 0.85 0.2",
-                        cegtag = CF,
-                        explosiongenerator = "custom:genericshellexplosion-small",
-                        soundstart = "flashemgxl",
-                        soundhit = "flashemgxlhit",
-                        onlytargetcategory = TSV,
-                    }
-                ),
-                [4] = W(
-                    "Apollyon Skyfall VLS",
-                    "MissileLauncher",
-                    1900,
-                    2.4,
-                    3600,
-                    85,
-                    750,
-                    90,
-                    240,
-                    nil,
-                    760,
-                    {
-                        burst = 12,
-                        burstrate = 0.06,
-                        sprayangle = 500,
-                        startvelocity = 1200,
-                        weaponacceleration = 1900,
-                        flighttime = 5.5,
-                        tracks = true,
-                        turnrate = 90e3,
-                        dance = 6,
-                        wobble = 110,
-                        texture1 = "null",
-                        texture2 = "smoketrailaa",
-                        cegtag = "missiletrailaa-large",
-                        explosiongenerator = "custom:genericshellexplosion-medium-aa",
-                        soundstart = "packolau",
-                        soundhit = "packohit",
-                        onlytargetcategory = TV,
-                    }
-                ),
-                [5] = W(
-                    "Apollyon Tachyon Lance",
-                    "BeamLaser",
-                    1700,
-                    2.5,
-                    4500,
-                    40,
-                    1100,
-                    4500,
-                    6000,
-                    1300,
-                    nil,
-                    {
-                        beamtime = 0.4,
-                        thickness = 9.5,
-                        corethickness = 0.55,
-                        laserflaresize = 12,
-                        scrollspeed = 12,
-                        pulsespeed = 8,
-                        largebeamlaser = true,
-                        texture3 = "largebeam",
-                        tilelength = 150,
-                        explosiongenerator = "custom:heatray-huge",
-                        rgbcolor = "1 0.18 0.12",
-                        rgbcolor2 = "1 0.9 0.7",
-                        soundstart = "lancefire",
-                        soundhit = "burn02",
-                        onlytargetcategory = TS,
-                    }
-                ),
-                [6] = fixW(
-                    {
-                        weapontype = "Shield",
-                        shieldradius = 480,
-                        shieldpower = 55000,
-                        shieldpowerregen = 260,
-                        shieldpowerregenenergy = 150,
-                        shieldrepulser = true,
-                        shieldintercepttype = 1,
-                        shieldalpha = 0.34,
-                        shieldgoodcolor = "1 0.5 0.15 0.9",
-                        shieldbadcolor = "1 0.15 0.1 0.95",
-                        rgbcolor = "0.9 0.4 0.1",
-                        visibleshield = true,
-                    },
-                    "Apollyon Aegis Field"
-                ),
+                siege = W("Apollyon Siege Driver", "Cannon", 2450, 4, 1900, 180, 3500, 18000, 22000, 5000, nil, {
+            accuracy = 120, size = 16, cegtag = "arty-extraheavy", explosiongenerator = ES,
+            soundstart = "cannhvy6", soundhit = "xplolrg4", onlytargetcategory = TS,
+        }),
+        microflak = W("Apollyon Microflak", "Cannon", 1150, 2.4, 3100, 100, 450, 0, nil, nil, 750, {
+            burst = 8, burstrate = 0.1, burnblow = true, canattackground = false,
+            cegtag = CF, explosiongenerator = "custom:flakshard", soundstart = SF, onlytargetcategory = TV,
+        }),
+        rockets = W("Apollyon Tracking Battery", "MissileLauncher", 1250, 3.2, 1900, 65, 750, 1200, nil, nil, nil, {
+            burst = 4, burstrate = 0.15, tracks = true, turnrate = 48e3, flighttime = 3,
+            startvelocity = 700, weaponacceleration = 1200, cegtag = "missiletrailaa-large",
+            explosiongenerator = ES, soundstart = "packolau", onlytargetcategory = TS,
+        }),
+        aegis = {
+            name = "Apollyon Aegis Field", weapontype = "Shield",
+            shield = {
+                radius = 480, power = 65000, powerregen = 260, powerregenenergy = 150,
+                startingpower = 65000, intercepttype = 1, smart = true, exterior = true,
+                alpha = 0.34, goodcolor = "1 0.5 0.15 0.9", badcolor = "1 0.15 0.1 0.95", visible = true,
             },
         },
     }
-    local SP = {
+    local function installApocalypse(u, src)
+        local legion = src == "legapollyon"
+        local active = legion and { [1] = "siege", [7] = "microflak", [9] = "rockets" }
+            or { [1] = "siege", [4] = "microflak" }
+        local stock = u.weapons or {}
+        local count = M(#stock, legion and 10 or 5)
+        u.weapons = {}
+        u.weapondefs = u.weapondefs or {}
+        u.weapondefs.apollyon_inert = {
+            weapontype = "Cannon", range = 1, projectiles = 0, commandfire = true,
+            canattackground = false, damage = { default = 0 }, customparams = { bogus = true },
+        }
+        for i = 1, count do
+            local role = active[i]
+            if role then
+                local key, weapon = "apollyon_" .. role, C(WP[role])
+                weapon.turret, weapon.noselfdamage = true, true
+                u.weapondefs[key] = weapon
+                local mount = stock[i] or {}
+                u.weapons[i] = {
+                    def = key, onlytargetcategory = weapon.onlytargetcategory,
+                    maindir = mount.maindir, maxangledif = mount.maxangledif,
+                    fastautoretargeting = mount.fastautoretargeting,
+                }
+            elseif not legion and i == 5 and stock[i] then
+                u.weapons[i] = stock[i] -- Preserve the script's footstep effect.
+            else
+                u.weapons[i] = { def = "apollyon_inert", onlytargetcategory = "NONE" }
+            end
+        end
+        u.weapondefs.apollyon_aegis = C(WP.aegis)
+        u.weapons[count + 1] = { def = "apollyon_aegis" }
+    end
+local SP = {
         {
             "player_riftcolossus",
             { "armbanth" },
@@ -671,8 +555,8 @@ do
             "tesla",
             WP.tesla,
             "Thunderlord Colossus",
-            "Tesla walker",
-            { 65e3, 125e4, 195e3, 62, 4, 400, 0, 50 },
+            "Surface lightning walker; forks can hit nearby allies",
+            { 60e3, 115e4, 195e3, 62, 4, 400, 0, 50 },
         },
         {
             "player_pyroclast",
@@ -680,17 +564,17 @@ do
             "pyro",
             WP.pyro,
             "Magma Leviathan",
-            "Fire titan",
-            { 68e3, 130e4, 230e3, 50, 4, 400, 0, 60 },
+            "Area-denial walker with single-bounce mortar shells",
+            { 60e3, 115e4, 230e3, 50, 4, 400, 0, 60 },
         },
         {
             "player_apollyonfortress",
-            { "legapollyon", "corpun", "corint" },
+            { "legapollyon", "corjugg" },
             "apollyon",
-            WP.apol_suite,
+            installApocalypse,
             "Apocalypse Engine",
-            "Heavy artillery fortress",
-            { 105e3, 210e4, 290e3, 38, 3, 700, 0, 80 },
+            "Mobile siege fortress with plasma shielding and independent close AA",
+            { 100e3, 200e4, 330e3, 38, 3, 700, 0, 80 },
         },
         {
             "player_vortexdisintegrator",
@@ -705,7 +589,7 @@ do
     local AB = getAir()
     for i = 1, #SP do
         local p = SP[i]
-        local s = findSrc(p[2])
+        local s, src = findSrc(p[2])
         if s and not U[p[1]] then
             local u = C(s)
             local st = p[7]
@@ -730,7 +614,12 @@ do
             u.customparams = u.customparams or {}
             u.customparams.techlevel, u.customparams.unitgroup = 4, "weapon"
             u.customparams.i18n_en_humanname, u.customparams.i18n_en_tooltip = p[5], p[6]
-            install(u, p[3], p[4], st[11])
+            if type(p[4]) == "function" then
+                p[4](u, src)
+            else
+                install(u, p[3], p[4], st[11])
+            end
+            if p[1] == "player_pyroclast" then u.customparams.maxrange = nil end
             U[p[1]] = u
             if UnitDefNames then
                 UnitDefNames[p[1]] = u

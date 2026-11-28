@@ -212,15 +212,14 @@ do
 			soundhitdry = "packohit",
 			onlytargetcategory = TV,
 		}),
-		torp = W("Torpedo Launcher", "MissileLauncher", 1950, 5, 1100, 0, 2200, 5200, 6400, 2500, nil, {
+		strike = W("Phantom Strike Missiles", "MissileLauncher", 2000, 4, 2600, 24, 2200, 4000, 4800, 1600, nil, {
 			burst = 4,
-			burstrate = 0.25,
-			weaponacceleration = 500,
-			flighttime = 10,
+			burstrate = 0.15,
+			startvelocity = 1400,
+			weaponacceleration = 1100,
+			flighttime = 4,
 			tracks = true,
 			turnrate = 60e3,
-			dance = 15,
-			wobble = 600,
 			size = 14,
 			stages = 22,
 			rgbcolor = "0 1 0.6",
@@ -232,18 +231,12 @@ do
 			onlytargetcategory = TS,
 		}),
 		pshield = {
+			name = "Phantom Plasma Shield",
 			weapontype = "Shield",
-			shieldradius = 520,
-			shieldpower = 45000,
-			shieldpowerregen = 225,
-			shieldpowerregenenergy = 125,
-			shieldrepulser = true,
-			shieldintercepttype = 1,
-			shieldalpha = 0.36,
-			shieldgoodcolor = "0.15 0.85 1 0.85",
-			shieldbadcolor = "1 0.35 0.15 0.9",
-			rgbcolor = "0.15 0.8 1",
-			visibleshield = true,
+			shield = {
+				radius = 520, power = 55000, powerregen = 225, powerregenenergy = 125,
+				startingpower = 55000, smart = true, exterior = true, intercepttype = 1, visible = false,
+			},
 		},
 		pbr = W("Rift Barrage", "Cannon", 2300, 1.5, 4200, 180, 6800, 5600, 12e3, nil, nil, {
 			canattackground = true,
@@ -345,9 +338,10 @@ do
 			firestarter = 120,
 			onlytargetcategory = TV,
 		}),
-		javelin = W("Capacitor Javelin Swarm", "MissileLauncher", 2000, 2.4, 3200, 80, 500, 300, 500, nil, 900, {
-			burst = 12,
+		javelin = W("Phantom Point Defense", "MissileLauncher", 1300, 2, 3200, 16, 500, 0, nil, nil, 500, {
+			burst = 4,
 			burstrate = 0.08,
+			canattackground = false,
 			startvelocity = 1600,
 			weaponacceleration = 1600,
 			flighttime = 5,
@@ -362,9 +356,23 @@ do
 			explosiongenerator = "custom:genericshellexplosion-medium-aa",
 			soundstart = "packolau",
 			soundhitdry = "packohit",
-			onlytargetcategory = TSV,
+			onlytargetcategory = TV,
 		}),
 	}
+
+	local function installPhantom(u)
+		-- Both Dragon scripts use slot 1 for surface fire and slot 2 for independent AA.
+		install(u, "phantom", { is_suite = true, slots = { WP.strike, WP.javelin } })
+		for i = 3, #u.weapons do
+			local inert = u.weapondefs[u.weapons[i].def]
+			inert.projectiles, inert.commandfire, inert.canattackground = 0, true, false
+			inert.customparams = { bogus = true }
+		end
+		local shield = #u.weapons + 1
+		u.weapondefs.phantom_shield = C(WP.pshield)
+		u.weapons[shield] = { def = "phantom_shield" }
+		u.customparams.maxrange = nil
+	end
 
 	-- COB mount indices: beam, plasma, SAM, total. The Krow fallback has no AA turret.
 	local sentinelMounts = { legfortt4 = { 3, 1, 6, 6 }, corcrwt4 = { 3, 1, 2, 6 }, corcrw = { 1, 2, 3, 3 } }
@@ -431,10 +439,10 @@ do
 			"player_phantomleviathan",
 			{ "corcrwh", "corcrwt4" },
 			"phantom",
-			{ is_suite = true, slots = { [1] = WP.torp, [2] = WP.pshield, [3] = WP.javelin } },
+			installPhantom,
 			"Phantom Leviathan",
-			"Cloaked dreadnought",
-			{ 125e3, 245e4, 245e3, 62, 2, 750, 0, 75, 0, true },
+			"Cloaked surface strike leader with plasma shielding and point defense",
+			{ 92e3, 185e4, 245e3, 62, 2, 750, 0, 75, 0, true },
 		},
 		{
 			"player_archangel",
@@ -469,9 +477,7 @@ do
 			if p[1] == "player_phantomleviathan" then
 				u.cancloak, u.cloakable, u.initcloaked, u.stealth = true, true, true, true
 				u.cloakcost, u.cloakcostmoving, u.mincloakdistance, u.decloakdistance = 18, 42, 220, 140
-				u.decloakonfire, u.decloaksonfire = false, false
-				u.customparams = u.customparams or {}
-				u.customparams.stealthhealth, u.customparams.stealthregen = 0.35, 240
+				u.decloakonfire = true
 			end
 			if air then
 				u.canfly, u.hoverattack, u.airhoverfactor, u.cruisealt, u.turnrate, u.collide =

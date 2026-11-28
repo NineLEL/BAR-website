@@ -64,7 +64,7 @@ do
             w.reloadtime = math.max(w.reloadtime * reload, volley + 0.05, tonumber(w.beamtime) or 0)
           end
           if type(w.shield) == "table" then
-            for _, field in ipairs({ "power", "startingPower", "powerRegen" }) do
+            for _, field in ipairs({ "power", "startingPower", "powerRegen", "startingpower", "powerregen" }) do
               if type(w.shield[field]) == "number" then w.shield[field] = w.shield[field] * shield end
             end
             cp.shield_power, cp.shield_radius = w.shield.power, w.shield.radius
