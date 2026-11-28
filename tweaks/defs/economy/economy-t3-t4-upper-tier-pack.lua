@@ -326,7 +326,7 @@ do
 			t3Builders[b] = true
 		end
 		route(t3N, t3Builders)
-		route(t4N, { [t3N] = true })
+		route(t4N, { [t3N] = true, [t4N] = true })
 		-- Stock advanced fusions were added to BLD by this pack, not to subs.
 		routeEconomy(p .. "afust3", p, 3, true)
 		routeEconomy(p .. "afust4", p, 4)
