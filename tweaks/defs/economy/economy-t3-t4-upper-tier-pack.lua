@@ -254,8 +254,6 @@ do
 		"leggatet3",
 		"armfgate",
 		"corfgate",
-		"player_aegisdome",
-		"player_citadelumbrella",
 	}
 	local fDef = {
 		arm = {
