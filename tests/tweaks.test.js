@@ -152,6 +152,11 @@ describe("Lua runtime checks", { skip: skipLua }, () => {
     assert.match(runLua("tests/player-turrets-exotic.lua", minPath), /exotic turrets runtime checks passed/);
   });
 
+  it("player defense shields pack executes cleanly", () => {
+    const srcPath = path.join(DEFS_DIR, "player", "defenses", "player-defense-shields.lua");
+    assert.match(runLua("tests/player-defense-shields.lua", srcPath), /defense shields runtime checks passed/);
+  });
+
   it("standalone T3 anti-air executes cleanly (raw and minified)", (t) => {
     const srcPath = path.join(DEFS_DIR, "player", "defenses", "player-defense-anti-air.lua");
     const testPath = "tests/player-defense-anti-air.lua";

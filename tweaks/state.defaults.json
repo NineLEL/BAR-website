@@ -1,6 +1,7 @@
 {
   "defs/economy/economy-t3-t4-upper-tier-pack.lua": true,
   "defs/player/defenses/player-defense-epic-walls.lua": false,
+  "defs/player/defenses/player-defense-shields.lua": false,
   "defs/player/megas/buff-default-units.lua": true,
   "defs/player/megas/player-mega-air-pack.lua": false,
   "defs/player/megas/player-mega-land-pack.lua": false,
