@@ -332,13 +332,13 @@ do
 		}),
 	}
 
-	local SP = {
+		local SP = {
 		{
 			"player_singularity",
 			{ "corcrwt4", "corcrw" },
 			"plasma",
 			WP.plasmacluster,
-			"Singularity",
+			"Void Nexus",
 			"Plasma cluster dreadnought",
 			{ 150e3, 36e5, 28e4, 58, 2, 3200, 0, 220, 0, true },
 		},
@@ -347,7 +347,7 @@ do
 			{ "armfepocht4", "armepocht4", "legfortt4" },
 			"aether",
 			{ is_suite = true, slots = { [1] = WP.a_a, [2] = WP.a_m, [3] = WP.a_s } },
-			"Aether Siege Fortress",
+			"Celestial Juggernaut",
 			"Aerial flagship",
 			{ 155e3, 35e5, 29e4, 52, 3, 2800, 0, 240, 0, true },
 		},
@@ -365,7 +365,7 @@ do
 			{ "legfortt4", "corcrwt4", "corcrw" },
 			"ionic",
 			WP.ionic,
-			"Archangel Gunship",
+			"Sentinel Colossus",
 			"Precision beam dreadnought",
 			{ 140e3, 31e5, 27e4, 66, 3, 2200, 0, 200, 0, true },
 		},
