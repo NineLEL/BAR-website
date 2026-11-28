@@ -989,21 +989,35 @@ function copyText(t) {
 }
 
 var toastTimer = null;
+var toastEl = null;
 function toast(msg) {
   var el = $("toast");
-  if (!el) { el = document.createElement("div"); el.id = "toast"; el.className = "toast"; el.setAttribute("role", "status"); el.setAttribute("aria-live", "polite"); document.body.appendChild(el); }
+  if (!el) { el = document.createElement("div"); el.id = "toast"; el.className = "toast"; el.setAttribute("role", "status"); el.setAttribute("aria-live", "polite"); el.setAttribute("aria-atomic", "true"); el.setAttribute("tabindex", "0"); document.body.appendChild(el); }
   el.textContent = msg;
   el.hidden = false;
   el.style.display = "flex";
   el.classList.remove("is-visible");
+  toastEl = el;
   void el.offsetWidth;
   el.classList.add("is-visible");
+  el.onclick = dismissToast;
+  el.onkeydown = function (e) { if (e.key === "Escape") dismissToast(); };
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(function () {
-    el.classList.remove("is-visible");
-    el.style.display = "none";
-    el.hidden = true;
-  }, 2400);
+  toastTimer = setTimeout(dismissToast, 2800);
+}
+
+function dismissToast() {
+  if (!toastEl) return;
+  toastEl.classList.remove("is-visible");
+  setTimeout(function () {
+    if (toastEl) {
+      toastEl.style.display = "none";
+      toastEl.hidden = true;
+      toastEl.onclick = null;
+      toastEl.onkeydown = null;
+      toastEl = null;
+    }
+  }, 150);
 }
 
 /* ---------- wiring ---------- */
@@ -1032,6 +1046,21 @@ $("defsAdd").onclick = function () { defs.snippets.push(""); defs.packed = null;
 $("unitsAdd").onclick = function () { units.snippets.push(""); units.packed = null; units.packedNames = null; saveEditorState(); renderInputs(units); };
 $("defsPack").onclick = function () { autoPack(defs); };
 $("unitsPack").onclick = function () { autoPack(units); };
+
+/* Keyboard shortcuts */
+if (document && document.addEventListener) {
+  document.addEventListener("keydown", function (e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+      var activeTab = document.querySelector(".tab.active");
+      if (!activeTab) return;
+      var tabType = activeTab.dataset.tab;
+      if (tabType === "defs") autoPack(defs);
+      else if (tabType === "units") autoPack(units);
+      e.preventDefault();
+    }
+  });
+}
+
 $("defsClear").onclick = function () { defs.snippets = [""]; defs.packed = null; defs.packedNames = null; saveEditorState(); renderAll(); };
 $("unitsClear").onclick = function () { units.snippets = [""]; units.packed = null; units.packedNames = null; saveEditorState(); renderAll(); };
 $("defsCopyAll").onclick = function () {
