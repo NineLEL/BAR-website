@@ -63,6 +63,7 @@ end
 
 -- Verify specific gadget hooks.
 local lance = UnitDefs.raptorx_voidlance_piercer
+assert(lance.customparams.raptorsquadweight == 48 and lance.customparams.raptorsquadunitsamount == 2)
 assert(lance.cancloak and lance.initcloak and lance.stealth and lance.decloakonfire)
 assert(lance.weapondefs.voidlance.impactonly and lance.weapondefs.voidlance.noexplode)
 assert(lance.weapondefs.voidlance.customparams.overpenetrate == true)
@@ -105,6 +106,7 @@ assert(equal(before, UnitDefs), "repeat application changed definitions")
 
 -- Compatible with hardening pack without violating burst/reload invariants.
 assert(loadfile("tweaks/defs/raptorx/raptorx-unit-hardening.lua"))()
+assert(lance.customparams.raptorsquadweight == 67)
 for id in pairs(expected) do
   local u = assert(UnitDefs[id])
   assert(u.customparams.raptorx_ultra_hardened == 1, id .. " should harden cleanly")

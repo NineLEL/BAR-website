@@ -47,7 +47,7 @@ do
     cp.raptorsquadbehavior, cp.raptorsquadbehaviorchance = squad[1], 1
     cp.raptorsquadbehaviordistance, cp.raptorsquadminanger = squad[2], squad[3]
     cp.raptorsquadmaxanger = 150
-    cp.raptorsquadunitsamount, cp.raptorsquadweight = squad[4], squad[5]
+    cp.raptorsquadunitsamount, cp.raptorsquadweight = squad[4], squad[5] * 3
     cp.raptorsquadforceair, cp.raptorsquadforcesurface = nil, nil
     for _, l in ipairs(langs) do
       cp["i18n_" .. l .. "_humanname"] = name

@@ -123,6 +123,21 @@ describe("Lua runtime checks", { skip: skipLua }, () => {
     return res.stdout;
   }
 
+  it("RaptorX balance applies in load order (raw and minified)", (t) => {
+    const source = path.join(DEFS_DIR, "raptorx");
+    const script = "tests/raptorx-balance.lua";
+    const success = /RaptorX balance runtime checks passed/;
+    assert.match(runLua(script, source), success);
+
+    const os = require("node:os");
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "bar-raptorx-balance-"));
+    t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+    for (const name of ["raptorx-custom-unit-core.lua", "raptorx-siege-artillery.lua", "raptorx-unit-hardening.lua"]) {
+      fs.writeFileSync(path.join(dir, name), pure.luaMinify(fs.readFileSync(path.join(source, name), "utf8")));
+    }
+    assert.match(runLua(script, dir), success);
+  });
+
   it("raptor mini-boss specialists execute cleanly (raw and minified)", (t) => {
     const srcPath = path.join(DEFS_DIR, "raptorx", "raptorx-miniboss-specialists.lua");
     assert.match(runLua("tests/raptor-minibosses.lua", srcPath), /mini-boss runtime checks passed/);

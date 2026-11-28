@@ -60,7 +60,7 @@ do
       cp.raptorx_ultra_hardened, cp.raptorx_squadweight_adjusted = nil, nil
       cp.paralyzemultiplier = 1
       cp.raptorcustomsquad, cp.raptorsquadrarity = "1", "special"
-      cp.raptorsquadunitsamount, cp.raptorsquadweight = 1, 2
+       cp.raptorsquadunitsamount, cp.raptorsquadweight = 1, 6
       cp.raptorsquadminanger, cp.raptorsquadmaxanger = spec[4], 150
       cp.raptorsquadbehavior, cp.raptorsquadbehaviorchance = spec[5], 1
       cp.raptorsquadbehaviordistance = spec[5] == "artillery" and 1100 or 700

@@ -34,8 +34,8 @@ do
     {"raptor_land_spiker_basic_t2_v1","raptorx_clusterrain","Cluster Rain",1.15,.82,.80,.98},
     {"raptor_allterrain_arty_emp_t2_v1","raptorx_disruptionmortar","Disruption Mortar",1.18,.80,.80,.98},
   }
-  -- behavior, min/max anger, amount, weight, distance, rarity. Kept in sync
-  -- with units/raptorx rosters so each clone gets its OWN squad, not its base's.
+  -- Behavior, min/max anger, amount, base weight, distance, rarity. The base
+  -- values mirror units/raptorx; clone registration doubles the selection weight.
   local squads = {
     raptorx_earlycrusher = {"berserk",24,75,2,28,1150,"basic"},
     raptorx_midravager = {"berserk",42,150,6,100,1600,"special"},
@@ -94,7 +94,7 @@ do
       end
       cp.raptorcustomsquad, cp.raptorsquadbehaviorchance = "1", 1
       cp.raptorsquadbehavior, cp.raptorsquadminanger, cp.raptorsquadmaxanger = q[1], q[2], q[3]
-      cp.raptorsquadunitsamount, cp.raptorsquadweight = q[4], q[5]
+      cp.raptorsquadunitsamount, cp.raptorsquadweight = q[4], q[5] * 2
       cp.raptorsquadbehaviordistance, cp.raptorsquadrarity = q[6], q[7]
       UnitDefs[s[2]] = unit
     end

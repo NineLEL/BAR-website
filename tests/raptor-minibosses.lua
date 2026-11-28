@@ -46,7 +46,7 @@ for i, kind in ipairs(kinds) do
   assert(u.weapondefs ~= base.weapondefs and u.weapons ~= base.weapons)
   assert(not u.builder and next(u.buildoptions) == nil)
   assert(u.customparams.raptorcustomsquad == "1" and u.customparams.raptorsquadunitsamount == 1)
-  assert(u.customparams.raptorsquadminanger == 40 + i * 10 and u.customparams.raptorsquadweight == 2)
+  assert(u.customparams.raptorsquadminanger == 40 + i * 10 and u.customparams.raptorsquadweight == 6)
   assert(u.customparams.paralyzemultiplier == 1)
   assert(#u.weapons == 5)
   for _, slot in ipairs(u.weapons) do

@@ -14,7 +14,7 @@ squads, not player-buildable units or replacements for the final queen.
 | Veilfang Stalker | 90% | 115,000 | Free moving cloak, radar stealth, fast movement, 2,500-damage claw strike; 250-distance proximity reveal |
 
 Each registers its own `raptorcustomsquad = "1"` metadata in tweakdefs (clones do
-not exist when tweakunits runs). Squads are special-rarity, weight 2, one unit
+not exist when tweakunits runs). Squads are special-rarity, weight 6, one unit
 per selected squad, and eligible until 150% anger. Selection is random, not a
 guaranteed scheduled spawn; multiple squads can coexist. No global boss limit
 or custom decision-tree AI is claimed.
