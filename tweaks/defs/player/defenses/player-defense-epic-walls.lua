@@ -15,9 +15,9 @@ local TIERS = {
 }
 -- Stats within each faction are { HP, idle HP/s, idle seconds }, ordered T2–T4.
 local FACTIONS = {
-  { id = "arm", source = "armfort", title = "Wall", stats = { { 24000, 100, 30 }, { 76000, 220, 30 }, { 165000, 400, 30 } } },
-  { id = "cor", source = "corfort", title = "Bulwark", stats = { { 33000, 60, 45 }, { 105000, 130, 45 }, { 215000, 240, 45 } } },
-  { id = "leg", source = "legforti", title = "Rampart", timeScale = 0.75, stats = { { 27000, 70, 40 }, { 86000, 150, 40 }, { 180000, 300, 40 } } },
+  { id = "arm", source = "armfort", stats = { { 24000, 100, 30 }, { 76000, 220, 30 }, { 165000, 400, 30 } } },
+  { id = "cor", source = "corfort", stats = { { 33000, 60, 45 }, { 105000, 130, 45 }, { 215000, 240, 45 } } },
+  { id = "leg", source = "legforti", timeScale = 0.75, stats = { { 27000, 70, 40 }, { 86000, 150, 40 }, { 180000, 300, 40 } } },
 }
 local function installWall(level, faction)
   local tier = TIERS[level]
@@ -27,7 +27,7 @@ local function installWall(level, faction)
     if source == nil then return end
     local stats = faction.stats[level - 1]
     local health, regen, delay = stats[1], stats[2], stats[3]
-    local name = tier.title .. " " .. faction.title
+    local name = tier.title .. " Wall"
     local tooltip = string.format("Siege wall: %d HP, %d crush resistance, no upkeep. Builders cannot repair it; it regenerates %d HP/s after %d seconds without damage.", health, tier.crush, regen, delay)
     local u = copy(source)
     u.unitname, u.name, u.description = id, name, tooltip
