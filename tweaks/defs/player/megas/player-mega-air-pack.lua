@@ -279,9 +279,11 @@ do
 		ionic = {
 			name = "Ionic Pulse Beam",
 			weapontype = "BeamLaser",
-			range = 1500,
-			reloadtime = 0.65,
+			range = 1850,
+			reloadtime = 0.8,
 			beamtime = 0.08,
+			minintensity = 1,
+			interceptedbyshieldtype = 3, -- BAR plasma shields (1) and normal beam interception (2)
 			largebeamlaser = true,
 			corethickness = 0.6,
 			laserflaresize = 9,
@@ -294,10 +296,35 @@ do
 			thickness = 5,
 			soundstart = "railgun3",
 			soundtrigger = 1,
-			damage = { default = 2600, vtol = 1800, shields = 4800 },
+			damage = { default = 3600, shields = 7200 },
 			energypershot = 220,
-			onlytargetcategory = TSV,
 		},
+		plasma_salvo = W("Plasma Salvo", "Cannon", 1550, 2.5, 1300, 180, 240, 1500, nil, nil, nil, {
+			burst = 4,
+			burstrate = 0.2,
+			edgeeffectiveness = 0.65,
+			cegtag = "starfire_arty",
+			explosiongenerator = "custom:plasmahit-huge",
+			soundstart = "cannhvy2",
+			soundhitdry = "xplolrg4",
+		}),
+		guardian_sam = W("Guardian SAM", "MissileLauncher", 1800, 2, 2600, 16, 300, 0, nil, nil, 1200, {
+			burst = 8,
+			burstrate = 0.1,
+			canattackground = false,
+			startvelocity = 1100,
+			weaponacceleration = 1100,
+			flighttime = 4,
+			tracks = true,
+			turnrate = 68e3,
+			model = "cormissile3fast.s3o",
+			texture1 = "null",
+			texture2 = "smoketrailaa",
+			cegtag = "missiletrailaa-large",
+			explosiongenerator = "custom:genericshellexplosion-medium-aa",
+			soundstart = "packolau",
+			soundhitdry = "packohit",
+		}),
 		plasmacluster = W("Plasma Cluster Torpedoes", "MissileLauncher", 2300, 4, 1500, 180, 1200, 3600, 4400, nil, nil, {
 			burst = 4,
 			burstrate = 0.3,
@@ -339,7 +366,49 @@ do
 		}),
 	}
 
-		local SP = {
+	-- COB mount indices: beam, plasma, SAM, total. The Krow fallback has no AA turret.
+	local sentinelMounts = { legfortt4 = { 3, 1, 6, 6 }, corcrwt4 = { 3, 1, 2, 6 }, corcrw = { 1, 2, 3, 3 } }
+	local function installSentinel(u, src)
+		local mount = sentinelMounts[src]
+		local beam, plasma, sam, count = mount[1], mount[2], mount[3], mount[4]
+		local active = {
+			[beam] = { def = "ionic", onlytargetcategory = TS },
+			[plasma] = { def = "plasma_salvo", onlytargetcategory = TS },
+			[sam] = { def = "guardian_sam", onlytargetcategory = TV, fastautoretargeting = true, fastquerypointupdate = true },
+		}
+		u.weapondefs = u.weapondefs or {}
+		if count > 3 then
+			-- Keep the slots contiguous without adding a weapon that can acquire a target or launch a projectile.
+			u.weapondefs.ionic_d = {
+				weapontype = "Cannon",
+				range = 1,
+				projectiles = 0,
+				commandfire = true,
+				canattackground = false,
+				damage = { default = 0 },
+				customparams = { bogus = true },
+			}
+		end
+		local stock = u.weapons or {}
+		u.weapons = {}
+		for i = 1, count do
+			local slot = active[i]
+			if slot then
+				local weapon = C(WP[slot.def])
+				weapon.noselfdamage, weapon.turret = true, true
+				u.weapondefs[slot.def] = weapon
+				-- Keep the stock ground arcs, but not target priorities or dependencies between mounts.
+				if i ~= sam and stock[i] then
+					slot.maindir, slot.maxangledif = stock[i].maindir, stock[i].maxangledif
+				end
+			end
+			u.weapons[i] = slot or { def = "ionic_d", onlytargetcategory = "NONE" }
+		end
+		-- The Epic Dragon hull otherwise forces the live unit's engagement range to 450.
+		u.customparams.maxrange = nil
+	end
+
+	local SP = {
 		{
 			"player_singularity",
 			{ "corcrwt4", "corcrw" },
@@ -371,10 +440,10 @@ do
 			"player_archangel",
 			{ "legfortt4", "corcrwt4", "corcrw" },
 			"ionic",
-			WP.ionic,
+			installSentinel,
 			"Sentinel Colossus",
-			"Precision beam dreadnought",
-			{ 70e3, 135e4, 155e3, 66, 3, 450, 0, 45, 0, true },
+			"Escort dreadnought with shield-breaking beam, plasma salvo and tracking SAMs",
+			{ 70e3, 135e4, 245e3, 70, 3, 450, 0, 110, 0, true },
 		},
 	}
 
@@ -382,7 +451,7 @@ do
 
 	for i = 1, #SP do
 		local p = SP[i]
-		local s = findSrc(p[2])
+		local s, src = findSrc(p[2])
 		if s and not U[p[1]] then
 			local u = C(s)
 			local st = p[7]
@@ -434,7 +503,11 @@ do
 					explosiongenerator = EG,
 				}
 			end
-			install(u, p[3], p[4], st[11])
+			if type(p[4]) == "function" then
+				p[4](u, src)
+			else
+				install(u, p[3], p[4], st[11])
+			end
 			U[p[1]] = u
 			if UnitDefNames then
 				UnitDefNames[p[1]] = u
