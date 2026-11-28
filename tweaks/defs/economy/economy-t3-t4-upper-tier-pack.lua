@@ -58,12 +58,12 @@ do
 
 	-- Converters: { id, src, fac, t, cap, eff, m, e, bt, hp }
 	local convs = {
-		{ "armmmkr_t3", "armmmkr", "arm", 3, 16000, 0.0225, 14200, 720000, 460000, 12000 },
-		{ "cormmkr_t3", "cormmkr", "cor", 3, 16000, 0.0225, 15000, 750000, 480000, 13500 },
-		{ "legadveconv_t3", "legadveconv", "leg", 3, 16000, 0.0225, 15000, 750000, 480000, 13500 },
-		{ "armmmkr_t4", "armmmkr", "arm", 4, 48000, 0.025, 30500, 1550000, 860000, 28000 },
-		{ "cormmkr_t4", "cormmkr", "cor", 4, 48000, 0.025, 32000, 1600000, 900000, 32000 },
-		{ "legadveconv_t4", "legadveconv", "leg", 4, 48000, 0.025, 32000, 1600000, 900000, 32000 },
+		{ "armmmkr_t3", "armmmkr", "arm", 3, 12000, 0.0205, 14200, 650000, 400000, 12000 },
+		{ "cormmkr_t3", "cormmkr", "cor", 3, 12000, 0.0205, 15000, 680000, 420000, 13500 },
+		{ "legadveconv_t3", "legadveconv", "leg", 3, 12000, 0.0205, 15000, 680000, 420000, 13500 },
+		{ "armmmkr_t4", "armmmkr", "arm", 4, 32000, 0.0215, 30500, 1350000, 820000, 28000 },
+		{ "cormmkr_t4", "cormmkr", "cor", 4, 32000, 0.0215, 32000, 1400000, 860000, 32000 },
+		{ "legadveconv_t4", "legadveconv", "leg", 4, 32000, 0.0215, 32000, 1400000, 860000, 32000 },
 	}
 	for _, s in ipairs(convs) do
 		local src = U[s[2]]
@@ -94,12 +94,12 @@ do
 
 	-- Moho: { id, src, fac, t, ext, make, upkeep, st, m, e, bt, hp }
 	local mexs = {
-		{ "armmoho_t3", "armmoho", "arm", 3, 0.008, 8, 90, 1200, 4500, 60000, 52000, 7500 },
-		{ "cormoho_t3", "cormoho", "cor", 3, 0.008, 8, 90, 1200, 5200, 78000, 58000, 9500 },
-		{ "legmoho_t3", "legmoho", "leg", 3, 0.008, 8, 90, 1200, 5200, 78000, 58000, 9500 },
-		{ "armmoho_t4", "armmoho", "arm", 4, 0.016, 16, 240, 2000, 16000, 270000, 180000, 17000 },
-		{ "cormoho_t4", "cormoho", "cor", 4, 0.016, 16, 240, 2000, 18500, 320000, 200000, 20000 },
-		{ "legmoho_t4", "legmoho", "leg", 4, 0.016, 16, 240, 2000, 18500, 320000, 200000, 20000 },
+		{ "armmoho_t3", "armmoho", "arm", 3, 0.010, 2, 55, 1200, 2700, 36000, 42000, 7500 },
+		{ "cormoho_t3", "cormoho", "cor", 3, 0.010, 2, 55, 1200, 3100, 44000, 46000, 9500 },
+		{ "legmoho_t3", "legmoho", "leg", 3, 0.010, 2, 55, 1200, 3100, 44000, 46000, 9500 },
+		{ "armmoho_t4", "armmoho", "arm", 4, 0.020, 4, 145, 2000, 8500, 120000, 115000, 17000 },
+		{ "cormoho_t4", "cormoho", "cor", 4, 0.020, 4, 145, 2000, 9500, 140000, 125000, 20000 },
+		{ "legmoho_t4", "legmoho", "leg", 4, 0.020, 4, 145, 2000, 9500, 140000, 125000, 20000 },
 	}
 	for _, s in ipairs(mexs) do
 		local src = U[s[2]]
@@ -112,12 +112,14 @@ do
 			u.activatewhenbuilt, u.onoffable = true, true
 			u.weapondefs = u.weapondefs or {}
 			u.customparams = u.customparams or {}
+			local depth = math.floor(s[5] * 1000 + 0.5)
 			u.customparams.techlevel, u.customparams.metal_extractor, u.customparams.standardextractor =
-				s[4], s[6], true
+				s[4], depth, true
 			i18n(
 				u,
 				n,
-				("Produces %d metal, upkeep %dE, storage %d. Explodes violently if destroyed."):format(s[6], s[7], s[8])
+				("%dx base extraction depth, +%d M/s flat bonus, %d E/s upkeep, %d metal storage. Explodes violently if destroyed.")
+					:format(depth, s[6], s[7], s[8])
 			)
 			pub(s[1], u)
 			for _, b in ipairs(BLD[s[3]]) do
@@ -128,18 +130,18 @@ do
 
 	-- Storage: { id, src, fac, type, t, cap, m, e, bt, hp }
 	local storages = {
-		{ "armuwadvmst3", "armuwadvms", "arm", "m", 3, 40000, 4800, 80000, 120000, 52000 },
-		{ "coruwadvmst3", "coruwadvms", "cor", "m", 3, 40000, 5300, 90000, 128000, 56000 },
-		{ "legamstort3", "legamstor", "leg", "m", 3, 40000, 5300, 90000, 128000, 56000 },
-		{ "armuwadvmst4", "armuwadvms", "arm", "m", 4, 160000, 19000, 340000, 480000, 195000 },
-		{ "coruwadvmst4", "coruwadvms", "cor", "m", 4, 160000, 21500, 390000, 520000, 225000 },
-		{ "legamstort4", "legamstor", "leg", "m", 4, 160000, 21500, 390000, 520000, 225000 },
-		{ "armuwadvest3", "armuwadves", "arm", "e", 3, 250000, 5200, 95000, 120000, 52000 },
-		{ "coruwadvest3", "coruwadves", "cor", "e", 3, 250000, 5700, 105000, 128000, 56000 },
-		{ "legadvestoret3", "legadvestore", "leg", "e", 3, 250000, 5700, 105000, 128000, 56000 },
-		{ "armuwadvest4", "armuwadves", "arm", "e", 4, 1500000, 20500, 470000, 480000, 195000 },
-		{ "coruwadvest4", "coruwadves", "cor", "e", 4, 1500000, 23000, 530000, 520000, 225000 },
-		{ "legadvestoret4", "legadvestore", "leg", "e", 4, 1500000, 23000, 530000, 520000, 225000 },
+		{ "armuwadvmst3", "armuwadvms", "arm", "m", 3, 40000, 3400, 55000, 85000, 24000 },
+		{ "coruwadvmst3", "coruwadvms", "cor", "m", 3, 40000, 3700, 60000, 90000, 27000 },
+		{ "legamstort3", "legamstor", "leg", "m", 3, 40000, 3700, 60000, 90000, 27000 },
+		{ "armuwadvmst4", "armuwadvms", "arm", "m", 4, 160000, 14000, 235000, 320000, 65000 },
+		{ "coruwadvmst4", "coruwadvms", "cor", "m", 4, 160000, 15500, 260000, 350000, 75000 },
+		{ "legamstort4", "legamstor", "leg", "m", 4, 160000, 15500, 260000, 350000, 75000 },
+		{ "armuwadvest3", "armuwadves", "arm", "e", 3, 250000, 4000, 65000, 90000, 27000 },
+		{ "coruwadvest3", "coruwadves", "cor", "e", 3, 250000, 4400, 72000, 95000, 30000 },
+		{ "legadvestoret3", "legadvestore", "leg", "e", 3, 250000, 4400, 72000, 95000, 30000 },
+		{ "armuwadvest4", "armuwadves", "arm", "e", 4, 1200000, 14000, 270000, 340000, 70000 },
+		{ "coruwadvest4", "coruwadves", "cor", "e", 4, 1200000, 15500, 300000, 375000, 80000 },
+		{ "legadvestoret4", "legadvestore", "leg", "e", 4, 1200000, 15500, 300000, 375000, 80000 },
 	}
 	for _, s in ipairs(storages) do
 		local src = U[s[2]]
@@ -181,19 +183,18 @@ do
 		local sN, tN = p .. "afust3", p .. "afust4"
 		local src = U[sN]
 		if src then
+			src.metalcost, src.energycost, src.buildtime = 82000, 475000, 2100000
 			for _, b in ipairs(BLD[p]) do
 				add(b, sN)
 			end
 			local u = cp(src)
-			local em = sc(src.energymake, 2) or 0
 			local n = "Legendary Fusion Reactor"
 			u.unitname, u.name, u.description = tN, n, n
-			u.buildtime, u.metalcost, u.energycost =
-				sc(src.buildtime, 2.2), sc(src.metalcost, 2.2), sc(src.energycost, 2.2)
-			u.energymake, u.energystorage = em, sc(src.energystorage, 5)
-			u.health, u.idleautoheal = sc(src.health, 5.5), sc(src.idleautoheal, 6)
+			u.metalcost, u.energycost, u.buildtime = 165000, 990000, 4000000
+			u.energymake, u.energystorage = 68000, 270000
+			u.health, u.idleautoheal = p == "cor" and 29000 or 25000, sc(src.idleautoheal, 6)
 			u.damagemodifier, u.footprintx, u.footprintz = 0.95, 12, 12
-			i18n(u, n, ("Produces %d Energy. Catastrophic if destroyed."):format(em))
+			i18n(u, n, ("Produces %d Energy. Catastrophic if destroyed."):format(u.energymake))
 			pub(tN, u)
 			for _, b in ipairs(BLD[p]) do
 				add(b, tN)
@@ -300,17 +301,17 @@ do
 
 			t3.unitname, t3.name, t3.description = t3N, "Epic Construction Turret", "Epic Construction Turret"
 			t3.disabled = false
-			t3.metalcost, t3.energycost, t3.buildtime = 3700, 62000, 108000
+			t3.metalcost, t3.energycost, t3.buildtime = 3300, 52000, 85000
 			t3.footprintx, t3.footprintz, t3.collisionvolumescales = 8, 8, "82 150 82"
-			t3.health, t3.maxdamage, t3.workertime, t3.builddistance = 10560, 10560, 2400, 750
+			t3.health, t3.maxdamage, t3.workertime, t3.builddistance = 8500, 8500, 2100, 675
 			i18n(t3, t3.name, t3.description)
 			pub(t3N, t3)
 
 			t4.unitname, t4.name, t4.description = t4N, "Legendary Construction Turret", "Legendary Construction Turret"
 			t4.disabled = false
-			t4.metalcost, t4.energycost, t4.buildtime = 11100, 186000, 324000
+			t4.metalcost, t4.energycost, t4.buildtime = 8600, 140000, 220000
 			t4.footprintx, t4.footprintz, t4.collisionvolumescales = 10, 10, "104 180 104"
-			t4.health, t4.maxdamage, t4.workertime, t4.builddistance = 26400, 26400, 4000, 900
+			t4.health, t4.maxdamage, t4.workertime, t4.builddistance = 19000, 19000, 5200, 775
 			i18n(t4, t4.name, t4.description)
 			pub(t4N, t4)
 
