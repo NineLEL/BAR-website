@@ -272,17 +272,18 @@
       <div class="library-search-wrap">
         <label class="library-search-label" for="libSearch">Search library filenames</label>
         <div class="library-search">
-          <input id="libSearch" type="search" autocomplete="off" placeholder="Filter by folder or filename (e.g. raptor, economy, boss)...">
+          <input id="libSearch" type="search" autocomplete="off" placeholder="Filter by folder or filename (e.g. raptor, economy, boss)..." aria-describedby="libSearchHint">
           <button id="libSearchClear" type="button" aria-label="Clear library search">Clear</button>
         </div>
+        <p id="libSearchHint" class="sr-only">Type to filter library files by name or folder path.</p>
       </div>
-      <label class="library-filter-toggle switch-control" for="libEnabledOnly">
-        <input id="libEnabledOnly" type="checkbox">
+      <label class="library-filter-toggle switch-control" for="libEnabledOnly" title="Show only enabled files">
+        <input id="libEnabledOnly" type="checkbox" aria-label="Show only enabled files">
         <span class="switch-track" aria-hidden="true"></span>
         <span>Enabled only</span>
       </label>
       <div class="toolbar library-toolbar" role="toolbar" aria-label="Library bulk actions">
-        <button id="libReload" type="button">Reload library</button>
+        <button id="libReload" type="button" title="Reload library from server">Reload library</button>
         <button id="libEnableAll" type="button">Enable all</button>
         <button id="libDisableAll" type="button">Disable all</button>
       </div>
