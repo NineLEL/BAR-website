@@ -84,14 +84,21 @@ do
 	end
 
 	local LG = "armshltx corgant leggant everyexpe"
-	local EA = "armapt3 corapt3 legapt3 everyexpe"
 	local function getAir()
-		for b in EA:gmatch("%S+") do
-			if U[b] or (UnitDefNames and UnitDefNames[b]) then
-				return EA
+		local buildable = {}
+		for id, def in pairs(U) do
+			if not id:match("_scav$") then
+				for _, option in ipairs(def.buildoptions or {}) do
+					buildable[option] = true
+				end
 			end
 		end
-		return "armaap coraap legaap"
+		local builders = { "everyexpe" }
+		for _, pair in ipairs({ { "armapt3", "armshltx" }, { "corapt3", "corgant" }, { "legapt3", "leggant" } }) do
+			local plant = pair[1]
+			builders[#builders + 1] = U[plant] and buildable[plant] and plant or pair[2]
+		end
+		return table.concat(builders, " ")
 	end
 
 	local S_C, S_N, S_M, S_F, S_R =

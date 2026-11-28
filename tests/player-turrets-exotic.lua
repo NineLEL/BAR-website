@@ -27,11 +27,15 @@ end
 
 for _, spec in ipairs({
   {"legcluster", 3}, {"armpb", 1}, {"corscavdtl", 1}, {"legbastion", 1},
-  {"legacluster", 3}, {"armamb", 3}, {"legrampart", 2}, {"armanavaldefturret", 2},
+  {"legacluster", 3}, {"armamb", 3}, {"legrampart", 2}, {"armanavaldefturret", 2}, {"corfdoom", 2},
 }) do
   makeBase(spec[1], spec[2])
 end
-for _, b in ipairs({"armack", "corack", "legack", "armacsub", "armbehem"}) do
+local builders = {
+  "armack", "corack", "legack", "armacsub", "armbehem", "corcrabe",
+  "armnanotct3", "cornanotct3", "legnanotct3", "armnanotct4", "cornanotct4", "legnanotct4",
+}
+for _, b in ipairs(builders) do
   local def = { name = b, health = 2000, speed = 50, buildoptions = {"existing_option"} }
   UnitDefs[b], UnitDefNames[b] = def, def
 end
@@ -40,9 +44,32 @@ local originals = copy(UnitDefs)
 assert(loadfile(pack))()
 
 local expected = {
-  {"player_sunsplitter", 3}, {"player_skewerspike", 1}, {"player_arcpylon", 1}, {"player_chronosweep", 1},
-  {"player_blightmortar", 3}, {"player_diskricochet", 3}, {"player_vlsbastion", 2}, {"player_abyssalkraken", 2},
+  {"player_sunsplitter", 3, "leg"}, {"player_skewerspike", 1, "arm"},
+  {"player_arcpylon", 1, "cor"}, {"player_chronosweep", 1, "leg"},
+  {"player_blightmortar", 3, "leg"}, {"player_diskricochet", 3, "arm"},
+  {"player_vlsbastion", 2, "leg"}, {"player_abyssalkraken", 2, "arm"},
 }
+
+local function checkMenus()
+  for _, b in ipairs(builders) do
+    if UnitDefs[b] then
+      local options = assert(UnitDefs[b].buildoptions, b .. " lost its build options")
+      local expectedCount = 1
+      assert(options[1] == "existing_option", b .. " lost its original buildoption")
+      for _, spec in ipairs(expected) do
+        local name, faction = spec[1], spec[3]
+        local want = b == faction .. "nanotct4" and 1 or 0
+        local found = 0
+        for _, opt in ipairs(options) do if opt == name then found = found + 1 end end
+        assert(found == want, b .. " has incorrect buildoption count for " .. name)
+        expectedCount = expectedCount + want
+      end
+      assert(#options == expectedCount, b .. " gained unexpected buildoptions")
+    end
+  end
+end
+
+checkMenus()
 for _, spec in ipairs(expected) do
   local name, slots = spec[1], spec[2]
   local u = assert(UnitDefs[name], name .. " not registered")
@@ -65,17 +92,13 @@ assert(UnitDefs.player_vlsbastion.weapondefs.AEGIS_VLS_CRUISE.interceptor == 0 a
 assert(UnitDefs.player_diskricochet.weapons[1].maindir == nil and UnitDefs.player_diskricochet.weapons[1].maxangledif == nil)
 assert(UnitDefs.player_abyssalkraken.sonardistance == 2200 and UnitDefs.player_abyssalkraken.weapondefs.KRAKEN_TORPEDO.weapontype == "TorpedoLauncher")
 
-for _, b in ipairs({"armack", "armacsub", "armbehem"}) do
-  local found = false
-  for _, opt in ipairs(UnitDefs[b].buildoptions) do if opt == "player_vlsbastion" then found = true end end
-  assert(found, b .. " missing exotic turret buildoption")
-end
 for name, def in pairs(originals) do
   assert(def.health == UnitDefs[name].health, name .. " base health modified")
 end
 
 local beforeRepeat = copy(UnitDefs)
 assert(loadfile(pack))()
+checkMenus()
 for _, spec in ipairs(expected) do
   local name, slots = spec[1], spec[2]
   local u = assert(UnitDefs[name], name .. " lost on repeat")
@@ -90,4 +113,13 @@ for _, spec in ipairs(expected) do
   assert(u.customparams.t4_source == before.customparams.t4_source
     and u.customparams.t4_source_weapon_slots == before.customparams.t4_source_weapon_slots, name .. " changed source metadata on repeat")
 end
+
+-- A Core fallback chassis must not move Abyssal Kraken out of Armada's menu.
+UnitDefs.armanavaldefturret, UnitDefs.player_abyssalkraken, UnitDefs.armnanotct4 = nil, nil, nil
+assert(loadfile(pack))()
+assert(UnitDefs.player_abyssalkraken.customparams.t4_source == "corfdoom")
+checkMenus()
+UnitDefs.armnanotct4 = copy(originals.armnanotct4)
+assert(loadfile(pack))()
+checkMenus()
 print("exotic turrets runtime checks passed")

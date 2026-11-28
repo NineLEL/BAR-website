@@ -63,23 +63,18 @@ do
 		return c
 	end
 
-	local function teach(builders, dest)
-		for b in builders:gmatch("%S+") do
-			local bd = U[b]
-			if bd then
-				bd.buildoptions = bd.buildoptions or {}
-				local exists = false
-				for _, opt in ipairs(bd.buildoptions) do
-					if opt == dest then
-						exists = true
-						break
-					end
-				end
-				if not exists then
-					bd.buildoptions[#bd.buildoptions + 1] = dest
-				end
+	local function teach(faction, dest)
+		local bd = U[faction .. "nanotct4"]
+		if not bd then
+			return
+		end
+		bd.buildoptions = bd.buildoptions or {}
+		for _, opt in ipairs(bd.buildoptions) do
+			if opt == dest then
+				return
 			end
 		end
+		bd.buildoptions[#bd.buildoptions + 1] = dest
 	end
 
 	local function createUnit(name, c)
@@ -461,9 +456,6 @@ do
 		},
 	}
 
-	local BUILDERS =
-		"armack corack legack armacv coracv legacv armaca coraca legaca armacsub coracsub armcsa corcsa legnavyconship leganavyconsub legspcon armbehem corcrabe"
-	local created = {}
 	local TURRET_ENERGY_FACTOR = 0.25
 
 	for _, spec in ipairs(SPECS) do
@@ -528,12 +520,12 @@ do
 				end
 			end
 		end
-		if u then
-			created[#created + 1] = spec[1]
-		end
 	end
 
-	for _, unitName in ipairs(created) do
-		teach(BUILDERS, unitName)
+	-- Keep faction ownership tied to the preferred chassis, even when cloning a fallback.
+	for _, spec in ipairs(SPECS) do
+		if U[spec[1]] then
+			teach(spec[2][1]:sub(1, 3), spec[1])
+		end
 	end
 end

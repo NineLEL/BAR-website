@@ -1,5 +1,5 @@
 -- Player shield pack.
--- Shields use faction-specific T2 constructors and T3/T4 construction turrets.
+-- Shields use faction-specific constructors and construction turrets.
 do
 local unpack = table.unpack or unpack
 local function copy(t)
@@ -100,8 +100,13 @@ local function registerShield(faction, tier, spec, tierStats)
     return -- Do not teach a conflicting, unrelated definition.
   end
 
-  local builders = tier == 2 and faction.builders or { faction.prefix .. "nanotct" .. tier }
-  teach(builders, dst)
+  local prefix = faction.prefix .. "nanotct"
+  if tier == 2 then
+    teach(faction.builders, dst)
+    teach({ prefix .. "2", prefix .. "3", prefix .. "4" }, dst)
+  else
+    teach({ prefix .. tier }, dst)
+  end
 end
 for _, faction in ipairs(SHIELD_FACTIONS) do
   for i, spec in ipairs(faction.tiers) do

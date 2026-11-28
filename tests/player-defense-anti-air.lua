@@ -42,7 +42,7 @@ lupara.weapons[1].maxangledif = 30
 lupara.weapons[1].slaveto = 2
 lupara.weapons[2] = { def = "extra" }
 
--- Representative entries in original menu order, including both stock AA choices on all nine builders.
+-- Keep both stock AA choices on the nine advanced constructors and check the turret routes separately.
 local menus = {
   armack = {"armfus", "armafus", "armflak", "armmercury", "armalab"},
   armacv = {"armfus", "armckfus", "armflak", "armmercury", "armshltx"},
@@ -55,8 +55,11 @@ local menus = {
   legaca = {"legfus", "legafus", "legflak", "leglraa", "leggant"},
   armck = {"armsolar"}, corcv = {"corsolar"}, legca = {"legsolar"},
   armacsub = {"armfrad"}, cornanotc3 = {"corflak"}, leghack = {"legflak"},
+  armnanotct2 = {"armfus"}, armnanotct3 = {"armflak"}, armnanotct4 = {"armmercury"},
+  cornanotct2 = {"corfus"}, cornanotct3 = {"corflak"}, cornanotct4 = {"corscreamer"},
+  legnanotct2 = {"legfus"}, legnanotct3 = {"legflak"}, legnanotct4 = {"leglraa"},
 }
-local eligible = { ack = true, acv = true, aca = true }
+local eligible = { nanotct3 = true, nanotct4 = true }
 for builder, options in pairs(menus) do
   UnitDefs[builder] = { buildoptions = { unpack(options) } }
 end
@@ -175,14 +178,15 @@ assert(installed.player_leg_skyspearbattery.sfxtypes.explosiongenerators[1] == "
 -- Missing chassis or unrelated collisions never add a dangling/unrelated menu entry.
 local blocker = { name = "Unrelated" }
 local stockMercury = UnitDefs.armmercury
-UnitDefs, UnitDefNames = { armack = {}, player_arm_skywardlance = blocker }, nil
+UnitDefs, UnitDefNames = { armack = {}, armnanotct3 = {}, player_arm_skywardlance = blocker }, nil
 applyPack()
 assert(UnitDefs.player_arm_silencearray == nil and UnitDefs.player_arm_skywardlance == blocker)
-assert(UnitDefs.armack.buildoptions == nil)
+assert(UnitDefs.armnanotct3.buildoptions == nil)
 -- BAR's defs preprocessing does not require the optional name lookup table.
 UnitDefs.armmercury = stockMercury
 applyPack()
-assert(UnitDefs.player_arm_silencearray and #UnitDefs.armack.buildoptions == 1)
-assert(UnitDefs.armack.buildoptions[1] == "player_arm_silencearray")
+assert(UnitDefs.player_arm_silencearray and #UnitDefs.armnanotct3.buildoptions == 1)
+assert(UnitDefs.armnanotct3.buildoptions[1] == "player_arm_silencearray")
+assert(UnitDefs.armack.buildoptions == nil)
 
 print("standalone T3 anti-air runtime checks passed")

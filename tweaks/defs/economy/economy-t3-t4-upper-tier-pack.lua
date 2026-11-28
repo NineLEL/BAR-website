@@ -37,6 +37,39 @@ do
 		b.buildoptions[#b.buildoptions + 1] = uName
 	end
 
+	local function setOption(bName, uName, enabled)
+		if enabled and U[uName] then
+			add(bName, uName)
+			return
+		end
+		local bo = U[bName] and U[bName].buildoptions
+		for i = bo and #bo or 0, 1, -1 do
+			if bo[i] == uName then
+				table.remove(bo, i)
+			end
+		end
+	end
+
+	local function route(uName, builders, preserveSubMenus)
+		-- Only change the menus this pack uses, not unrelated stock build paths.
+		for _, p in ipairs(FL) do
+			for _, b in ipairs(BLD[p]) do
+				setOption(b, uName, builders[b])
+			end
+			if not preserveSubMenus then
+				setOption(SUB[p], uName, false)
+			end
+			for tier = 2, 4 do
+				local b = p .. "nanotct" .. tier
+				setOption(b, uName, builders[b])
+			end
+		end
+	end
+
+	local function routeEconomy(uName, p, tier, preserveSubMenus)
+		route(uName, { [p .. "nanotct3"] = tier == 3, [p .. "nanotct4"] = true }, preserveSubMenus)
+	end
+
 	local function pub(n, u)
 		U[n] = u
 		if UN then
@@ -86,9 +119,6 @@ do
 				)
 			)
 			pub(s[1], u)
-			for _, b in ipairs(BLD[s[3]]) do
-				add(b, s[1])
-			end
 		end
 	end
 
@@ -122,9 +152,6 @@ do
 					:format(depth, s[6], s[7], s[8])
 			)
 			pub(s[1], u)
-			for _, b in ipairs(BLD[s[3]]) do
-				add(b, s[1])
-			end
 		end
 	end
 
@@ -168,13 +195,6 @@ do
 				)
 			)
 			pub(s[1], u)
-			for _, b in ipairs(BLD[s[3]]) do
-				add(b, s[1])
-			end
-			local sb = SUB[s[3]]
-			if sb and u.maxwaterdepth then
-				add(sb, s[1])
-			end
 		end
 	end
 
@@ -184,9 +204,6 @@ do
 		local src = U[sN]
 		if src then
 			src.metalcost, src.energycost, src.buildtime = 82000, 475000, 2100000
-			for _, b in ipairs(BLD[p]) do
-				add(b, sN)
-			end
 			local u = cp(src)
 			local n = "Legendary Fusion Reactor"
 			u.unitname, u.name, u.description = tN, n, n
@@ -196,41 +213,11 @@ do
 			u.damagemodifier, u.footprintx, u.footprintz = 0.95, 12, 12
 			i18n(u, n, ("Produces %d Energy. Catastrophic if destroyed."):format(u.energymake))
 			pub(tN, u)
-			for _, b in ipairs(BLD[p]) do
-				add(b, tN)
-			end
 		end
 	end
 
 	-- Turrets
 	local tOpts = {
-		"player_hailstorm",
-		"player_needleswarm",
-		"player_blackoutcascade",
-		"player_phalanxlance",
-		"player_quakedoom",
-		"player_nullcathedral",
-		"player_hivearray",
-		"player_aegiseraser",
-		"player_executioner",
-		"player_prismcathedral",
-		"player_hyperionlance",
-		"player_orbitfall",
-		"player_sunsplitter",
-		"player_skewerspike",
-		"player_arcpylon",
-		"player_chronosweep",
-		"player_blightmortar",
-		"player_diskricochet",
-		"player_vlsbastion",
-		"player_streamarty",
-		"player_holybeam",
-		"player_aegisstarspire",
-		"player_thornnest",
-		"player_mirrorarray",
-		"player_voidvortex",
-		"player_infernocrucible",
-		"player_cascademortar",
 		"armshltx",
 		"corgant",
 		"leggant",
@@ -290,6 +277,14 @@ do
 		local vis = U[VIS[p]]
 		if base then
 			local t3, t4 = cp(base), cp(base)
+			-- Keep options provided by other packs when these definitions are rebuilt.
+			local prev3, prev4 = U[t3N], U[t4N]
+			if prev3 then
+				t3.buildoptions = cp(prev3.buildoptions)
+			end
+			if prev4 then
+				t4.buildoptions = cp(prev4.buildoptions)
+			end
 			if vis then
 				t3.objectname, t3.script, t3.corpse, t3.featuredefs =
 					vis.objectname, vis.script, vis.corpse, cp(vis.featuredefs)
@@ -313,20 +308,6 @@ do
 			i18n(t4, t4.name, t4.description)
 			pub(t4N, t4)
 
-			for _, b in ipairs(BLD[p]) do
-				add(b, t3N)
-				local bo = U[b] and U[b].buildoptions
-				if bo then
-					for i = #bo, 1, -1 do
-						if bo[i] == t4N then
-							table.remove(bo, i)
-						end
-					end
-				end
-			end
-
-			add(t3N, t3N)
-			add(t3N, t4N)
 			for _, o in ipairs(tOpts) do
 				add(t3N, o)
 				add(t4N, o)
@@ -336,6 +317,28 @@ do
 				add(t4N, o)
 			end
 		end
+	end
+
+	for _, p in ipairs(FL) do
+		local t2N, t3N, t4N = p .. "nanotct2", p .. "nanotct3", p .. "nanotct4"
+		local t3Builders = { [t2N] = true, [t3N] = true, [t4N] = true }
+		for _, b in ipairs(BLD[p]) do
+			t3Builders[b] = true
+		end
+		route(t3N, t3Builders)
+		route(t4N, { [t3N] = true })
+		-- Stock advanced fusions were added to BLD by this pack, not to subs.
+		routeEconomy(p .. "afust3", p, 3, true)
+		routeEconomy(p .. "afust4", p, 4)
+	end
+	for _, s in ipairs(convs) do
+		routeEconomy(s[1], s[3], s[4])
+	end
+	for _, s in ipairs(mexs) do
+		routeEconomy(s[1], s[3], s[4])
+	end
+	for _, s in ipairs(storages) do
+		routeEconomy(s[1], s[3], s[5])
 	end
 
 	-- Explosions

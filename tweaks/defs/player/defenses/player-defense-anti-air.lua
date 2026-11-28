@@ -148,7 +148,7 @@ do
       return -- Do not teach a conflicting, unrelated definition.
     end
 
-    for _, suffix in ipairs({ "ack", "acv", "aca" }) do
+    for _, suffix in ipairs({ "nanotct3", "nanotct4" }) do
       local builder = U[faction .. suffix]
       if builder then
         local options = builder.buildoptions or {}

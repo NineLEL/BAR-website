@@ -19,6 +19,13 @@ local FACTIONS = {
   { id = "cor", source = "corfort", stats = { { 33000, 60, 45 }, { 105000, 130, 45 }, { 215000, 240, 45 } } },
   { id = "leg", source = "legforti", timeScale = 0.75, stats = { { 27000, 70, 40 }, { 86000, 150, 40 }, { 180000, 300, 40 } } },
 }
+local function teach(builder, id)
+  local u = UnitDefs[builder]
+  if u == nil then return end
+  u.buildoptions = u.buildoptions or {}
+  for _, option in ipairs(u.buildoptions) do if option == id then return end end
+  u.buildoptions[#u.buildoptions + 1] = id
+end
 local function installWall(level, faction)
   local tier = TIERS[level]
   local id = "player_" .. tier.id .. "wall_" .. faction.id
@@ -60,19 +67,15 @@ local function installWall(level, faction)
     UnitDefs[id] = u
   end
   if UnitDefNames ~= nil then UnitDefNames[id] = UnitDefs[id] end
-  for _, b in ipairs(BUILDERS) do
-    if level == 4 or b:sub(1, 3) == faction.id then
-      local bu = UnitDefs[b]
-      if bu ~= nil then
-        bu.buildoptions = bu.buildoptions or {}
-        local exists = false
-        for _, x in ipairs(bu.buildoptions) do if x == id then exists = true break end end
-        if not exists then bu.buildoptions[#bu.buildoptions + 1] = id end
-      end
+  if level == 2 then
+    for _, b in ipairs(BUILDERS) do
+      if b:sub(1, 3) == faction.id then teach(b, id) end
     end
   end
+  for builderTier = level, 4 do
+    teach(faction.id .. "nanotct" .. builderTier, id)
+  end
 end
--- Keep the existing Epic block in order and append the faction-specific tiers.
 for _, level in ipairs({ 4, 2, 3 }) do
   for _, faction in ipairs(FACTIONS) do installWall(level, faction) end
 end

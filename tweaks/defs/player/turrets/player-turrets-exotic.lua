@@ -53,23 +53,18 @@ do
 		return u and u.weapons and #u.weapons or 0
 	end
 
-	local function TH(builders, dst)
-		for b in builders:gmatch("%S+") do
-			local bd = U[b]
-			if bd then
-				bd.buildoptions = bd.buildoptions or {}
-				local ex = false
-				for _, opt in ipairs(bd.buildoptions) do
-					if opt == dst then
-						ex = true
-						break
-					end
-				end
-				if not ex then
-					bd.buildoptions[#bd.buildoptions + 1] = dst
-				end
+	local function TH(faction, dst)
+		local bd = U[faction .. "nanotct4"]
+		if not bd then
+			return
+		end
+		bd.buildoptions = bd.buildoptions or {}
+		for _, opt in ipairs(bd.buildoptions) do
+			if opt == dst then
+				return
 			end
 		end
+		bd.buildoptions[#bd.buildoptions + 1] = dst
 	end
 
 	local function CU(nm, c)
@@ -528,9 +523,7 @@ do
 		},
 	}
 
-	local BUILDERS =
-		"armack corack legack armacv coracv legacv armaca coraca legaca armacsub coracsub armcsa corcsa legnavyconship leganavyconsub legspcon armbehem corcrabe"
-	local created, EF = {}, 0.25
+	local EF = 0.25
 
 	for _, spec in ipairs(SPECS) do
 		local u, source, sourceName = CU(spec[1], spec[2])
@@ -595,12 +588,12 @@ do
 				end
 			end
 		end
-		if u then
-			created[#created + 1] = spec[1]
-		end
 	end
 
-	for _, unitName in ipairs(created) do
-		TH(BUILDERS, unitName)
+	-- Keep faction ownership tied to the preferred chassis, even when cloning a fallback.
+	for _, spec in ipairs(SPECS) do
+		if U[spec[1]] then
+			TH(spec[2][1]:sub(1, 3), spec[1])
+		end
 	end
 end

@@ -34,9 +34,9 @@ shieldSource("legdeflector", "legshield", "LEGSHIELD", nil)
 -- Leggatet3 intentionally absent: both upper tiers must stay on Legion assets.
 
 local builderTiers = {
-  arm = { {"armack", "armacv", "armaca", "armacsub", "armcs", "armch", "armcsa"}, {"armnanotct3"}, {"armnanotct4"} },
-  cor = { {"corack", "coracv", "coraca", "coracsub", "corcs", "corch"}, {"cornanotct3"}, {"cornanotct4"} },
-  leg = { {"legack", "legacv", "legaca", "legch", "legspcon", "leghack", "leghacv", "leghaca", "legnavyconship", "leganavyconsub"}, {"legnanotct3"}, {"legnanotct4"} },
+  arm = { {"armack", "armacv", "armaca", "armacsub", "armcs", "armch", "armcsa", "armnanotct2"}, {"armnanotct3"}, {"armnanotct4"} },
+  cor = { {"corack", "coracv", "coraca", "coracsub", "corcs", "corch", "cornanotct2"}, {"cornanotct3"}, {"cornanotct4"} },
+  leg = { {"legack", "legacv", "legaca", "legch", "legspcon", "leghack", "leghacv", "leghaca", "legnavyconship", "leganavyconsub", "legnanotct2"}, {"legnanotct3"}, {"legnanotct4"} },
 }
 local function addBuilder(b)
   local u = { name = b, health = 1500, speed = 50, buildoptions = {} }
@@ -112,7 +112,8 @@ for faction, tiers in pairs(shields) do
     for other, otherTiers in pairs(builderTiers) do
       for j, builders in ipairs(otherTiers) do
         for _, b in ipairs(builders) do
-          assert(countOption(b, id) == ((faction == other and i == j) and 1 or 0), b .. ": " .. id)
+          local eligible = faction == other and (i == 1 or i == j)
+          assert(countOption(b, id) == (eligible and 1 or 0), b .. ": " .. id)
         end
       end
     end
@@ -133,6 +134,7 @@ for id, u in pairs(installed) do
   end
 end
 assert(countOption("armnanotct4", "player_arm_aegisstronghold") == 1)
+assert(countOption("armnanotct4", "player_aegisdome") == 1)
 
 -- Only BAR's renderer metadata should apply the mod multiplier before BAR post-processing.
 Spring = { GetModOptions = function() return { multiplier_shieldpower = "2" } end }
