@@ -157,6 +157,20 @@ describe("Lua runtime checks", { skip: skipLua }, () => {
     assert.match(runLua("tests/player-defense-shield-aa.lua", srcPath), /defense shield aa runtime checks passed/);
   });
 
+  it("standalone T3 anti-air executes cleanly (raw and minified)", (t) => {
+    const srcPath = path.join(DEFS_DIR, "player", "defenses", "player-defense-anti-air.lua");
+    const testPath = "tests/player-defense-anti-air.lua";
+    const success = /standalone T3 anti-air runtime checks passed/;
+    assert.match(runLua(testPath, srcPath), success);
+
+    const os = require("node:os");
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "bar-t3-aa-"));
+    t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+    const minPath = path.join(dir, "min.lua");
+    fs.writeFileSync(minPath, pure.luaMinify(fs.readFileSync(srcPath, "utf8")));
+    assert.match(runLua(testPath, minPath), success);
+  });
+
   it("raptor unique enemies execute cleanly (raw and minified)", (t) => {
     const srcPath = path.join(DEFS_DIR, "raptorx", "raptorx-unique-enemies.lua");
     assert.match(runLua("tests/raptor-unique-enemies.lua", srcPath), /unique enemies runtime checks passed/);
