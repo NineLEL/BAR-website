@@ -126,7 +126,7 @@ do
 		return { default = d, vtol = v, shields = s, commanders = c }
 	end
 
-	local T_S, T_SV, T_NA = "SURFACE", "SURFACE VTOL", "NOTAIR"
+	local T_S, T_SV = "SURFACE", "SURFACE VTOL"
 	local G, PH = "custom:genericshellexplosion-", "custom:plasmahit-"
 
 	local SPECS = {
@@ -134,15 +134,15 @@ do
 		{
 			"player_sunsplitter",
 			{ "legcluster", "corint" },
-			{ 760e3, 1680e4, 620e3, 2, 42000, 950, 2800 },
+			{ 650e3, 1425e4, 620e3, 2, 42000, 950, 2800 },
 			"Helios Splitter",
-			"Solar airburst mortar splitting at apex into 14 blazing meteors.",
+			"High-arc mortar that splits into nine shards on descent.",
 			function(u, src)
 				u.hightrajectory = 1
 				I(u, src, 1, "HELIOS_SHELL", {
 					weapontype = "Cannon",
-					range = 3800,
-					reloadtime = 6,
+					range = 3600,
+					reloadtime = 6.5,
 					hightrajectory = 1,
 					weaponvelocity = 900,
 					mygravity = 0.20,
@@ -161,12 +161,12 @@ do
 					customparams = {
 						speceffect = "split",
 						speceffect_def = "player_sunsplitter_sun_shard",
-						number = 14,
+						number = 9,
 						splitexplosionceg = "starfire-explosion",
 						cegtag = "ministarfire",
 						model = "",
 					},
-					damage = D(8000, nil, 10000, 1600),
+					damage = D(4000, nil, 5000, 800),
 					onlytargetcategory = T_S,
 				})
 				local shardSlot = GS(src, 2) and 2 or 1
@@ -175,7 +175,7 @@ do
 					canattackground = false,
 					range = 1200,
 					reloadtime = 9999,
-					areaofeffect = 240,
+					areaofeffect = 175,
 					edgeeffectiveness = 0.65,
 					impulsefactor = 6.0,
 					craterboost = 2.0,
@@ -189,11 +189,11 @@ do
 					explosiongenerator = "custom:ministarfire-explosion",
 					soundstart = "cannhvy5",
 					soundhit = "xplomed2",
-					damage = D(2400, nil, 3900, 440),
+					damage = D(2100, nil, 3400, 380),
 					onlytargetcategory = "NONE",
 				}, { badtargetcategory = "ALL" })
-				if installed and shardSlot == 1 then
-					-- The split gadget can spawn the unmounted definition on the one-slot fallback.
+				if installed then
+					-- The split gadget uses the definition, not a firing mount.
 					u.weapons[#u.weapons] = nil
 				end
 			end,
@@ -463,42 +463,46 @@ do
 		{
 			"player_abyssalkraken",
 			{ "armanavaldefturret", "corfdoom", "coratl" },
-			{ 640e3, 1420e4, 680e3, 2, 32000, 1100, 2200 },
+			{ 500e3, 1100e4, 620e3, 2, 32000, 1100, 2200 },
 			"Leviathan Maw",
-			"Aquatic citadel combining high-impulse shock-rail guns and 5-torpedo sub-hunter salvos.",
-			function(u, src)
-				u.minwaterdepth = 8
+			"Coastal rail defense with dedicated anti-submarine torpedoes.",
+		function(u, src)
 				u.maxwaterdepth = 9999
 				u.sonardistance = 2200
-				I(u, src, 1, "KRAKEN_SHOCKRAIL", {
-					weapontype = "Cannon",
-					waterweapon = false,
-					range = 2400,
-					reloadtime = 3.6,
-					burst = 2,
-					burstrate = 0.12,
-					weaponvelocity = 4200,
-					areaofeffect = 240,
-					impulsefactor = 5,
-					impulseboost = 4,
-					camerashake = 95,
-					energypershot = 11000,
-					size = 11,
-					stages = 22,
-					intensity = 2.4,
-					rgbcolor = "0.15 0.85 1",
-					cegtag = "gausscannonprojectilexl",
-					explosiongenerator = PH .. "huge",
-					soundstart = "cannhvy5",
-					soundhit = "xplolrg3",
-					damage = D(11500, nil, 14500, 2400),
-					onlytargetcategory = T_S,
-				})
-				local installed = I(u, src, GS(src, 2) and 2 or 1, "KRAKEN_TORPEDO", {
+				local rail = GS(src, 2) ~= nil
+				if rail then
+					I(u, src, 1, "KRAKEN_SHOCKRAIL", {
+						weapontype = "Cannon",
+						waterweapon = false,
+						range = 2250,
+						reloadtime = 4,
+						burst = 2,
+						burstrate = 0.12,
+						weaponvelocity = 4200,
+						areaofeffect = 240,
+						impulsefactor = 5,
+						impulseboost = 4,
+						camerashake = 95,
+						energypershot = 11000,
+						size = 11,
+						stages = 22,
+						intensity = 2.4,
+						rgbcolor = "0.15 0.85 1",
+						cegtag = "gausscannonprojectilexl",
+						explosiongenerator = PH .. "huge",
+						soundstart = "cannhvy5",
+						soundhit = "xplolrg3",
+						damage = D(10000, nil, 12600, 2100),
+						onlytargetcategory = T_S,
+					})
+				else
+					LB(u, "Leviathan Maw", "Submerged defense firing dedicated anti-submarine torpedoes.")
+				end
+				local installed = I(u, src, rail and 2 or 1, "KRAKEN_TORPEDO", {
 					weapontype = "TorpedoLauncher",
-					range = 2400,
-					reloadtime = 4,
-					burst = 5,
+					range = 1950,
+					reloadtime = 4.8,
+					burst = 4,
 					burstrate = 0.16,
 					waterweapon = true,
 					tracks = true,
@@ -509,13 +513,14 @@ do
 					flighttime = 8,
 					areaofeffect = 120,
 					energypershot = 9500,
+					model = "torpedo.s3o",
 					cegtag = "torpedotrail-small",
 					explosiongenerator = G .. "large-uw",
 					soundstart = "torpedo1",
 					soundhit = "xplodep1",
-					damage = D(5500, nil, 6800, 1200),
-					onlytargetcategory = T_NA,
-				})
+					damage = D(4500, nil, 5600, 980),
+					onlytargetcategory = "UNDERWATER",
+				}, { slaveto = 0, badtargetcategory = "" })
 				if installed then
 					u.weapondefs.KRAKEN_TORPEDO.weapontimer = nil
 				end

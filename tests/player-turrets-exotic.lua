@@ -28,6 +28,7 @@ end
 for _, spec in ipairs({
   {"legcluster", 3}, {"armpb", 1}, {"corscavdtl", 1}, {"legbastion", 1},
   {"legacluster", 3}, {"armamb", 3}, {"legrampart", 2}, {"armanavaldefturret", 2}, {"corfdoom", 3},
+  {"coratl", 1}, {"corint", 1},
 }) do
   makeBase(spec[1], spec[2])
 end
@@ -80,8 +81,17 @@ for _, spec in ipairs(expected) do
   end
 end
 
-assert(UnitDefs.player_sunsplitter.weapondefs.sun_shard ~= nil)
-assert(UnitDefs.player_sunsplitter.weapondefs.HELIOS_SHELL.customparams.speceffect == "split")
+local function checkHelios()
+  local u = assert(UnitDefs.player_sunsplitter)
+  local shell = assert(u.weapondefs.HELIOS_SHELL)
+  local shard = assert(u.weapondefs.sun_shard)
+  assert(shell.customparams.speceffect == "split" and shell.customparams.number == 9)
+  assert(shell.customparams.speceffect_def == "player_sunsplitter_sun_shard")
+  assert(shell.range == 3600 and shard.damage.default == 2100)
+  assert(u.weapons[1].def == "HELIOS_SHELL")
+  for i = 2, #u.weapons do assert(u.weapons[i].onlytargetcategory == "NONE" and u.weapons[i].def ~= "sun_shard") end
+end
+checkHelios()
 assert(UnitDefs.player_skewerspike.cancloak == true and UnitDefs.player_skewerspike.weapondefs.HYPERION_SKEWER.customparams.overpenetrate == true)
 assert(UnitDefs.player_arcpylon.weapondefs.ZEUS_ARC.customparams.spark_maxunits == "7")
 assert(UnitDefs.player_chronosweep.weapondefs.SOLARIS_SWEEP.sweepfire == true)
@@ -118,8 +128,22 @@ end
 UnitDefs.armanavaldefturret, UnitDefs.player_abyssalkraken, UnitDefs.armnanotct4 = nil, nil, nil
 assert(loadfile(pack))()
 assert(UnitDefs.player_abyssalkraken.customparams.t4_source == "corfdoom")
+assert(UnitDefs.player_abyssalkraken.weapons[2].onlytargetcategory == "UNDERWATER")
 checkMenus()
 UnitDefs.armnanotct4 = copy(originals.armnanotct4)
 assert(loadfile(pack))()
 checkMenus()
+
+UnitDefs.corfdoom, UnitDefs.player_abyssalkraken = nil, nil
+UnitDefs.legcluster, UnitDefs.player_sunsplitter = nil, nil
+UnitDefs.coratl.minwaterdepth = 12
+assert(loadfile(pack))()
+checkMenus()
+checkHelios()
+assert(#UnitDefs.player_sunsplitter.weapons == 1)
+local fallback = assert(UnitDefs.player_abyssalkraken)
+assert(fallback.customparams.t4_source == "coratl" and fallback.minwaterdepth == 12)
+assert(#fallback.weapons == 1 and fallback.weapons[1].def == "KRAKEN_TORPEDO")
+assert(fallback.weapons[1].onlytargetcategory == "UNDERWATER" and fallback.weapons[1].slaveto == 0)
+assert(not fallback.weapondefs.KRAKEN_SHOCKRAIL)
 print("exotic turrets runtime checks passed")

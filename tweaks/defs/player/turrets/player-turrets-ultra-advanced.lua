@@ -225,6 +225,7 @@ do
 			"Aegis Starspire",
 			"Four laser channels engage air raids at up to 3600 range.",
 			function(u, src)
+				u.airsightdistance = math.max(u.airsightdistance or 0, 3712)
 				local beamHues = { "0.0 0.95 1.0", "0.4 0.25 1.0", "0.0 0.75 1.0", "0.25 0.55 1.0" }
 				for slot = 1, 4 do
 					installWeapon(u, src, slot, "AEGIS_STARBEAM_" .. slot, {
@@ -375,16 +376,16 @@ do
 		-- 7. INFERNO CRUCIBLE: Heavy Napalm Torrent Flamethrower
 		{
 			"player_infernocrucible",
-			{ "corpun", "armguard", "corpyro" },
-			{ 450e3, 980e4, 980e4, 620e3, 4, 24000, 950, 2000 },
+			{ "corpun", "armguard" },
+			{ 350e3, 725e4, 725e4, 450e3, 4, 24000, 950, 2000 },
 			"Inferno Crucible",
-			"Heavy multi-barrel chemical flamethrower. Envelops chokepoints in an inescapable sea of liquid fire.",
+			"Close-range flame volleys suppress clustered ground pushes.",
 			function(u, src)
 				installWeapon(u, src, 1, "INFERNO_CRUCIBLE", {
 					weapontype = "Flame",
-					range = 1050,
-					reloadtime = 1.6,
-					burst = 14,
+					range = 1000,
+					reloadtime = 2,
+					burst = 10,
 					burstrate = 0.034,
 					projectiles = 2,
 					sprayangle = 1300,
@@ -394,7 +395,7 @@ do
 					sizegrowth = 1.8,
 					intensity = 1.4,
 					rgbcolor = "1.0 0.38 0.05",
-					areaofeffect = 240,
+					areaofeffect = 170,
 					edgeeffectiveness = 0.88,
 					energypershot = 1400,
 					firestarter = 100,
@@ -405,7 +406,7 @@ do
 					explosiongenerator = "custom:fire-incinerator",
 					soundstart = "flamhvy1",
 					soundhit = "flamhit1",
-					damage = { default = 520, shields = 850, commanders = 160 },
+					damage = { default = 600, shields = 850, commanders = 175 },
 					onlytargetcategory = "SURFACE",
 				})
 			end,

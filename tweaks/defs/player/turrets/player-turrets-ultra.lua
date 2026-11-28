@@ -164,24 +164,25 @@ do
 		{
 			"player_hailstorm",
 			{ "armflak", "corflak" },
-			{ 260e3, 540e4, 260e3, 4, 22000, 800, 1600 },
+			{ 230e3, 460e4, 200e3, 4, 22000, 800, 1600 },
 			"Hailstorm",
-			"Short-range saturation flak battery",
+			"Wide flak screen for clustered aircraft",
 			function(u, src)
 				I(u, src, 1, "HAILSTORM_FLAK", {
 					weapontype = C_CAN,
 					canattackground = false,
-					range = 1550,
+					range = 1650,
 					reloadtime = 2,
-					burst = 30,
-					burstrate = 0.03,
+					burst = 8,
+					burstrate = 0.07,
 					sprayangle = 1400,
 					accuracy = 350,
-					areaofeffect = 140,
+					areaofeffect = 280,
+					burnblow = true,
 					weaponvelocity = 4200,
 					energypershot = 1200,
 					onlytargetcategory = T_V,
-					damage = D(100, 480, 300),
+					damage = D(100, 1050, 300),
 					size = 6,
 					rgbcolor = "1 0.8 0.35",
 					cegtag = "flaktrailaamg",
@@ -230,28 +231,29 @@ do
 		{
 			"player_blackoutcascade",
 			{ "corflak", "armflak" },
-			{ 290e3, 600e4, 230e3, 3, 28000, 1000, 2200 },
+			{ 260e3, 525e4, 190e3, 3, 28000, 1000, 2200 },
 			"Blackout Cascade",
-			"Wide-area AA EMP battery",
+			"Short-window EMP flak",
 			function(u, src)
 				I(u, src, 1, "BLACKOUT_CASCADE", {
 					weapontype = C_CAN,
 					canattackground = false,
-					range = 1900,
-					reloadtime = 6,
-					burst = 8,
+					range = 1800,
+					reloadtime = 9,
+					burst = 3,
 					burstrate = 0.08,
 					sprayangle = 1200,
 					accuracy = 260,
-					areaofeffect = 400,
+					areaofeffect = 260,
+					burnblow = true,
 					weaponvelocity = 2600,
 					energypershot = 14e3,
 					paralyzer = true,
-					paralyzetime = 8,
+					paralyzetime = 4,
 					size = 8,
 					stages = 16,
 					rgbcolor = "0.3 0.75 1",
-					damage = D(200, 18000, nil, 200),
+					damage = D(200, 12000, nil, 200),
 					cegtag = "lightning_stormbolt_small",
 					explosiongenerator = "custom:lightning_storm_emp",
 					soundhit = "mismed1emp",
@@ -458,33 +460,30 @@ do
 		{
 			"player_prismcathedral",
 			{ "cordoom" },
-			{ 880e3, 1900e4, 880e3, 2, 62000, 1350, 2600 },
+			{ 775e3, 1625e4, 680e3, 2, 62000, 1350, 2600 },
 			"Prism Cathedral",
-			"Three-channel independent beam fortress",
+			"Layered lance, shield breaker and close defense beams",
 			function(u, src)
+				local unpack = unpack or table.unpack
 				local cfgs = {
-					{ "0.75 0.15 1.0", 16, 0.70 },
-					{ "0.50 0.10 0.95", 15, 0.65 },
-					{ "0.95 0.35 0.95", 17, 0.75 },
+					{ "0.75 0.15 1", 2850, 4, 0.9, 18000, 16000, 2900, 12000, 12 },
+					{ "0.30 1 0.40", 1800, 3, 0.4, 6000, 24000, 950, 8000, 8 },
+					{ "1 0.22 0.15", 1050, 0.6, 0.1, 1800, 1600, 300, 1600, 4 },
 				}
 				for slot = 1, 3 do
-					local cfg = cfgs[slot]
+					local hue, range, reload, beam, ground, shield, commander, energy, width = unpack(cfgs[slot])
 					I(u, src, slot, "PRISM_BEAM_" .. slot, BV {
-						range = 3400,
-						reloadtime = 2.4,
-						beamtime = 0.55,
+						range = range,
+						reloadtime = reload,
+						beamtime = beam,
 						beamttl = 5,
-						energypershot = 8000,
-						thickness = cfg[2] * 0.8,
-						corethickness = cfg[3] * 0.8,
-						laserflaresize = 8,
-						scrollspeed = 10,
-						pulsespeed = 9,
+						energypershot = energy,
+						thickness = width,
+						corethickness = 0.55,
 						firestarter = 100,
-						damage = D(10000, nil, 9000, 1600),
+						damage = D(ground, nil, shield, commander),
 						explosiongenerator = LH .. "large-purple",
-						rgbcolor = cfg[1],
-						rgbcolor2 = "0.95 0.85 1",
+						rgbcolor = hue,
 						soundstart = S_BLAS,
 						onlytargetcategory = T_S,
 					})
@@ -600,6 +599,9 @@ do
 			LB(u, spec[4], spec[5])
 			spec[6](u, source)
 			for _, weapon in pairs(u.weapondefs) do
+				if weapon.onlytargetcategory == T_V then
+					u.airsightdistance = math.max(u.airsightdistance or 0, math.ceil(weapon.range / 128) * 128)
+				end
 				if weapon.energypershot then
 					weapon.energypershot = weapon.energypershot * EF
 				end
