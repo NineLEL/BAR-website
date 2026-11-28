@@ -124,7 +124,7 @@ do
 			o.damage.shields = s
 		end
 		if c then
-			o.damage.commandertoo = c
+			o.damage.commanders = c
 		end
 		if vt then
 			o.damage.vtol = vt
@@ -152,7 +152,7 @@ do
 			soundhitdry = "junohit2",
 			onlytargetcategory = TSV,
 		}),
-		a_m = W("Siege Mortar", "Cannon", 3100, 3.4, 2000, 580, 40e3, 38e3, 72e3, 8500, nil, {
+		a_m = W("Siege Mortar", "Cannon", 2450, 5, 2000, 300, 4800, 9000, 11000, 3500, nil, {
 			accuracy = 220,
 			sprayangle = 500,
 			size = 18,
@@ -171,7 +171,7 @@ do
 			firestarter = 100,
 			onlytargetcategory = TS,
 		}),
-		a_s = W("Deck Cannon", "Cannon", 2000, 0.6, 2600, 180, 600, 2100, 4800, 450, nil, {
+		a_s = W("Deck Cannon", "Cannon", 1450, 1.2, 2600, 120, 300, 900, 1200, 300, nil, {
 			canattackground = true,
 			accuracy = 250,
 			sprayangle = 550,
@@ -186,7 +186,7 @@ do
 			soundhitdry = "xplomed2",
 			onlytargetcategory = TS,
 		}),
-		a_a = W("SAM Array", "MissileLauncher", 2200, 1.4, 3600, 90, 1400, 900, 2400, nil, 7400, {
+		a_a = W("SAM Array", "MissileLauncher", 1750, 2, 3600, 55, 500, 100, 200, nil, 950, {
 			burst = 10,
 			burstrate = 0.05,
 			sprayangle = 450,
@@ -205,7 +205,7 @@ do
 			soundhitdry = "packohit",
 			onlytargetcategory = TV,
 		}),
-		torp = W("Torpedo Launcher", "MissileLauncher", 2600, 4.0, 1100, 0, 32e3, 26e3, 64e3, 6200, nil, {
+		torp = W("Torpedo Launcher", "MissileLauncher", 1950, 5, 1100, 0, 2200, 5200, 6400, 2500, nil, {
 			burst = 4,
 			burstrate = 0.25,
 			weaponacceleration = 500,
@@ -227,9 +227,9 @@ do
 		pshield = {
 			weapontype = "Shield",
 			shieldradius = 520,
-			shieldpower = 125e3,
-			shieldpowerregen = 950,
-			shieldpowerregenenergy = 180,
+			shieldpower = 45000,
+			shieldpowerregen = 225,
+			shieldpowerregenenergy = 125,
 			shieldrepulser = true,
 			shieldintercepttype = 1,
 			shieldalpha = 0.36,
@@ -272,8 +272,8 @@ do
 		ionic = {
 			name = "Ionic Pulse Beam",
 			weapontype = "BeamLaser",
-			range = 1800,
-			reloadtime = 0.4,
+			range = 1500,
+			reloadtime = 0.65,
 			beamtime = 0.08,
 			largebeamlaser = true,
 			corethickness = 0.6,
@@ -287,11 +287,11 @@ do
 			thickness = 5,
 			soundstart = "railgun3",
 			soundtrigger = 1,
-			damage = { default = 8500, vtol = 9200, shields = 18e4 },
-			energyperaim = 220,
+			damage = { default = 2600, vtol = 1800, shields = 4800 },
+			energypershot = 220,
 			onlytargetcategory = TSV,
 		},
-		plasmacluster = W("Plasma Cluster Torpedoes", "MissileLauncher", 2800, 3.6, 1500, 420, 8500, 42e3, 68e3, nil, nil, {
+		plasmacluster = W("Plasma Cluster Torpedoes", "MissileLauncher", 2300, 4, 1500, 180, 1200, 3600, 4400, nil, nil, {
 			burst = 4,
 			burstrate = 0.3,
 			startvelocity = 1200,
@@ -311,7 +311,7 @@ do
 			firestarter = 120,
 			onlytargetcategory = TV,
 		}),
-		javelin = W("Capacitor Javelin Swarm", "MissileLauncher", 2600, 2.0, 3200, 140, 1200, 1600, 3200, nil, 4800, {
+		javelin = W("Capacitor Javelin Swarm", "MissileLauncher", 2000, 2.4, 3200, 80, 500, 300, 500, nil, 900, {
 			burst = 12,
 			burstrate = 0.08,
 			startvelocity = 1600,
@@ -340,7 +340,7 @@ do
 			WP.plasmacluster,
 			"Void Nexus",
 			"Plasma cluster dreadnought",
-			{ 150e3, 36e5, 28e4, 58, 2, 3200, 0, 220, 0, true },
+			{ 75e3, 145e4, 165e3, 58, 2, 450, 0, 45, 0, true },
 		},
 		{
 			"player_aethersiege",
@@ -349,7 +349,7 @@ do
 			{ is_suite = true, slots = { [1] = WP.a_a, [2] = WP.a_m, [3] = WP.a_s } },
 			"Celestial Juggernaut",
 			"Aerial flagship",
-			{ 155e3, 35e5, 29e4, 52, 3, 2800, 0, 240, 0, true },
+			{ 100e3, 195e4, 225e3, 44, 3, 650, 0, 65, 0, true },
 		},
 		{
 			"player_phantomleviathan",
@@ -358,7 +358,7 @@ do
 			{ is_suite = true, slots = { [1] = WP.torp, [2] = WP.pshield, [3] = WP.javelin } },
 			"Phantom Leviathan",
 			"Cloaked dreadnought",
-			{ 220e3, 48e5, 42e4, 72, 2, 3200, 0, 420, 0, true },
+			{ 125e3, 245e4, 245e3, 62, 2, 750, 0, 75, 0, true },
 		},
 		{
 			"player_archangel",
@@ -367,7 +367,7 @@ do
 			WP.ionic,
 			"Sentinel Colossus",
 			"Precision beam dreadnought",
-			{ 140e3, 31e5, 27e4, 66, 3, 2200, 0, 200, 0, true },
+			{ 70e3, 135e4, 155e3, 66, 3, 450, 0, 45, 0, true },
 		},
 	}
 
@@ -414,16 +414,16 @@ do
 				u.weapondefs = u.weapondefs or {}
 				u.weapondefs.sing_d = {
 					weapontype = "Cannon",
-					areaofeffect = 2400,
+					areaofeffect = 850,
 					edgeeffectiveness = 0.8,
-					damage = { default = 5e5, commanders = 25e4 },
+					damage = { default = 30000, commanders = 7500 },
 					explosiongenerator = EG,
 				}
 				u.weapondefs.sing_s = {
 					weapontype = "Cannon",
-					areaofeffect = 4200,
+					areaofeffect = 1400,
 					edgeeffectiveness = 0.9,
-					damage = { default = 15e5, commanders = 75e4 },
+					damage = { default = 75000, commanders = 18000 },
 					explosiongenerator = EG,
 				}
 			end
