@@ -42,6 +42,19 @@ function createToggleHandler(output, button, showText, hideText) {
   };
 }
 
+function createButtons(configs) {
+  var fragment = document.createDocumentFragment();
+  configs.forEach(function (config) {
+    var button = document.createElement("button");
+    button.type = "button";
+    button.textContent = config.label;
+    if (config.className) button.className = config.className;
+    if (config.onclick) button.onclick = config.onclick;
+    fragment.appendChild(button);
+  });
+  return fragment;
+}
+
 /* ---------- server library presentation ---------- */
 function libFetch() {
   var request = ++libraryRequest;
@@ -169,29 +182,37 @@ function renderLibGroup(el, kind, files) {
     summary.appendChild(summaryTitle);
     summary.appendChild(summaryCount);
     var actions = document.createElement("div"); actions.className = "library-group-actions";
-    [true, false].forEach(function (enable) {
-      var action = document.createElement("button"); action.type = "button"; action.textContent = enable ? "Enable group" : "Disable group";
-      action.onclick = function () {
-        groupFiles.forEach(function (f) { f.enabled = enable; });
-        if (window._lib) updateLibHeader(window._lib);
-        syncLibToPacker();
-        renderLibrary();
-        toggleLibraryFiles(groupFiles.map(function (f) { return { kind: kind, name: f.name }; }), enable)
-          .catch(function () { toast("Group toggle failed."); libFetch(); });
+    var actionConfigs = [true, false].map(function (enable) {
+      return {
+        label: enable ? "Enable group" : "Disable group",
+        onclick: (function (en) {
+          return function () {
+            groupFiles.forEach(function (f) { f.enabled = en; });
+            if (window._lib) updateLibHeader(window._lib);
+            syncLibToPacker();
+            renderLibrary();
+            toggleLibraryFiles(groupFiles.map(function (f) { return { kind: kind, name: f.name }; }), en)
+              .catch(function () { toast("Group toggle failed."); libFetch(); });
+          };
+        })(enable)
       };
-      actions.appendChild(action);
     });
+    actions.appendChild(createButtons(actionConfigs));
     details.appendChild(summary); details.appendChild(actions);
     groupFiles.forEach(function (f) {
       var stateKey = kind + "/" + f.name;
       renderLibraryFile(details, f, kind, stateKey, groupFiles, summaryCount, fileIndexes);
     });
     var bulk = document.createElement("div"); bulk.className = "library-group-bulk";
-    [true, false].forEach(function (enable) {
-      var button = document.createElement("button"); button.type = "button"; button.textContent = (enable ? "Enable all " : "Disable all ") + kind;
-      button.onclick = function () { setAllLib(enable, kind); };
-      bulk.appendChild(button);
+    var bulkConfigs = [true, false].map(function (enable) {
+      return {
+        label: (enable ? "Enable all " : "Disable all ") + kind,
+        onclick: (function (en) {
+          return function () { setAllLib(en, kind); };
+        })(enable)
+      };
     });
+    bulk.appendChild(createButtons(bulkConfigs));
     details.appendChild(bulk);
     fragment.appendChild(details);
   });
