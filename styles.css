@@ -52,9 +52,11 @@
   --sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --mono: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
 
-  /* Motion */
-  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
-  --fast: 150ms;
+  /* Spacing & sizing utilities */
+  --btn-sm-height: 36px;
+  --btn-sm-padding: 6px 12px;
+  --btn-md-height: 44px;
+  --btn-md-padding: 8px 14px;
 }
 
 *, *::before, *::after {
@@ -912,13 +914,13 @@ button:disabled {
   border-left: 0;
 }
 
-.action-group button {
-  min-height: 36px;
+.action-group button,
+.library-group-actions button,
+.library-group-bulk button {
+  min-height: var(--btn-sm-height);
+  padding: var(--btn-sm-padding);
+  font-size: 0.79rem;
 }
-
-/* ==========================================================================
-   Snippet Editors
-   ========================================================================== */
 .inputs {
   display: flex;
   flex-direction: column;
@@ -1489,14 +1491,9 @@ button:disabled {
   padding: 12px 14px 10px;
 }
 
-.library-group-actions button,
-.library-group-bulk button {
-  min-height: 36px;
-  padding: 6px 12px;
-  font-size: 0.79rem;
-}
-
-.library-group .slot {
+/* ==========================================================================
+   Snippet Editors
+   ========================================================================== */
   margin: 0 14px 10px;
   background: var(--surface);
   border-left: 3px solid var(--ok);
