@@ -7,11 +7,11 @@ squads, not player-buildable units or replacements for the final queen.
 
 | Boss | Anger unlock | HP | Signature skills |
 | --- | ---: | ---: | --- |
-| Ironhide Juggernaut | 35% | 180,000 | Repulsor claws, three-shot shockwave volley, 900 HP/s regeneration |
-| Miremaw Plague Matriarch | 45% | 200,000 | Five-shot siege volley; 150-radius acid pools last 18 seconds; corrosive defensive spikes |
-| Stormlock Tyrant | 55% | 240,000 | Six-shot lightning bursts, three-shot 280-AoE EMP volley; 8-second paralysis; EMP death explosion |
-| Cindermaw Incinerator | 65% | 280,000 | Ten-shot breath volley; 100-radius burning ground lasts 8 seconds |
-| Veilfang Stalker | 75% | 160,000 | Free moving cloak, radar stealth, fast movement, 8,000-damage claw strike; 250-distance proximity reveal |
+| Ironhide Juggernaut | 50% | 120,000 | Repulsor claws, three-shot shockwave volley, 450 HP/s regeneration |
+| Miremaw Plague Matriarch | 60% | 140,000 | Five-shot siege volley; 150-radius acid pools last 15 seconds; corrosive defensive spikes |
+| Stormlock Tyrant | 70% | 170,000 | Six-shot lightning bursts, three-shot 260-AoE EMP volley; 6-second paralysis; EMP death explosion |
+| Cindermaw Incinerator | 80% | 195,000 | Ten-shot breath volley; 100-radius burning ground lasts 7 seconds |
+| Veilfang Stalker | 90% | 115,000 | Free moving cloak, radar stealth, fast movement, 2,500-damage claw strike; 250-distance proximity reveal |
 
 Each registers its own `raptorcustomsquad = "1"` metadata in tweakdefs (clones do
 not exist when tweakunits runs). Squads are special-rarity, weight 2, one unit

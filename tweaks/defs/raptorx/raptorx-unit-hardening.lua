@@ -1,7 +1,7 @@
 -- Ultra Nightmare: mobile Raptor combat only, after clone and siege creation.
--- HP floors let frontlines survive ultra-turret volleys without infinite swarms.
+-- HP floors let mid/late frontlines survive ultra-turret volleys without early rushes.
 -- Bosses are tough, not EMP-immune; original scripts/targeting/effects stay intact.
--- RaptorX clone HP rises 12% and damage rises 5% per 10 anger, based on squad unlock tier.
+-- RaptorX clone HP rises 7% and damage rises 2% per 10 anger, based on squad unlock tier.
 do
   local elites = {}
   for name in string.gmatch("raptorx_latebehemoth raptorx_lateskyreaper raptorx_broodlord raptorx_acidstorm raptorx_siegehowler raptorx_clusterrain raptorx_disruptionmortar", "%S+") do elites[name] = true end
@@ -21,14 +21,14 @@ do
         local squadData = u.customparams
         local minimumAnger = tonumber(squadData.raptorsquadminanger) or 0
         local angerTier = math.min(10, math.floor(minimumAnger / 10))
-        local angerScale = customUnit and (1.12 ^ angerTier) or 1
-        local damageAngerScale = customUnit and (1.05 ^ angerTier) or 1
+        local angerScale = customUnit and (1.07 ^ angerTier) or 1
+        local damageAngerScale = customUnit and (1.02 ^ angerTier) or 1
         if squadData.raptorcustomsquad and not squadData.raptorx_squadweight_adjusted then
           local weight = tonumber(squadData.raptorsquadweight)
           if weight then
-            local bias = customUnit and 2 or 0.5
+            local bias = customUnit and 1.25 or 0.65
             if minimumAnger < 25 then
-              bias = customUnit and 1.25 or 0.8
+              bias = customUnit and 0.65 or 0.9
             end
             squadData.raptorsquadweight = math.max(1, math.floor(weight * bias + 0.5))
           end
@@ -36,22 +36,27 @@ do
         end
         if not u.customparams.raptorx_ultra_hardened then
           u.customparams.raptorx_ultra_hardened = 1
-          local hp, damage, reload, speed, floor = 3, 0.85, 1.00, 1.03, 8000
-          if u.canfly then floor = 25000 end
+          local early = minimumAnger < 25 or name:find("_t1_", 1, true)
+          local hp, damage, reload, speed, floor = 2.0, 0.55, 1.02, 1.00, 2200
+          if u.canfly then floor = 3500 end
+          if early then
+            hp, damage, reload, speed, floor = 1.30, 0.50, 1.06, 0.92, 0
+          end
           if name:find("_t4_", 1, true) or elites[name] then
-            hp, damage, reload, speed, floor = 10, 1.15, 0.95, 1.03, 200000
+            hp, damage, reload, speed, floor = 6.5, 0.68, 1.00, 1.00, (u.canfly and 45000 or 90000)
           end
           if name:find("matriarch", 1, true) or name:find("queen", 1, true) or apex[name] then
-            hp, damage, reload, speed, floor = 16, 1.35, 0.92, 1.0, 2500000
+            hp, damage, reload, speed, floor = 11, 0.78, 0.96, 0.98, 1400000
           end
-          if apex[name] then floor = 8000000 end
+          if apex[name] then floor = 4500000 end
           if customUnit then
-            hp, damage, reload, speed, floor = hp * 1.15, damage * 1.05, reload * 0.98, speed * 1.02, floor * 1.15
+            hp, damage, reload, speed, floor = hp * 1.06, damage * 0.95, reload * 1.00, speed * 1.00, floor * 1.06
           end
           local health = tonumber(u.health) or tonumber(u.maxdamage) or 1
           u.health = math.max(health * hp, floor) * angerScale
           u.maxdamage = u.health
-          u.autoheal = math.max(tonumber(u.autoheal) or 0, math.min(25000, u.health * 0.001))
+          local regen = early and 0 or math.min(12000, u.health * 0.0005)
+          u.autoheal = math.max(tonumber(u.autoheal) or 0, regen)
           u.speed = u.speed * speed
           for _, field in ipairs({ "maxacc", "maxdec", "turnrate" }) do
             if type(u[field]) == "number" then u[field] = u[field] * speed end

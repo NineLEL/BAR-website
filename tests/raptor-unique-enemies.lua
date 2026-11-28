@@ -38,14 +38,14 @@ local originals = copy(UnitDefs)
 assert(loadfile(pack))()
 
 local expected = {
-  raptorx_voidlance_piercer = { base = "raptor_land_spiker_spectre_t4_v1", anger = 25, behavior = "skirmisher", slots = 1 },
-  raptorx_arcweaver_conduit = { base = "raptor_land_assault_emp_t2_v1", anger = 30, behavior = "berserk", slots = 2 },
-  raptorx_broodscatter_mortar = { base = "raptor_allterrain_arty_brood_t4_v1", anger = 35, behavior = "artillery", slots = 1 },
-  raptorx_pyreburst_lobber = { base = "raptor_allterrain_arty_basic_t4_v1", anger = 40, behavior = "artillery", slots = 1 },
-  raptorx_tempest_swooper = { base = "raptor_air_gunship_emp_t2_v1", anger = 45, behavior = "raider", slots = 1 },
-  raptorx_miasma_crawler = { base = "raptor_land_swarmer_fire_t4_v1", anger = 50, behavior = "berserk", slots = 3 },
-  raptorx_abyssal_skynest = { base = "raptor_air_bomber_brood_t4_v2", anger = 60, behavior = "raider", slots = 1 },
-  raptorx_chronovore_apex = { base = "raptor_allterrain_arty_emp_t4_v1", anger = 75, behavior = "artillery", slots = 1 },
+  raptorx_voidlance_piercer = { base = "raptor_land_spiker_spectre_t4_v1", anger = 45, behavior = "skirmisher", slots = 1 },
+  raptorx_arcweaver_conduit = { base = "raptor_land_assault_emp_t2_v1", anger = 50, behavior = "berserk", slots = 2 },
+  raptorx_broodscatter_mortar = { base = "raptor_allterrain_arty_brood_t4_v1", anger = 55, behavior = "artillery", slots = 1 },
+  raptorx_pyreburst_lobber = { base = "raptor_allterrain_arty_basic_t4_v1", anger = 60, behavior = "artillery", slots = 1 },
+  raptorx_tempest_swooper = { base = "raptor_air_gunship_emp_t2_v1", anger = 65, behavior = "raider", slots = 1 },
+  raptorx_miasma_crawler = { base = "raptor_land_swarmer_fire_t4_v1", anger = 70, behavior = "berserk", slots = 3 },
+  raptorx_abyssal_skynest = { base = "raptor_air_bomber_brood_t4_v2", anger = 75, behavior = "raider", slots = 1 },
+  raptorx_chronovore_apex = { base = "raptor_allterrain_arty_emp_t4_v1", anger = 85, behavior = "artillery", slots = 1 },
 }
 
 for id, spec in pairs(expected) do

@@ -46,7 +46,7 @@ for i, kind in ipairs(kinds) do
   assert(u.weapondefs ~= base.weapondefs and u.weapons ~= base.weapons)
   assert(not u.builder and next(u.buildoptions) == nil)
   assert(u.customparams.raptorcustomsquad == "1" and u.customparams.raptorsquadunitsamount == 1)
-  assert(u.customparams.raptorsquadminanger == 25 + i * 10 and u.customparams.raptorsquadweight == 2)
+  assert(u.customparams.raptorsquadminanger == 40 + i * 10 and u.customparams.raptorsquadweight == 2)
   assert(u.customparams.paralyzemultiplier == 1)
   assert(#u.weapons == 5)
   for _, slot in ipairs(u.weapons) do
@@ -57,11 +57,11 @@ for i, kind in ipairs(kinds) do
   assert(u.weapons[1].onlytargetcategory == "NOTAIR" and u.weapons[5].onlytargetcategory == "NOTAIR")
 end
 local iron = UnitDefs.raptorx_miniboss_ironhide
-assert(iron.autoheal == 900 and iron.weapondefs.melee.impulsefactor == 4)
+assert(iron.autoheal == 450 and iron.weapondefs.melee.impulsefactor == 4)
 local acid = UnitDefs.raptorx_miniboss_miremaw.weapondefs.acidgoo.customparams
-assert(acid.area_onhit_time == 18 and acid.area_onhit_range == 150 and acid.area_onhit_ceg == "acid-area-150-repeat")
+assert(acid.area_onhit_time == 15 and acid.area_onhit_range == 150 and acid.area_onhit_ceg == "acid-area-150-repeat")
 local storm = UnitDefs.raptorx_miniboss_stormlock.weapondefs.goo
-assert(storm.paralyzer and storm.paralyzetime == 8 and storm.reloadtime == 20)
+assert(storm.paralyzer and storm.paralyzetime == 6 and storm.reloadtime == 22)
 local fire = UnitDefs.raptorx_miniboss_cindermaw
 assert(fire.weapondefs.flamethrowermain.customparams.area_onhit_damageceg == "burnthermite")
 for _, slot in ipairs(fire.weapons) do assert(slot.onlytargetcategory == "NOTAIR") end
