@@ -19,7 +19,8 @@ do
         u.customparams = u.customparams or {}
         local customUnit = name:sub(1, 8) == "raptorx_"
         local squadData = u.customparams
-        local minimumAnger = tonumber(squadData.raptorsquadminanger) or 0
+        local squadMinimumAnger = tonumber(squadData.raptorsquadminanger)
+        local minimumAnger = squadMinimumAnger or 0
         local angerTier = math.min(10, math.floor(minimumAnger / 10))
         local angerScale = customUnit and (1.07 ^ angerTier) or 1
         local damageAngerScale = customUnit and (1.02 ^ angerTier) or 1
@@ -36,10 +37,14 @@ do
         end
         if not u.customparams.raptorx_ultra_hardened then
           u.customparams.raptorx_ultra_hardened = 1
-          local early = minimumAnger < 25 or name:find("_t1_", 1, true)
+          local tierOne = name:find("_t1_", 1, true)
+          local early = minimumAnger < 25 or tierOne
           local hp, damage, reload, speed, floor = 2.0, 0.55, 1.02, 1.00, 2200
           if u.canfly then floor = 3500 end
-          if early then
+          if tierOne or (squadMinimumAnger and squadMinimumAnger < 25) then
+            hp, damage, reload, speed, floor = 1.08, 0.42, 1.12, 0.88, 0
+          elseif early then
+            -- Missing squad metadata retains legacy tuning, not the opening nerf.
             hp, damage, reload, speed, floor = 1.30, 0.50, 1.06, 0.92, 0
           end
           if name:find("_t4_", 1, true) or elites[name] then

@@ -37,10 +37,10 @@ do
   -- behavior, min/max anger, amount, weight, distance, rarity. Kept in sync
   -- with units/raptorx rosters so each clone gets its OWN squad, not its base's.
   local squads = {
-    raptorx_earlycrusher = {"berserk",22,75,3,28,1150,"basic"},
+    raptorx_earlycrusher = {"berserk",24,75,2,28,1150,"basic"},
     raptorx_midravager = {"berserk",42,150,6,100,1600,"special"},
     raptorx_latebehemoth = {"berserk",55,150,5,95,2100,"special"},
-    raptorx_earlytalon = {"raider",20,85,4,30,1500,"basic"},
+    raptorx_earlytalon = {"raider",24,85,2,30,1500,"basic"},
     raptorx_midfirewing = {"raider",42,150,5,95,1900,"special"},
     raptorx_lateskyreaper = {"raider",55,150,3,85,2300,"special"},
     raptorx_ironfang = {"berserk",28,85,4,30,1050,"basic"},
