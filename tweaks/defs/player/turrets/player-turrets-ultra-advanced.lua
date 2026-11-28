@@ -84,7 +84,7 @@ do
 
 	local function createUnit(name, c)
 		if U[name] then
-			return U[name], U[name], name
+			return U[name]
 		end
 		local src, srcName = findSource(c)
 		if not src then
@@ -163,13 +163,13 @@ do
 				installWeapon(u, src, 1, "STREAM_ARTILLERY", {
 					weapontype = "Cannon",
 					range = 4600,
-					reloadtime = 0.10,
+					reloadtime = 0.55,
 					accuracy = 200,
 					sprayangle = 420,
 					areaofeffect = 480,
 					weaponvelocity = 4200,
-					energypershot = 12000,
-					damage = { default = 12000, shields = 28000, commandertoo = 2800 },
+					energypershot = 3600,
+					damage = { default = 3600, shields = 4500, commanders = 1000 },
 					impulsefactor = 8.0,
 					impulseboost = 5.0,
 					craterboost = 3.0,
@@ -200,7 +200,7 @@ do
 					weapontype = "BeamLaser",
 					largebeamlaser = true,
 					range = 3600,
-					reloadtime = 0.04,
+					reloadtime = 0.25,
                     beamtime = 0.034,
 					beamttl = 2,
                     thickness = 3.5,
@@ -208,17 +208,17 @@ do
                     laserflaresize = 10,
 					scrollspeed = 10,
 					pulsespeed = 12,
-					energypershot = 5200,
+					energypershot = 2000,
 					rgbcolor = "1 0.96 0.82",
 					rgbcolor2 = "1 1 0.98",
-					damage = { default = 5200, shields = 18000, vtol = 12000, commandertoo = 1200 },
+					damage = { default = 2300, shields = 2400, vtol = 1200, commanders = 550 },
 					texture3 = "largebeam",
 					tilelength = 150,
 					explosiongenerator = "custom:laserhit-large-yellow",
 					soundstart = "beamershot2",
 					soundtrigger = 1,
 					onlytargetcategory = "SURFACE VTOL",
-				})
+				}, { badtargetcategory = "GROUNDSCOUT" })
 			end,
 		},
 
@@ -228,28 +228,29 @@ do
 			{ "corhllllt" },
 			{ 620e3, 1600e4, 1600e4, 780e3, 3, 38000, 1400, 3800 },
 			"Aegis Starspire",
-			"Four-channel continuous laser spires. Locks 4 targets at 3600 range to disintegrate air raids.",
+			"Four laser channels engage air raids at up to 3600 range.",
 			function(u, src)
 				local beamHues = { "0.0 0.95 1.0", "0.4 0.25 1.0", "0.0 0.75 1.0", "0.25 0.55 1.0" }
 				for slot = 1, 4 do
 					installWeapon(u, src, slot, "AEGIS_STARBEAM_" .. slot, {
 						weapontype = "BeamLaser",
+						canattackground = false,
 						largebeamlaser = true,
 						range = 3600,
-						reloadtime = 0.04,
+						reloadtime = 0.4,
                         beamtime = 0.034,
 						beamttl = 3,
                         thickness = 4.0,
                         corethickness = 0.55,
                         laserflaresize = 8,
-						energypershot = 2400,
+						energypershot = 700,
 						pulsespeed = 12,
 						scrollspeed = 10,
 						rgbcolor = beamHues[slot],
 						rgbcolor2 = "0.7 0.1 1.0",
 						texture3 = "largebeam",
 						tilelength = 120,
-						damage = { default = 1200, vtol = 6800, shields = 4000, commandertoo = 300 },
+						damage = { default = 100, vtol = 950, shields = 400, commanders = 60 },
 						explosiongenerator = "custom:laserhit-large-aqua",
 						soundstart = "lasrhvy2",
 						soundtrigger = 1,
@@ -257,23 +258,25 @@ do
 					}, {
 						fastautoretargeting = true,
 						onlytargetcategory = "VTOL",
+						badtargetcategory = "",
 					})
 				end
 			end,
 		},
 
-		-- 4. TEMPEST STORM: Electrified Arc & Thermite Anti-Swarm Matrix
+		-- 4. TEMPEST STORM: Electrified Chain-Arc Anti-Swarm Battery
 		{
 			"player_thornnest",
 			{ "corpun", "armguard", "corflak" },
 			{ 360e3, 780e4, 780e4, 380e3, 4, 18000, 850, 1800 },
 			"Tempest Storm",
-			"Electrified napalm chain-arc array. Vaporizes massed ground swarms and air raids.",
+			"Chain-arc array for massed ground swarms and air raids.",
 			function(u, src)
 				installWeapon(u, src, 1, "TEMPEST_STORM", {
 					weapontype = "LightningCannon",
+					canattackground = true,
 					range = 1550,
-					reloadtime = 0.8,
+					reloadtime = 1.4,
 					burst = 8,
 					burstrate = 0.04,
 					projectiles = 4,
@@ -290,9 +293,14 @@ do
 					soundstart = "electric2",
 					soundhitdry = "lashit",
 					soundhit = "xploelc2",
-					damage = { default = 1650, vtol = 4200, shields = 2800, commandertoo = 400 },
+					customparams = {
+						spark_forkdamage = "0.25",
+						spark_maxunits = "3",
+						spark_range = "130",
+					},
+					damage = { default = 330, vtol = 420, shields = 600, commanders = 100 },
 					onlytargetcategory = "SURFACE VTOL",
-				})
+				}, { badtargetcategory = "" })
 			end,
 		},
 
@@ -308,7 +316,7 @@ do
 					weapontype = "BeamLaser",
 					canattackground = true,
 					range = 2400,
-					reloadtime = 1.2,
+					reloadtime = 3.2,
 					beamtime = 0.20,
 					largebeamlaser = true,
 					beamttl = 8,
@@ -318,16 +326,16 @@ do
 					scrollspeed = 8,
 					pulsespeed = 10,
 					energypershot = 6000,
-					paralyzetime = 8,
+					paralyzetime = 5,
 					paralyzer = true,
-					damage = { default = 42000, vtol = 72000, shields = 24000, commandertoo = 8000 },
+					damage = { default = 27000, vtol = 24000, shields = 10000, commanders = 5000 },
 					rgbcolor = "0.25 0.92 1",
 					rgbcolor2 = "0.9 1 1",
 					explosiongenerator = "custom:laserhit-emp",
 					soundhit = "xploelc1",
 					soundstart = "lasrhvy3",
 					onlytargetcategory = "SURFACE VTOL",
-				})
+				}, { badtargetcategory = "LIGHTAIRSCOUT" })
 			end,
 		},
 
@@ -339,17 +347,18 @@ do
 			"Void Vortex",
 			"Gravitational collapse artillery. Pulls, compresses, and shatters advancing armadas.",
 			function(u, src)
+				local slot = getSlot(src, 1)
 				installWeapon(u, src, 1, "VOID_VORTEX", {
 					weapontype = "Cannon",
 					range = 3400,
-					reloadtime = 2.2,
+					reloadtime = 5,
 					accuracy = 180,
-					areaofeffect = 800,
+					areaofeffect = 440,
 					edgeeffectiveness = 0.85,
 					weaponvelocity = 2200,
 					energypershot = 42000,
-					impulsefactor = -50.0,
-					impulseboost = -35.0,
+					impulsefactor = -4,
+					impulseboost = -3,
 					craterboost = 0,
 					cratermult = 0,
 					camerashake = 180,
@@ -362,9 +371,9 @@ do
 					explosiongenerator = "custom:juno-explo",
 					soundhit = "xplonuk4",
 					soundstart = "junofir2",
-					damage = { default = 155000, shields = 210000, commandertoo = 24000 },
+					damage = { default = 30000, shields = 29000, commanders = 5500 },
 					onlytargetcategory = "SURFACE VTOL",
-				})
+				}, slot and slot.badtargetcategory == "VTOL" and { badtargetcategory = "" } or nil)
 			end,
 		},
 
@@ -378,14 +387,14 @@ do
 			function(u, src)
 				installWeapon(u, src, 1, "INFERNO_CRUCIBLE", {
 					weapontype = "Flame",
-					range = 1750,
-					reloadtime = 0.8,
+					range = 1050,
+					reloadtime = 1.6,
 					burst = 14,
 					burstrate = 0.034,
 					projectiles = 2,
 					sprayangle = 1300,
 					weaponvelocity = 1100,
-					flamegfxtime = 65,
+					flamegfxtime = 1.2,
 					size = 7.5,
 					sizegrowth = 1.8,
 					intensity = 1.4,
@@ -396,12 +405,12 @@ do
 					firestarter = 100,
 					groundbounce = true,
 					bouncerebound = 0.45,
-					bounceminspeed = 180,
+					numbounce = 1,
 					cegtag = "flamestreamxl",
 					explosiongenerator = "custom:fire-incinerator",
 					soundstart = "flamhvy1",
 					soundhit = "flamhit1",
-					damage = { default = 3200, shields = 9000, commandertoo = 700 },
+					damage = { default = 520, shields = 850, commanders = 160 },
 					onlytargetcategory = "SURFACE",
 				})
 			end,
@@ -415,22 +424,22 @@ do
 			"Cascade Mortar",
 			"Apocalyptic orbital plasma geyser. Rains devastating cataclysms across map sectors.",
 			function(u, src)
-				u.hightrajectorytype = 1
+				u.hightrajectory = 1
 				installWeapon(u, src, 1, "CASCADE_FOUNTAIN", {
 					weapontype = "Cannon",
-					range = 6800,
-					reloadtime = 4.5,
+					range = 6200,
+					reloadtime = 7,
 					burst = 8,
 					burstrate = 0.10,
 					projectiles = 5,
 					sprayangle = 1200,
 					accuracy = 320,
 					hightrajectory = 1,
-					weaponvelocity = 1500,
-					mygravity = 0.55,
-					areaofeffect = 720,
+					weaponvelocity = 1750,
+					mygravity = 0.40,
+					areaofeffect = 390,
 					edgeeffectiveness = 0.75,
-					energypershot = 16000,
+					energypershot = 12000,
 					size = 16.0,
 					stages = 40,
 					intensity = 4.0,
@@ -445,7 +454,7 @@ do
 					impulsefactor = 18.0,
 					impulseboost = 12.0,
 					camerashake = 240,
-					damage = { default = 20000, shields = 65000, commandertoo = 4000 },
+					damage = { default = 1300, shields = 1800, commanders = 350 },
 					onlytargetcategory = "SURFACE",
 				})
 			end,
@@ -468,7 +477,8 @@ do
 			u.unitname, u.name = spec[1], spec[1]
 			u.metalcost, u.energycost, u.buildtime = st[1], st[2], st[3]
 			u.health, u.maxdamage = st[4], st[4]
-			u.energyupkeep, u.energyuse = st[6] * TURRET_ENERGY_FACTOR, st[6] * TURRET_ENERGY_FACTOR
+			local upkeep = st[6] * TURRET_ENERGY_FACTOR * 0.2
+			u.energyupkeep, u.energyuse = upkeep, upkeep
 			if st[7] then
 				u.sightdistance = st[7]
 			end
@@ -505,19 +515,20 @@ do
 					range = 1,
 					reloadtime = 9999,
 					damage = { default = 0 },
+					canattackground = false,
 					noselfdamage = true,
 					turret = true,
 					explosiongenerator = mainW and mainW.explosiongenerator or "custom:genericshellexplosion-tiny-aa",
 				}
 				for sIdx = #u.weapons + 1, #source.weapons do
-					local sSlot = source.weapons[sIdx]
 					u.weapons[sIdx] = {
 						def = dName,
-						onlytargetcategory = sSlot and sSlot.onlytargetcategory or "SURFACE",
+						onlytargetcategory = "NONE",
 					}
 				end
 			end
-
+		end
+		if u then
 			created[#created + 1] = spec[1]
 		end
 	end

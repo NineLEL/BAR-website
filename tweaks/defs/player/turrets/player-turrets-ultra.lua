@@ -84,7 +84,7 @@ do
 
 	local function CU(nm, c)
 		if U[nm] then
-			return U[nm], U[nm], nm
+			return U[nm]
 		end
 		local src, sn = FS(c)
 		if not src then
@@ -142,27 +142,17 @@ do
 	end
 
 	local function D(d, v, s, c)
-		local t = { default = d }
-		if v then
-			t.vtol = v
-		end
-		if s then
-			t.shields = s
-		end
-		if c then
-			t.commandertoo = c
-		end
-		return t
+		return { default = d, vtol = v, shields = s, commanders = c }
 	end
 
 	local G, LH, PH, HR = "custom:genericshellexplosion-", "custom:laserhit-", "custom:plasmahit-huge", "custom:heatray-"
 
 	local function MV(w, heavy, ceg, exp)
-		w.cegtag, w.smoketrail, w.smoketrailcastshadow = ceg or "missiletrailaa", true, false
+		w.cegtag, w.smoketrail, w.smoketrailcastshadow = ceg, true, false
 		w.smokeperiod, w.smoketime, w.smokesize, w.smokecolor =
 			heavy and 2 or 1, heavy and 12 or 24, heavy and 3.8 or 7.0, 1
 		w.texture1, w.texture2 = "null", "smoketrailaa"
-		w.explosiongenerator = exp or (heavy and (G .. "small") or (G .. "medium-aa"))
+		w.explosiongenerator = exp
 	end
 
 	local C_CAN, C_MSL, C_BLAS, T_V, T_S, T_SV =
@@ -185,8 +175,9 @@ do
 			function(u, src)
 				I(u, src, 1, "HAILSTORM_FLAK", {
 					weapontype = C_CAN,
+					canattackground = false,
 					range = 1550,
-					reloadtime = 1.0,
+					reloadtime = 2,
 					burst = 30,
 					burstrate = 0.03,
 					sprayangle = 1400,
@@ -195,7 +186,7 @@ do
 					weaponvelocity = 4200,
 					energypershot = 1200,
 					onlytargetcategory = T_V,
-					damage = D(1200, 16000, 4800),
+					damage = D(100, 480, 300),
 					size = 6,
 					rgbcolor = "1 0.8 0.35",
 					cegtag = "flaktrailaamg",
@@ -217,8 +208,9 @@ do
 			function(u, src)
 				I(u, src, 1, "NEEDLE_SWARM", {
 					weapontype = C_MSL,
+					canattackground = false,
 					range = 3200,
-					reloadtime = 1.8,
+					reloadtime = 2.5,
 					burst = 6,
 					burstrate = 0.08,
 					weaponvelocity = 6000,
@@ -230,8 +222,8 @@ do
 					dance = 0,
 					wobble = 0,
 					areaofeffect = 220,
-					energypershot = 12000,
-					damage = D(3000, 96000, 20000),
+					energypershot = 6000,
+					damage = D(100, 3000, 500),
 					soundhit = "packohit",
 					soundstart = "packolau",
 					onlytargetcategory = T_V,
@@ -249,21 +241,22 @@ do
 			function(u, src)
 				I(u, src, 1, "BLACKOUT_CASCADE", {
 					weapontype = C_CAN,
+					canattackground = false,
 					range = 1900,
-					reloadtime = 3.5,
+					reloadtime = 6,
 					burst = 8,
 					burstrate = 0.08,
 					sprayangle = 1200,
 					accuracy = 260,
-					areaofeffect = 700,
+					areaofeffect = 400,
 					weaponvelocity = 2600,
 					energypershot = 14e3,
 					paralyzer = true,
-					paralyzetime = 18,
+					paralyzetime = 8,
 					size = 8,
 					stages = 16,
 					rgbcolor = "0.3 0.75 1",
-					damage = D(400, 140e3, nil, 400),
+					damage = D(200, 18000, nil, 200),
 					cegtag = "lightning_stormbolt_small",
 					explosiongenerator = "custom:lightning_storm_emp",
 					soundhit = "mismed1emp",
@@ -281,17 +274,18 @@ do
 			"Rapid close-range anti-air point defense beam",
 			function(u, src)
 				I(u, src, 1, "PHALANX_SKYBEAM", BV {
+					canattackground = false,
 					range = 1600,
-					reloadtime = 0.04,
+					reloadtime = 0.2,
 					beamtime = 0.034,
 					beamttl = 2,
 					thickness = 4.0,
 					corethickness = 0.40,
-					energypershot = 2400,
+					energypershot = 1000,
 					laserflaresize = 7,
 					scrollspeed = 8,
 					pulsespeed = 10,
-					damage = D(450, 18000, 6000),
+					damage = D(150, 1400, 1200),
 					explosiongenerator = LH .. "medium-aqua",
 					rgbcolor = "0.15 0.95 1",
 					rgbcolor2 = "0.9 1 1",
@@ -312,21 +306,21 @@ do
 				I(u, src, 1, "QUAKE_DOOM", {
 					weapontype = C_CAN,
 					range = 5400,
-					reloadtime = 2.8,
-					energypershot = 110e3,
+					reloadtime = 7,
+					energypershot = 40000,
 					accuracy = 420,
-					areaofeffect = 1400,
+					areaofeffect = 760,
 					weaponvelocity = 2800,
-					impulsefactor = 50,
-					impulseboost = 35,
-					craterboost = 16.0,
-					cratermult = 12.0,
+					impulsefactor = 5,
+					impulseboost = 4,
+					craterboost = 4,
+					cratermult = 3,
 					camerashake = 160,
 					size = 16.0,
 					stages = 24,
 					intensity = 2.4,
 					rgbcolor = "1 0.65 0.2",
-					damage = D(310e3, nil, 240e3, 48e3),
+					damage = D(48000, nil, 42000, 9000),
 					cegtag = "arty-huge",
 					explosiongenerator = G .. "huge",
 					soundstart = "bertha6",
@@ -347,19 +341,19 @@ do
 				I(u, src, 1, "NULL_CATHEDRAL", {
 					weapontype = C_CAN,
 					range = 3800,
-					reloadtime = 3.5,
-					energypershot = 140e3,
+					reloadtime = 8,
+					energypershot = 35000,
 					accuracy = 280,
-					areaofeffect = 1500,
+					areaofeffect = 720,
 					weaponvelocity = 2400,
 					paralyzer = true,
-					paralyzetime = 28,
+					paralyzetime = 12,
 					camerashake = 140,
 					size = 15.0,
 					stages = 24,
 					intensity = 2.5,
 					rgbcolor = "0.35 0.65 1",
-					damage = D(180e3, nil, nil, 180e3),
+					damage = D(95000, nil, nil, 16000),
 					cegtag = "juno_sphere_emit",
 					explosiongenerator = "custom:juno-explo",
 					soundstart = "junofir2",
@@ -376,10 +370,11 @@ do
 			"Hive Array",
 			"Guided missile barrage fortress",
 			function(u, src)
+				local slot = GS(src, 1)
 				I(u, src, 1, "HIVE_ARRAY", {
 					weapontype = C_MSL,
 					range = 4000,
-					reloadtime = 0.06,
+					reloadtime = 0.4,
 					trajectoryheight = 1.5,
 					startvelocity = 600,
 					weaponvelocity = 3800,
@@ -393,12 +388,12 @@ do
 					dance = 3,
 					wobble = 60,
 					areaofeffect = 200,
-					energypershot = 4200,
-					damage = D(7200, 32000, 18000),
+					energypershot = 2200,
+					damage = D(3200, 3600, 4200),
 					soundstart = "rocklit1",
 					soundhit = "xplomed2",
 					onlytargetcategory = T_SV,
-				})
+				}, slot and slot.badtargetcategory == "VTOL" and { badtargetcategory = "" } or nil)
 				MV(u.weapondefs.HIVE_ARRAY, true, "cruisemissiletrail-starburst", G .. "medium")
 			end,
 		},
@@ -413,7 +408,7 @@ do
 				I(u, src, 1, "AEGIS_ERASER", {
 					weapontype = C_CAN,
 					range = 3400,
-					reloadtime = 1.6,
+					reloadtime = 3,
 					burst = 6,
 					burstrate = 0.05,
 					projectiles = 4,
@@ -421,12 +416,12 @@ do
 					accuracy = 90,
 					areaofeffect = 280,
 					weaponvelocity = 3600,
-					energypershot = 18000,
+					energypershot = 7000,
 					size = 9.0,
 					stages = 18,
 					intensity = 2.0,
 					rgbcolor = "0.1 0.9 1",
-					damage = D(7500, nil, 180e3, 3500),
+					damage = D(1100, nil, 12000, 400),
 					cegtag = "gausscannonprojectile",
 					explosiongenerator = PH,
 					soundhit = "xplomed2",
@@ -445,17 +440,17 @@ do
 			function(u, src)
 				I(u, src, 1, "EXECUTIONER", BV {
 					range = 3600,
-					reloadtime = 1.6,
+					reloadtime = 3.5,
 					beamtime = 1.0,
-					beamttl = 170,
-					energypershot = 180e3,
+					beamttl = 5,
+					energypershot = 20000,
 					thickness = 8,
 					corethickness = 0.80,
 					laserflaresize = 9,
 					scrollspeed = 12,
 					pulsespeed = 8,
 					firestarter = 100,
-					damage = D(280e3, nil, 180e3, 50e3),
+					damage = D(49000, nil, 35000, 8500),
 					explosiongenerator = HR .. "large",
 					rgbcolor = "1 0.12 0.02",
 					rgbcolor2 = "1 0.85 0.4",
@@ -481,17 +476,17 @@ do
 					local cfg = cfgs[slot]
 					I(u, src, slot, "PRISM_BEAM_" .. slot, BV {
 						range = 3400,
-						reloadtime = 1.2,
+						reloadtime = 2.4,
 						beamtime = 0.55,
-						beamttl = 22,
-						energypershot = 44000,
+						beamttl = 5,
+						energypershot = 8000,
 						thickness = cfg[2] * 0.8,
 						corethickness = cfg[3] * 0.8,
 						laserflaresize = 8,
 						scrollspeed = 10,
 						pulsespeed = 9,
 						firestarter = 100,
-						damage = D(76e3, nil, 175e3, 18e3),
+						damage = D(10000, nil, 9000, 1600),
 						explosiongenerator = LH .. "large-purple",
 						rgbcolor = cfg[1],
 						rgbcolor2 = "0.95 0.85 1",
@@ -511,17 +506,17 @@ do
 			function(u, src)
 				I(u, src, 1, "HYPERION_LANCE", BV {
 					range = 4000,
-					reloadtime = 4.0,
+					reloadtime = 9,
 					beamtime = 1.5,
-					beamttl = 250,
-					energypershot = 540e3,
+					beamttl = 6,
+					energypershot = 56000,
 					thickness = 10,
 					corethickness = 0.90,
 					laserflaresize = 12,
 					scrollspeed = 14,
 					pulsespeed = 10,
 					firestarter = 100,
-					damage = D(1100e3, nil, 600e3, 160e3),
+					damage = D(132000, nil, 78000, 22000),
 					explosiongenerator = HR .. "huge",
 					rgbcolor = "1 0.65 0.05",
 					rgbcolor2 = "1 0.96 0.78",
@@ -538,11 +533,11 @@ do
 			"Aegis Orbitfall",
 			"Fully automatic continuous kinetic battery. Rains rapid precision hyper-velocity rods across strategic ranges.",
 			function(u, src)
-				u.hightrajectorytype = 2
+				u.hightrajectory = 2
 				I(u, src, 1, "AEGIS_ORBITFALL", {
 					weapontype = C_CAN,
-					range = 8400,
-					reloadtime = 0.25,
+					range = 6500,
+					reloadtime = 3.5,
 					burst = 1,
 					projectiles = 1,
 					sprayangle = 240,
@@ -552,7 +547,7 @@ do
 					areaofeffect = 360,
 					edgeeffectiveness = 0.6,
 					camerashake = 45,
-					energypershot = 22000,
+					energypershot = 13000,
 					craterboost = 3.0,
 					cratermult = 2.0,
 					impulsefactor = 6.0,
@@ -561,7 +556,7 @@ do
 					stages = 22,
 					intensity = 2.2,
 					rgbcolor = "0.25 0.85 1",
-					damage = D(36e3, nil, 85e3, 11e3),
+					damage = D(23500, nil, 25000, 5200),
 					cegtag = "tachyonshot",
 					explosiongenerator = PH,
 					soundstart = "heavyrailgun",
@@ -588,7 +583,8 @@ do
 			u.unitname, u.name = spec[1], spec[1]
 			u.health, u.maxdamage = st[3], st[3]
 			u.metalcost, u.energycost, u.buildtime = st[1], st[2], st[2]
-			u.energyupkeep, u.energyuse = st[5] * EF, st[5] * EF
+			local upkeep = st[5] * EF * 0.2
+			u.energyupkeep, u.energyuse = upkeep, upkeep
 			if st[6] then
 				u.sightdistance = st[6]
 			end
@@ -625,19 +621,20 @@ do
 					range = 1,
 					reloadtime = 9999,
 					damage = { default = 0 },
+					canattackground = false,
 					noselfdamage = true,
 					turret = true,
 					explosiongenerator = mainW and mainW.explosiongenerator or (G .. "tiny-aa"),
 				}
 				for sIdx = #u.weapons + 1, #source.weapons do
-					local sSlot = source.weapons[sIdx]
 					u.weapons[sIdx] = {
 						def = dName,
-						onlytargetcategory = sSlot and sSlot.onlytargetcategory or T_S,
+						onlytargetcategory = "NONE",
 					}
 				end
 			end
-
+		end
+		if u then
 			created[#created + 1] = spec[1]
 		end
 	end

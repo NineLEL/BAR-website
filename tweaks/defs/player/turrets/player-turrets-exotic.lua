@@ -17,15 +17,11 @@ do
 		return r
 	end
 
-	local function FU(n)
-		return n and (U[n] or U[L(n)])
-	end
-
 	local function FS(c)
-		for i = 1, #c do
-			local s = FU(c[i])
+		for _, name in ipairs(c) do
+			local s = U[name]
 			if s then
-				return s, c[i]
+				return s, name
 			end
 		end
 	end
@@ -78,7 +74,7 @@ do
 
 	local function CU(nm, c)
 		if U[nm] then
-			return U[nm], U[nm], nm
+			return U[nm]
 		end
 		local src, sn = FS(c)
 		if not src then
@@ -98,12 +94,9 @@ do
 			u[k] = false
 		end
 		u.buildoptions, u.weapons, u.weapondefs = nil, {}, {}
-		u.activatewhenbuilt, u.onoffable = true, true
 	end
 
 	local function LB(u, nm, tip)
-		u.customparams = u.customparams or {}
-		u.customparams.techlevel = 4
 		for l in ("en de fr es it ru zh cs hr lt"):gmatch("%S+") do
 			u.customparams["i18n_" .. l .. "_humanname"], u.customparams["i18n_" .. l .. "_tooltip"] = nm, tip
 		end
@@ -126,11 +119,8 @@ do
 
 		local s = C(sSlot)
 		s.def, s.maindir, s.maxangledif = nn, nil, nil
-		sov = sov or {}
-		if w.onlytargetcategory and not sov.onlytargetcategory then
-			sov.onlytargetcategory = w.onlytargetcategory
-		end
-		for k, v in pairs(sov) do
+		s.onlytargetcategory = w.onlytargetcategory
+		for k, v in pairs(sov or {}) do
 			s[k] = C(v)
 		end
 		u.weapons[#u.weapons + 1] = s
@@ -138,17 +128,7 @@ do
 	end
 
 	local function D(d, v, s, c)
-		local t = { default = d }
-		if v then
-			t.vtol = v
-		end
-		if s then
-			t.shields = s
-		end
-		if c then
-			t.commandertoo = c
-		end
-		return t
+		return { default = d, vtol = v, shields = s, commanders = c }
 	end
 
 	local T_S, T_SV, T_NA = "SURFACE", "SURFACE VTOL", "NOTAIR"
@@ -163,17 +143,17 @@ do
 			"Helios Splitter",
 			"Solar airburst mortar splitting at apex into 14 blazing meteors.",
 			function(u, src)
-				u.hightrajectorytype = 1
+				u.hightrajectory = 1
 				I(u, src, 1, "HELIOS_SHELL", {
 					weapontype = "Cannon",
 					range = 3800,
-					reloadtime = 4.2,
+					reloadtime = 6,
 					hightrajectory = 1,
-					weaponvelocity = 1400,
-					mygravity = 0.45,
+					weaponvelocity = 900,
+					mygravity = 0.20,
 					accuracy = 160,
 					areaofeffect = 240,
-					energypershot = 84000,
+					energypershot = 28000,
 					size = 18,
 					stages = 32,
 					intensity = 3.0,
@@ -191,11 +171,13 @@ do
 						cegtag = "ministarfire",
 						model = "",
 					},
-					damage = D(16000, nil, 24000, 3200),
+					damage = D(8000, nil, 10000, 1600),
 					onlytargetcategory = T_S,
 				})
-				I(u, src, 2, "sun_shard", {
+				local shardSlot = GS(src, 2) and 2 or 1
+				local installed = I(u, src, shardSlot, "sun_shard", {
 					weapontype = "Cannon",
+					canattackground = false,
 					range = 1200,
 					reloadtime = 9999,
 					areaofeffect = 240,
@@ -212,9 +194,13 @@ do
 					explosiongenerator = "custom:ministarfire-explosion",
 					soundstart = "cannhvy5",
 					soundhit = "xplomed2",
-					damage = D(11000, nil, 18000, 2200),
+					damage = D(2400, nil, 3900, 440),
 					onlytargetcategory = "NONE",
-				}, { onlytargetcategory = "NONE", badtargetcategory = "ALL" })
+				}, { badtargetcategory = "ALL" })
+				if installed and shardSlot == 1 then
+					-- The split gadget can spawn the unmounted definition on the one-slot fallback.
+					u.weapons[#u.weapons] = nil
+				end
 			end,
 		},
 		-- 2. HYPERION SKEWER: Cloaked Pop-Up Overpenetrating Rail Sniper
@@ -224,7 +210,7 @@ do
 			{ 680e3, 1520e4, 480e3, 3, 34000, 1250, 2200 },
 			"Hyperion Skewer",
 			"Cloaked ambush bunker firing overpenetrating rail slugs through killed targets.",
-			function(u, src)
+			function(u, src, sourceName)
 				u.cancloak = true
 				u.initcloaked = true
 				u.decloakonfire = true
@@ -235,10 +221,11 @@ do
 				u.damagemodifier = 0.25
 				I(u, src, 1, "HYPERION_SKEWER", {
 					weapontype = "LaserCannon",
+					canattackground = true,
 					range = 3200,
-					reloadtime = 2.6,
+					reloadtime = 5,
 					weaponvelocity = 7500,
-					energypershot = 48000,
+					energypershot = 18000,
 					duration = 0.09,
 					thickness = 8.5,
 					corethickness = 0.65,
@@ -259,9 +246,9 @@ do
 						overpenetrate_slowing = false,
 						overpenetrate_penalty = 0.06,
 					},
-					damage = D(165e3, 140e3, 210e3, 24000),
+					damage = D(44000, 14500, 44000, 6500),
 					onlytargetcategory = T_SV,
-				})
+				}, { badtargetcategory = sourceName == "leglraa" and "LIGHTAIRSCOUT" or "GROUNDSCOUT" })
 			end,
 		},
 		-- 3. ZEUS CONDUIT: True 7-Target Chain-Lightning Spire
@@ -275,11 +262,11 @@ do
 				I(u, src, 1, "ZEUS_ARC", {
 					weapontype = "LightningCannon",
 					range = 1750,
-					reloadtime = 1.6,
+					reloadtime = 2.6,
 					burst = 4,
 					burstrate = 0.06,
 					weaponvelocity = 5400,
-					energypershot = 9600,
+					energypershot = 4400,
 					thickness = 16,
 					beamttl = 2,
 					duration = 1.6,
@@ -299,7 +286,7 @@ do
 						spark_maxunits = "7",
 						spark_range = "260",
 					},
-					damage = D(18000, 28000, 32000, 3200),
+					damage = D(4300, 4800, 4500, 950),
 					onlytargetcategory = T_SV,
 				})
 			end,
@@ -315,11 +302,12 @@ do
 				I(u, src, 1, "SOLARIS_SWEEP", {
 					weapontype = "BeamLaser",
 					largebeamlaser = true,
+					sweepfire = true,
 					range = 2400,
 					reloadtime = 3.2,
-					beamtime = 0.12,
+					beamtime = 0.65,
 					beamttl = 8,
-					energypershot = 24000,
+					energypershot = 9000,
 					thickness = 11,
 					corethickness = 0.65,
 					laserflaresize = 12,
@@ -336,14 +324,11 @@ do
 					explosiongenerator = "custom:heatray-huge",
 					soundstart = "heatray3",
 					soundtrigger = 1,
-					customparams = {
-						sweepfire_firetime = 2.6,
-					},
-					damage = D(14000, 9000, 26000, 2600),
+					damage = D(14000, 9000, 12000, 2600),
 					onlytargetcategory = T_SV,
 				}, {
 					fastautoretargeting = true,
-					onlytargetcategory = T_SV,
+					badtargetcategory = "GROUNDSCOUT",
 				})
 			end,
 		},
@@ -358,7 +343,7 @@ do
 				I(u, src, 1, "VIPER_CAULDRON", {
 					weapontype = "Cannon",
 					range = 2800,
-					reloadtime = 4.0,
+					reloadtime = 5.5,
 					burst = 4,
 					burstrate = 0.14,
 					sprayangle = 650,
@@ -366,7 +351,7 @@ do
 					weaponvelocity = 1800,
 					areaofeffect = 240,
 					edgeeffectiveness = 0.8,
-					energypershot = 36000,
+					energypershot = 15000,
 					size = 13,
 					stages = 24,
 					intensity = 2.2,
@@ -380,11 +365,11 @@ do
 						area_onhit_damageceg = "acid-damage-gen",
 						area_onhit_range = 150,
 						area_onhit_time = 16,
-						area_onhit_damage = 1400,
+						area_onhit_damage = 450,
 						area_onhit_resistance = "acid",
 						area_onhit_shieldpen = true,
 					},
-					damage = D(18000, nil, 36000, 3600),
+					damage = D(5500, nil, 6500, 1200),
 					onlytargetcategory = T_S,
 				})
 			end,
@@ -400,7 +385,7 @@ do
 				I(u, src, 1, "VALKYRIE_GLAIVE", {
 					weapontype = "Cannon",
 					range = 2400,
-					reloadtime = 2.0,
+					reloadtime = 3,
 					burst = 3,
 					burstrate = 0.12,
 					sprayangle = 420,
@@ -415,9 +400,8 @@ do
 					waterbounce = true,
 					numbounce = 4,
 					bouncerebound = 0.78,
-					bounceminspeed = 180,
 					collidefriendly = false,
-					energypershot = 22000,
+					energypershot = 11000,
 					size = 12,
 					stages = 26,
 					intensity = 2.4,
@@ -426,7 +410,7 @@ do
 					explosiongenerator = PH .. "medium",
 					soundstart = "sabotfire",
 					soundhit = "sabothit",
-					damage = D(22000, nil, 42000, 4000),
+					damage = D(6500, nil, 8500, 1800),
 					onlytargetcategory = T_S,
 				})
 			end,
@@ -437,7 +421,7 @@ do
 			{ "legrampart", "cortron", "armemp" },
 			{ 900e3, 2000e4, 720e3, 2, 48000, 1200, 3600 },
 			"Aegis VLS Bastion",
-			"EW radar/jammer citadel with auto-firing shield-piercing vertical cruise missiles.",
+			"EW radar/jammer citadel with auto-firing vertical cruise missiles.",
 			function(u, src, sourceName)
 				if sourceName == "legrampart" then
 					u.yardmap = ("o"):rep(25)
@@ -449,11 +433,9 @@ do
 				I(u, src, 1, "AEGIS_VLS_CRUISE", {
 					weapontype = "StarburstLauncher",
 					range = 4200,
-					reloadtime = 5.0,
+					reloadtime = 7.5,
 					burst = 4,
 					burstrate = 0.22,
-					stockpile = false,
-					commandfire = false,
 					tracks = true,
 					turnrate = 42000,
 					weaponvelocity = 2600,
@@ -463,7 +445,7 @@ do
 					flighttime = 12,
 					areaofeffect = 320,
 					edgeeffectiveness = 0.7,
-					energypershot = 72000,
+					energypershot = 25000,
 					interceptedbyshieldtype = 0,
 					craterboost = 3.0,
 					cratermult = 2.0,
@@ -477,7 +459,7 @@ do
 						uptime_max = 4,
 						shield_aoe_penetration = true,
 					},
-					damage = D(44000, nil, 90000, 8000),
+					damage = D(12000, nil, 14000, 2100),
 					onlytargetcategory = T_S,
 				})
 			end,
@@ -497,15 +479,15 @@ do
 					weapontype = "Cannon",
 					waterweapon = false,
 					range = 2400,
-					reloadtime = 2.2,
+					reloadtime = 3.6,
 					burst = 2,
 					burstrate = 0.12,
 					weaponvelocity = 4200,
 					areaofeffect = 240,
-					impulsefactor = 32,
-					impulseboost = 22,
+					impulsefactor = 5,
+					impulseboost = 4,
 					camerashake = 95,
-					energypershot = 24000,
+					energypershot = 11000,
 					size = 11,
 					stages = 22,
 					intensity = 2.4,
@@ -514,13 +496,13 @@ do
 					explosiongenerator = PH .. "huge",
 					soundstart = "cannhvy5",
 					soundhit = "xplolrg3",
-					damage = D(34000, nil, 68000, 5600),
+					damage = D(11500, nil, 14500, 2400),
 					onlytargetcategory = T_S,
 				})
-				I(u, src, GS(src, 2) and 2 or 1, "KRAKEN_TORPEDO", {
+				local installed = I(u, src, GS(src, 2) and 2 or 1, "KRAKEN_TORPEDO", {
 					weapontype = "TorpedoLauncher",
 					range = 2400,
-					reloadtime = 2.4,
+					reloadtime = 4,
 					burst = 5,
 					burstrate = 0.16,
 					waterweapon = true,
@@ -529,16 +511,19 @@ do
 					weaponvelocity = 1400,
 					startvelocity = 240,
 					weaponacceleration = 360,
-					weapontimer = 10,
+					flighttime = 8,
 					areaofeffect = 120,
-					energypershot = 18000,
+					energypershot = 9500,
 					cegtag = "torpedotrail-small",
 					explosiongenerator = G .. "large-uw",
 					soundstart = "torpedo1",
 					soundhit = "xplodep1",
-					damage = D(16000, nil, 24000, 3000),
+					damage = D(5500, nil, 6800, 1200),
 					onlytargetcategory = T_NA,
 				})
+				if installed then
+					u.weapondefs.KRAKEN_TORPEDO.weapontimer = nil
+				end
 			end,
 		},
 	}
@@ -558,7 +543,8 @@ do
 			u.unitname, u.name = spec[1], spec[1]
 			u.health, u.maxdamage = st[3], st[3]
 			u.metalcost, u.energycost, u.buildtime = st[1], st[2], st[2]
-			u.energyupkeep, u.energyuse = st[5] * EF, st[5] * EF
+			local upkeep = st[5] * EF * 0.2
+			u.energyupkeep, u.energyuse = upkeep, upkeep
 			if st[6] then
 				u.sightdistance = st[6]
 			end
@@ -596,19 +582,20 @@ do
 					range = 1,
 					reloadtime = 9999,
 					damage = { default = 0 },
+					canattackground = false,
 					noselfdamage = true,
 					turret = true,
 					explosiongenerator = mainW and mainW.explosiongenerator or "custom:genericshellexplosion-tiny-aa",
 				}
 				for sIdx = #u.weapons + 1, #source.weapons do
-					local sSlot = source.weapons[sIdx]
 					u.weapons[sIdx] = {
 						def = dName,
-						onlytargetcategory = sSlot and sSlot.onlytargetcategory or T_S,
+						onlytargetcategory = "NONE",
 					}
 				end
 			end
-
+		end
+		if u then
 			created[#created + 1] = spec[1]
 		end
 	end

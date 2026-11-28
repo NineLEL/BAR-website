@@ -57,7 +57,7 @@ assert(UnitDefs.player_sunsplitter.weapondefs.sun_shard ~= nil)
 assert(UnitDefs.player_sunsplitter.weapondefs.HELIOS_SHELL.customparams.speceffect == "split")
 assert(UnitDefs.player_skewerspike.cancloak == true and UnitDefs.player_skewerspike.weapondefs.HYPERION_SKEWER.customparams.overpenetrate == true)
 assert(UnitDefs.player_arcpylon.weapondefs.ZEUS_ARC.customparams.spark_maxunits == "7")
-assert(UnitDefs.player_chronosweep.weapondefs.SOLARIS_SWEEP.customparams.sweepfire_firetime == 2.6)
+assert(UnitDefs.player_chronosweep.weapondefs.SOLARIS_SWEEP.sweepfire == true)
 assert(UnitDefs.player_blightmortar.weapondefs.VIPER_CAULDRON.customparams.area_onhit_time == 16)
 assert(UnitDefs.player_diskricochet.weapondefs.VALKYRIE_GLAIVE.groundbounce == true and UnitDefs.player_diskricochet.weapondefs.VALKYRIE_GLAIVE.numbounce == 4)
 assert(UnitDefs.player_vlsbastion.radardistancejam == 950 and UnitDefs.player_vlsbastion.customparams.geothermal == nil)
@@ -74,6 +74,20 @@ for name, def in pairs(originals) do
   assert(def.health == UnitDefs[name].health, name .. " base health modified")
 end
 
+local beforeRepeat = copy(UnitDefs)
 assert(loadfile(pack))()
-for _, spec in ipairs(expected) do assert(UnitDefs[spec[1]], spec[1] .. " lost on repeat") end
+for _, spec in ipairs(expected) do
+  local name, slots = spec[1], spec[2]
+  local u = assert(UnitDefs[name], name .. " lost on repeat")
+  local before = beforeRepeat[name]
+  assert(#u.weapons == slots, name .. " changed weapon slot count on repeat")
+  for i, slot in ipairs(u.weapons) do
+    assert(slot.def == before.weapons[i].def and u.weapondefs[slot.def], name .. " changed mounted weapon on repeat")
+  end
+  for def in pairs(before.weapondefs) do
+    assert(u.weapondefs[def], name .. " lost weapon definition on repeat: " .. def)
+  end
+  assert(u.customparams.t4_source == before.customparams.t4_source
+    and u.customparams.t4_source_weapon_slots == before.customparams.t4_source_weapon_slots, name .. " changed source metadata on repeat")
+end
 print("exotic turrets runtime checks passed")
