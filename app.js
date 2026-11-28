@@ -45,6 +45,8 @@ function libFetch() {
 
 var libraryRequest = 0, libraryRendered = false, librarySearchTimer = null;
 var libraryToggleQueues = Object.create(null);
+var libraryFolderState = Object.create(null);
+var libraryFileStates = Object.create(null);
 
 function toggleLibraryFile(kind, name, enabled) {
   var key = kind + "/" + name;
@@ -111,12 +113,6 @@ function renderLibGroup(el, kind, files) {
     return;
   }
   var openByFolder = Object.create(null);
-  if (el.querySelectorAll) {
-    el.querySelectorAll(".library-group").forEach(function (groupEl) {
-      var folderKey = groupEl.getAttribute("data-folder");
-      if (folderKey !== null) openByFolder[folderKey] = !!groupEl.open;
-    });
-  }
   var query = ($("libSearch") ? $("libSearch").value : "").toLowerCase();
   var enabledOnly = !!($("libEnabledOnly") && $("libEnabledOnly").checked);
   var filtered = files.filter(function (f) {
@@ -138,10 +134,12 @@ function renderLibGroup(el, kind, files) {
   names.forEach(function (folder) {
     var groupFiles = groups[folder].sort(function (a, b) { return a.name.toLowerCase().localeCompare(b.name.toLowerCase()); });
     var enabled = groupFiles.filter(function (f) { return f.enabled; }).length;
+    var folderKey = kind + "/" + folder;
     var details = document.createElement("details");
     details.className = "library-group";
     details.setAttribute("data-folder", folder);
-    details.open = Object.prototype.hasOwnProperty.call(openByFolder, folder) ? openByFolder[folder] : true;
+    details.open = Object.prototype.hasOwnProperty.call(libraryFolderState, folderKey) ? libraryFolderState[folderKey] : true;
+    details.onchange = function () { libraryFolderState[folderKey] = details.open; };
     var summary = document.createElement("summary");
     var summaryTitle = document.createElement("span");
     summaryTitle.className = "library-group-title";
@@ -166,85 +164,8 @@ function renderLibGroup(el, kind, files) {
     });
     details.appendChild(summary); details.appendChild(actions);
     groupFiles.forEach(function (f) {
-    var div = document.createElement("div");
-    div.className = "slot" + (f.enabled ? "" : " empty");
-    var head = document.createElement("header");
-    var left = document.createElement("span");
-    var cb = document.createElement("input");
-    cb.type = "checkbox";
-    cb.checked = !!f.enabled;
-    cb.title = "Enable or disable " + f.name + " (file is kept)";
-    var checkboxLabel = document.createElement("label");
-    checkboxLabel.className = "library-file-toggle";
-    checkboxLabel.appendChild(cb);
-    var nm = document.createElement("span");
-    nm.className = "name";
-    nm.textContent = f.name;
-    checkboxLabel.appendChild(nm);
-    checkboxLabel.setAttribute("aria-label", (f.enabled ? "Disable " : "Enable ") + f.name);
-    cb.onchange = function () {
-      var nextEnabled = !!cb.checked;
-      var prevEnabled = !!f.enabled;
-      f.enabled = nextEnabled;
-      div.className = "slot" + (nextEnabled ? "" : " empty");
-      checkboxLabel.setAttribute("aria-label", (nextEnabled ? "Disable " : "Enable ") + f.name);
-      summaryCount.textContent = groupFiles.filter(function (gf) { return gf.enabled; }).length + "/" + groupFiles.length + " enabled";
-      if (window._lib) updateLibHeader(window._lib);
-      syncLibToPacker();
-      if ($("libEnabledOnly") && $("libEnabledOnly").checked) renderLibrary();
-      toggleLibraryFile(kind, f.name, nextEnabled).then(function (r) {
-        if (!r || !r.ok) throw new Error("Toggle failed");
-      }, function () {
-        f.enabled = prevEnabled;
-        cb.checked = prevEnabled;
-        div.className = "slot" + (prevEnabled ? "" : " empty");
-        checkboxLabel.setAttribute("aria-label", (prevEnabled ? "Disable " : "Enable ") + f.name);
-        summaryCount.textContent = groupFiles.filter(function (gf) { return gf.enabled; }).length + "/" + groupFiles.length + " enabled";
-        if (window._lib) updateLibHeader(window._lib);
-        syncLibToPacker();
-        if (libraryRendered) renderLibrary();
-        toast("Toggle failed; browser storage may be unavailable.");
-      });
-    };
-    left.appendChild(checkboxLabel);
-    var st = document.createElement("span");
-    st.className = "stats";
-    st.textContent = f.chars + " chars";
-    head.appendChild(left);
-    head.appendChild(st);
-    div.appendChild(head);
-    var row = document.createElement("div");
-    row.className = "row";
-    var pv = document.createElement("button");
-     pv.type = "button";
-     pv.textContent = "Preview";
-     pv.setAttribute("aria-expanded", "false");
-     var pre = document.createElement("pre");
-     pre.className = "mono output";
-      pre.id = "lib-preview-" + kind + "-" + fileIndexes[f.name];
-      pv.setAttribute("aria-controls", pre.id);
-     pre.hidden = true;
-     // Keep large library scripts out of the DOM until the user asks to see
-     // them. This avoids creating hundreds of thousands of text nodes on load.
-     pv.onclick = function () {
-       var opening = pre.hidden;
-       if (opening) {
-          pre.textContent = f.content;
-          pre.hidden = false;
-        pv.textContent = "Hide script";
-        pv.setAttribute("aria-expanded", "true");
-       } else {
-          pre.textContent = "";
-         pre.hidden = true;
-        pv.textContent = "Preview";
-        pv.setAttribute("aria-expanded", "false");
-       }
-     };
-     row.appendChild(pv);
-     var cp = document.createElement("button"); cp.type = "button"; cp.textContent = "Copy raw Lua"; cp.onclick = function () { copyText(f.content); }; row.appendChild(cp);
-    div.appendChild(row);
-    div.appendChild(pre);
-    details.appendChild(div);
+      var stateKey = kind + "/" + f.name;
+      renderLibraryFile(details, f, kind, stateKey, groupFiles, summaryCount, fileIndexes);
     });
     var bulk = document.createElement("div"); bulk.className = "library-group-bulk";
     [true, false].forEach(function (enable) {
@@ -1168,6 +1089,96 @@ $("utilityCopy").onclick = function () {
     catch (e) { utilitySetStatus("Could not copy output. Select it and copy manually.", true); }
   } else fallbackCopy();
 };
+function renderLibraryFile(container, f, kind, stateKey, groupFiles, summaryCount, fileIndexes) {
+  var div = document.createElement("div");
+  div.className = "slot" + (f.enabled ? "" : " empty");
+  var head = document.createElement("header");
+  var left = document.createElement("span");
+  var cb = document.createElement("input");
+  cb.type = "checkbox";
+  cb.checked = !!f.enabled;
+  cb.title = "Enable or disable " + f.name + " (file is kept)";
+  var checkboxLabel = document.createElement("label");
+  checkboxLabel.className = "library-file-toggle";
+  checkboxLabel.appendChild(cb);
+  var nm = document.createElement("span");
+  nm.className = "name";
+  nm.textContent = f.name;
+  checkboxLabel.appendChild(nm);
+  checkboxLabel.setAttribute("aria-label", (f.enabled ? "Disable " : "Enable ") + f.name);
+  cb.onchange = createFileToggleHandler(f, cb, div, checkboxLabel, groupFiles, summaryCount, kind, stateKey);
+  left.appendChild(checkboxLabel);
+  var st = document.createElement("span");
+  st.className = "stats";
+  st.textContent = f.chars + " chars";
+  head.appendChild(left);
+  head.appendChild(st);
+  div.appendChild(head);
+  var row = document.createElement("div");
+  row.className = "row";
+  var pv = document.createElement("button");
+  pv.type = "button";
+  pv.textContent = "Preview";
+  pv.setAttribute("aria-expanded", "false");
+  var pre = document.createElement("pre");
+  pre.className = "mono output";
+  pre.id = "lib-preview-" + kind + "-" + (fileIndexes[f.name] || 0);
+  pv.setAttribute("aria-controls", pre.id);
+  pre.hidden = true;
+  pv.onclick = createPreviewToggleHandler(pv, pre, f.content);
+  row.appendChild(pv);
+  var cp = document.createElement("button"); cp.type = "button"; cp.textContent = "Copy raw Lua"; cp.onclick = function () { copyText(f.content); }; row.appendChild(cp);
+  div.appendChild(row);
+  div.appendChild(pre);
+  container.appendChild(div);
+}
 
+function createFileToggleHandler(f, cb, div, checkboxLabel, groupFiles, summaryCount, kind, stateKey) {
+  return function () {
+    var nextEnabled = !!cb.checked;
+    var prevEnabled = !!f.enabled;
+    f.enabled = nextEnabled;
+    libraryFileStates[stateKey] = nextEnabled;
+    div.className = "slot" + (nextEnabled ? "" : " empty");
+    checkboxLabel.setAttribute("aria-label", (nextEnabled ? "Disable " : "Enable ") + f.name);
+    summaryCount.textContent = groupFiles.filter(function (gf) { return gf.enabled; }).length + "/" + groupFiles.length + " enabled";
+    if (window._lib) updateLibHeader(window._lib);
+    syncLibToPacker();
+    if ($("libEnabledOnly") && $("libEnabledOnly").checked) renderLibrary();
+    toggleLibraryFile(kind, f.name, nextEnabled).then(function (r) {
+      if (!r || !r.ok) throw new Error("Toggle failed");
+    }, function () {
+      f.enabled = prevEnabled;
+      libraryFileStates[stateKey] = prevEnabled;
+      cb.checked = prevEnabled;
+      div.className = "slot" + (prevEnabled ? "" : " empty");
+      checkboxLabel.setAttribute("aria-label", (prevEnabled ? "Disable " : "Enable ") + f.name);
+      summaryCount.textContent = groupFiles.filter(function (gf) { return gf.enabled; }).length + "/" + groupFiles.length + " enabled";
+      if (window._lib) updateLibHeader(window._lib);
+      syncLibToPacker();
+      if (libraryRendered) renderLibrary();
+      toast("Toggle failed; browser storage may be unavailable.");
+    });
+  };
+}
+
+function createPreviewToggleHandler(button, pre, content) {
+  return function () {
+    var opening = pre.hidden;
+    if (opening) {
+      pre.textContent = content;
+      pre.hidden = false;
+      button.textContent = "Hide script";
+      button.setAttribute("aria-expanded", "true");
+      pre.focus();
+    } else {
+      pre.textContent = "";
+      pre.hidden = true;
+      button.textContent = "Preview";
+      button.setAttribute("aria-expanded", "false");
+      button.focus();
+    }
+  };
+}
 loadEditorState();
 renderAll();
