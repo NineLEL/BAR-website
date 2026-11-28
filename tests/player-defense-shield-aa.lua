@@ -1,6 +1,7 @@
 local pack = arg[1] or "tweaks/defs/player/defenses/player-defense-shield-aa.lua"
 local applyPack = assert(loadfile(pack))
 UnitDefs, UnitDefNames = {}, {}
+-- Keep the old AA source chassis available so missing sources cannot hide a regression.
 for _, src in ipairs({"armflak", "corflak", "legflak"}) do
   local u = {
     name = src, health = 3000, speed = 0,
@@ -142,22 +143,12 @@ assert(scaled.customparams.shield_power == 84000 and scaled.weapondefs.repulsor.
 assert(scaled.customparams.shield_powerregen == 1200 and scaled.customparams.shield_startingpower == 10500)
 Spring = nil
 
-local sg = assert(UnitDefs.player_legionstormguard, "Storm Guard missing")
-local w = assert(sg.weapondefs.player_legionstormguard, "Storm Guard weapondef missing")
-assert(sg.weapons[1].def == "player_legionstormguard", "Storm Guard slot casing mismatch")
-assert(sg.weapons[1].onlytargetcategory == "VTOL", "Storm Guard must target VTOL")
-assert(w.turret == true, "Storm Guard turret must be true")
-assert(w.burnblow == true and w.canattackground == false, "Storm Guard must air-detonate via burnblow")
-assert(not (w.customparams and w.customparams.speceffect), "Storm Guard must not have broken sector_fire")
-assert(sg.canattack == true and sg.maxdamage == sg.health)
-
-for _, aa in ipairs({"player_silencearray", "player_prismwall"}) do
-  local u = assert(UnitDefs[aa], aa .. " missing")
-  local key = u.weapons[1].def
-  local def = assert(u.weapondefs[key], aa .. " unresolved weapondef")
-  assert(def.turret == true and def.noselfdamage == true)
+for _, id in ipairs({"player_silencearray", "player_prismwall", "player_legionstormguard"}) do
+  assert(UnitDefs[id] == nil and UnitDefNames[id] == nil, id .. " must not be registered")
+  for b, u in pairs(UnitDefs) do
+    if u.buildoptions then
+      assert(countOption(b, id) == 0, b .. " must not build " .. id)
+    end
+  end
 end
-assert(countOption("armack", "player_silencearray") == 1 and countOption("corack", "player_silencearray") == 0)
-assert(countOption("corack", "player_prismwall") == 1 and countOption("corgantuw", "player_prismwall") == 1)
-assert(countOption("legack", "player_legionstormguard") == 1 and countOption("leghack", "player_legionstormguard") == 1)
 print("defense shield aa runtime checks passed")
