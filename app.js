@@ -23,6 +23,25 @@ var resetAllCommands = Pure.resetAllCommands;
 
 function $(id) { return document.getElementById(id); }
 
+/* ---------- reusable DOM helpers ---------- */
+function createToggleHandler(output, button, showText, hideText) {
+  return function () {
+    var opening = output.style.display === "none";
+    if (opening) {
+      output.hidden = false;
+      output.style.display = "block";
+      button.textContent = hideText;
+      button.setAttribute("aria-expanded", "true");
+    } else {
+      output.textContent = "";
+      output.hidden = true;
+      output.style.display = "none";
+      button.textContent = showText;
+      button.setAttribute("aria-expanded", "false");
+    }
+  };
+}
+
 /* ---------- server library presentation ---------- */
 function libFetch() {
   var request = ++libraryRequest;
@@ -597,24 +616,13 @@ function renderSlots(g) {
         showCmd.className = "btn-ghost";
         showCmd.textContent = isCmdOpen ? "Hide command" : "Show command";
         showCmd.setAttribute("aria-expanded", isCmdOpen ? "true" : "false"); showCmd.setAttribute("aria-controls", "command-" + g.kind + "-" + idx); pre.id = "command-" + g.kind + "-" + idx;
-         showCmd.onclick = (function (command, output, button) {
-           return function () {
-             var opening = output.style.display === "none";
-             if (opening) {
-        output.textContent = command;
-        output.hidden = false;
-               output.style.display = "block";
-                button.textContent = "Hide command";
-                button.setAttribute("aria-expanded", "true");
-             } else {
-        output.textContent = "";
-        output.hidden = true;
-               output.style.display = "none";
-                button.textContent = "Show command";
-                button.setAttribute("aria-expanded", "false");
-             }
-           };
-         })(cmd, pre, showCmd);
+          showCmd.onclick = (function (command, output, button) {
+            var handler = createToggleHandler(output, button, "Show command", "Hide command");
+            return function () {
+              if (output.style.display === "none") output.textContent = command;
+              handler();
+            };
+          })(cmd, pre, showCmd);
         row.appendChild(showCmd);
         var pv = document.createElement("button");
         pv.type = "button";
@@ -628,24 +636,13 @@ function renderSlots(g) {
         prev2.hidden = !isMinOpen;
         prev2.style.display = isMinOpen ? "block" : "none";
         if (isMinOpen) prev2.textContent = min;
-         pv.onclick = (function (source, output, button) {
-           return function () {
-             var opening = output.style.display === "none";
-             if (opening) {
-                output.textContent = source;
-                output.hidden = false;
-               output.style.display = "block";
-                button.textContent = "Hide minified";
-                button.setAttribute("aria-expanded", "true");
-             } else {
-                output.textContent = "";
-                output.hidden = true;
-               output.style.display = "none";
-                button.textContent = "Show minified";
-                button.setAttribute("aria-expanded", "false");
-             }
-           };
-         })(min, prev2, pv);
+          pv.onclick = (function (source, output, button) {
+            var handler = createToggleHandler(output, button, "Show minified", "Hide minified");
+            return function () {
+              if (output.style.display === "none") output.textContent = source;
+              handler();
+            };
+          })(min, prev2, pv);
         row.appendChild(cp); row.appendChild(pv);
         div.appendChild(row);
         div.appendChild(prev2);
